@@ -1,0 +1,76 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+}
+
+
+
+
+
+// =======================
+// USER MODULE
+// =======================
+
+enum UserType {
+  admin
+  user
+}
+
+enum AccountStatus {
+  active
+  suspended
+  deleted
+}
+
+model User {
+
+  // Primary Key
+  id                  String         @id @default(uuid()) @db.Uuid
+
+  // Basic Information
+  firstName           String         @db.VarChar(100)
+  lastName            String         @db.VarChar(100)
+
+  email               String         @unique @db.VarChar(255)
+  phone               String         @unique @db.VarChar(20)
+
+  // Authentication
+  password            String         @db.VarChar(255)
+
+  // Verification
+  verificationCode    String?        @db.VarChar(10)
+  verified            Boolean        @default(false)
+
+  // User Role
+  userType            UserType       @default(user)
+
+  // Account Status
+  accountStatus       AccountStatus  @default(active)
+
+  // Profile
+  profilePhoto        String?        @db.Text
+  dob                 DateTime?
+
+  // Security
+  passwordChangedAt   DateTime?
+  lastLoginAt         DateTime?
+
+  // Timestamps
+  createdAt           DateTime       @default(now())
+  updatedAt           DateTime       @updatedAt
+
+  // Soft Delete
+  deletedAt           DateTime?
+
+  // Indexes
+  @@index([email])
+  @@index([phone])
+  @@index([userType])
+  @@index([accountStatus])
+
+  // Table Name
+  @@map("users")
+}
