@@ -74,3 +74,55 @@ model User {
   // Table Name
   @@map("users")
 }
+
+
+
+// =======================
+// SESSION MODULE
+// =======================
+
+
+model Session {
+  id                String   @id @default(cuid())
+
+  // Relationship
+  userId            String
+  user              User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  // Refresh token
+  refreshTokenHash  String   @unique
+
+
+  // Device information
+  deviceName        String?
+  deviceType        String?
+  browser           String?
+  os                String?
+  userAgent         String?
+
+  // Network information
+  ipAddress         String?
+  city              String?
+  region            String?
+  country           String?
+  timezone          String?
+
+  // Security
+  isRevoked         Boolean  @default(false)
+  revokedAt         DateTime?
+  revokeReason      String?
+
+  // Expiration
+  expiresAt         DateTime
+  lastUsedAt        DateTime?
+
+  // Activity tracking
+  loginAt           DateTime @default(now())
+  createdAt         DateTime @default(now())
+  updatedAt         DateTime @updatedAt
+
+  @@index([userId])
+  @@index([refreshTokenHash])
+  @@index([expiresAt])
+  @@index([isRevoked])
+}
