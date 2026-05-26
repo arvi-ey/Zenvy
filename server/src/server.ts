@@ -26,3 +26,23 @@ app.use(globalErrorHandler)
 app.listen(PORT, () => {
     console.log(`Server running on port ${PORT}`);
 });
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+//Most used prisma comands
+
+// npx prisma format
+// npx prisma migrate dev--name your_change
+// npx prisma studio
+// npx prisma generate

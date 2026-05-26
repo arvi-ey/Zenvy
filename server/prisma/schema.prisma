@@ -6,10 +6,6 @@ datasource db {
   provider = "postgresql"
 }
 
-
-
-
-
 // =======================
 // USER MODULE
 // =======================
@@ -26,100 +22,97 @@ enum AccountStatus {
 }
 
 model User {
-
   // Primary Key
-  id                  String         @id @default(uuid()) @db.Uuid
+  id String @id @default(uuid()) @db.Uuid
 
   // Basic Information
-  firstName           String         @db.VarChar(100)
-  lastName            String         @db.VarChar(100)
+  firstName String @db.VarChar(100)
+  lastName  String @db.VarChar(100)
 
-  email               String         @unique @db.VarChar(255)
-  phone               String         @unique @db.VarChar(20)
+  email String @unique @db.VarChar(255)
+  phone String @unique @db.VarChar(20)
 
   // Authentication
-  password            String         @db.VarChar(255)
+  password String @db.VarChar(255)
 
   // Verification
-  verificationCode    String?        @db.VarChar(10)
-  verified            Boolean        @default(false)
+  verificationCode String? @db.VarChar(10)
+  verified         Boolean @default(false)
 
   // User Role
-  userType            UserType       @default(user)
+  userType UserType @default(user)
 
   // Account Status
-  accountStatus       AccountStatus  @default(active)
+  accountStatus AccountStatus @default(active)
 
   // Profile
-  profilePhoto        String?        @db.Text
-  dob                 DateTime?
+  profilePhoto String?   @db.Text
+  dob          DateTime?
 
   // Security
-  passwordChangedAt   DateTime?
-  lastLoginAt         DateTime?
+  passwordChangedAt DateTime?
+  lastLoginAt       DateTime?
 
   // Timestamps
-  createdAt           DateTime       @default(now())
-  updatedAt           DateTime       @updatedAt
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
 
   // Soft Delete
-  deletedAt           DateTime?
+  deletedAt DateTime?
+
+  // Sessions Relation
+  sessions Session[]
 
   // Indexes
   @@index([email])
   @@index([phone])
   @@index([userType])
   @@index([accountStatus])
-
   // Table Name
   @@map("users")
 }
-
-
 
 // =======================
 // SESSION MODULE
 // =======================
 
-
 model Session {
-  id                String   @id @default(cuid())
+  id String @id @default(uuid()) @db.Uuid
 
   // Relationship
-  userId            String
-  user              User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  userId String @db.Uuid
+  user   User   @relation(fields: [userId], references: [id], onDelete: Cascade)
 
   // Refresh token
-  refreshTokenHash  String   @unique
-
+  refreshTokenHash String @unique
 
   // Device information
-  deviceName        String?
-  deviceType        String?
-  browser           String?
-  os                String?
-  userAgent         String?
+  deviceName String?
+  deviceType String?
+  browser    String?
+  os         String?
+  userAgent  String?
 
   // Network information
-  ipAddress         String?
-  city              String?
-  region            String?
-  country           String?
-  timezone          String?
+  ipAddress String?
+  city      String?
+  region    String?
+  country   String?
+  timezone  String?
 
   // Security
-  isRevoked         Boolean  @default(false)
-  revokedAt         DateTime?
-  revokeReason      String?
+  isRevoked    Boolean   @default(false)
+  revokedAt    DateTime?
+  revokeReason String?
 
   // Expiration
-  expiresAt         DateTime
-  lastUsedAt        DateTime?
+  expiresAt  DateTime
+  lastUsedAt DateTime?
 
   // Activity tracking
-  loginAt           DateTime @default(now())
-  createdAt         DateTime @default(now())
-  updatedAt         DateTime @updatedAt
+  loginAt   DateTime @default(now())
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
 
   @@index([userId])
   @@index([refreshTokenHash])
