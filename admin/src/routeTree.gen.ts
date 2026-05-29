@@ -9,18 +9,28 @@
 // Additionally, you should also exclude this file from your linter and/or formatter to prevent it from being checked or modified.
 
 import { Route as rootRouteImport } from './routes/__root'
+import { Route as VerifyEmailRouteImport } from './routes/verify-email'
 import { Route as SignupRouteImport } from './routes/signup'
 import { Route as SigninRouteImport } from './routes/signin'
+import { Route as ResetPasswordRouteImport } from './routes/reset-password'
+import { Route as ForgotPasswordRouteImport } from './routes/forgot-password'
 import { Route as DashboardRouteImport } from './routes/dashboard'
 import { Route as IndexRouteImport } from './routes/index'
 import { Route as DashboardIndexRouteImport } from './routes/dashboard.index'
-import { Route as DashboardUsersRouteImport } from './routes/dashboard.users'
-import { Route as DashboardProfileRouteImport } from './routes/dashboard.profile'
-import { Route as DashboardProductsRouteImport } from './routes/dashboard.products'
-import { Route as DashboardOrdersRouteImport } from './routes/dashboard.orders'
-import { Route as DashboardNotificationsRouteImport } from './routes/dashboard.notifications'
-import { Route as DashboardDeliveriesRouteImport } from './routes/dashboard.deliveries'
+import { Route as DashboardUsersIndexRouteImport } from './routes/dashboard.users.index'
+import { Route as DashboardSettingsIndexRouteImport } from './routes/dashboard.settings.index'
+import { Route as DashboardProfileIndexRouteImport } from './routes/dashboard.profile.index'
+import { Route as DashboardOrdersIndexRouteImport } from './routes/dashboard.orders.index'
+import { Route as DashboardNotificationsIndexRouteImport } from './routes/dashboard.notifications.index'
+import { Route as DashboardItemsIndexRouteImport } from './routes/dashboard.items.index'
+import { Route as DashboardCategoriesIndexRouteImport } from './routes/dashboard.categories.index'
+import { Route as DashboardOrdersOrderIdRouteImport } from './routes/dashboard.orders.$orderId'
 
+const VerifyEmailRoute = VerifyEmailRouteImport.update({
+  id: '/verify-email',
+  path: '/verify-email',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const SignupRoute = SignupRouteImport.update({
   id: '/signup',
   path: '/signup',
@@ -29,6 +39,16 @@ const SignupRoute = SignupRouteImport.update({
 const SigninRoute = SigninRouteImport.update({
   id: '/signin',
   path: '/signin',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const ResetPasswordRoute = ResetPasswordRouteImport.update({
+  id: '/reset-password',
+  path: '/reset-password',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const ForgotPasswordRoute = ForgotPasswordRouteImport.update({
+  id: '/forgot-password',
+  path: '/forgot-password',
   getParentRoute: () => rootRouteImport,
 } as any)
 const DashboardRoute = DashboardRouteImport.update({
@@ -46,126 +66,178 @@ const DashboardIndexRoute = DashboardIndexRouteImport.update({
   path: '/',
   getParentRoute: () => DashboardRoute,
 } as any)
-const DashboardUsersRoute = DashboardUsersRouteImport.update({
-  id: '/users',
-  path: '/users',
+const DashboardUsersIndexRoute = DashboardUsersIndexRouteImport.update({
+  id: '/users/',
+  path: '/users/',
   getParentRoute: () => DashboardRoute,
 } as any)
-const DashboardProfileRoute = DashboardProfileRouteImport.update({
-  id: '/profile',
-  path: '/profile',
+const DashboardSettingsIndexRoute = DashboardSettingsIndexRouteImport.update({
+  id: '/settings/',
+  path: '/settings/',
   getParentRoute: () => DashboardRoute,
 } as any)
-const DashboardProductsRoute = DashboardProductsRouteImport.update({
-  id: '/products',
-  path: '/products',
+const DashboardProfileIndexRoute = DashboardProfileIndexRouteImport.update({
+  id: '/profile/',
+  path: '/profile/',
   getParentRoute: () => DashboardRoute,
 } as any)
-const DashboardOrdersRoute = DashboardOrdersRouteImport.update({
-  id: '/orders',
-  path: '/orders',
+const DashboardOrdersIndexRoute = DashboardOrdersIndexRouteImport.update({
+  id: '/orders/',
+  path: '/orders/',
   getParentRoute: () => DashboardRoute,
 } as any)
-const DashboardNotificationsRoute = DashboardNotificationsRouteImport.update({
-  id: '/notifications',
-  path: '/notifications',
+const DashboardNotificationsIndexRoute =
+  DashboardNotificationsIndexRouteImport.update({
+    id: '/notifications/',
+    path: '/notifications/',
+    getParentRoute: () => DashboardRoute,
+  } as any)
+const DashboardItemsIndexRoute = DashboardItemsIndexRouteImport.update({
+  id: '/items/',
+  path: '/items/',
   getParentRoute: () => DashboardRoute,
 } as any)
-const DashboardDeliveriesRoute = DashboardDeliveriesRouteImport.update({
-  id: '/deliveries',
-  path: '/deliveries',
+const DashboardCategoriesIndexRoute =
+  DashboardCategoriesIndexRouteImport.update({
+    id: '/categories/',
+    path: '/categories/',
+    getParentRoute: () => DashboardRoute,
+  } as any)
+const DashboardOrdersOrderIdRoute = DashboardOrdersOrderIdRouteImport.update({
+  id: '/orders/$orderId',
+  path: '/orders/$orderId',
   getParentRoute: () => DashboardRoute,
 } as any)
 
 export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
   '/dashboard': typeof DashboardRouteWithChildren
+  '/forgot-password': typeof ForgotPasswordRoute
+  '/reset-password': typeof ResetPasswordRoute
   '/signin': typeof SigninRoute
   '/signup': typeof SignupRoute
-  '/dashboard/deliveries': typeof DashboardDeliveriesRoute
-  '/dashboard/notifications': typeof DashboardNotificationsRoute
-  '/dashboard/orders': typeof DashboardOrdersRoute
-  '/dashboard/products': typeof DashboardProductsRoute
-  '/dashboard/profile': typeof DashboardProfileRoute
-  '/dashboard/users': typeof DashboardUsersRoute
+  '/verify-email': typeof VerifyEmailRoute
   '/dashboard/': typeof DashboardIndexRoute
+  '/dashboard/orders/$orderId': typeof DashboardOrdersOrderIdRoute
+  '/dashboard/categories/': typeof DashboardCategoriesIndexRoute
+  '/dashboard/items/': typeof DashboardItemsIndexRoute
+  '/dashboard/notifications/': typeof DashboardNotificationsIndexRoute
+  '/dashboard/orders/': typeof DashboardOrdersIndexRoute
+  '/dashboard/profile/': typeof DashboardProfileIndexRoute
+  '/dashboard/settings/': typeof DashboardSettingsIndexRoute
+  '/dashboard/users/': typeof DashboardUsersIndexRoute
 }
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
+  '/forgot-password': typeof ForgotPasswordRoute
+  '/reset-password': typeof ResetPasswordRoute
   '/signin': typeof SigninRoute
   '/signup': typeof SignupRoute
-  '/dashboard/deliveries': typeof DashboardDeliveriesRoute
-  '/dashboard/notifications': typeof DashboardNotificationsRoute
-  '/dashboard/orders': typeof DashboardOrdersRoute
-  '/dashboard/products': typeof DashboardProductsRoute
-  '/dashboard/profile': typeof DashboardProfileRoute
-  '/dashboard/users': typeof DashboardUsersRoute
+  '/verify-email': typeof VerifyEmailRoute
   '/dashboard': typeof DashboardIndexRoute
+  '/dashboard/orders/$orderId': typeof DashboardOrdersOrderIdRoute
+  '/dashboard/categories': typeof DashboardCategoriesIndexRoute
+  '/dashboard/items': typeof DashboardItemsIndexRoute
+  '/dashboard/notifications': typeof DashboardNotificationsIndexRoute
+  '/dashboard/orders': typeof DashboardOrdersIndexRoute
+  '/dashboard/profile': typeof DashboardProfileIndexRoute
+  '/dashboard/settings': typeof DashboardSettingsIndexRoute
+  '/dashboard/users': typeof DashboardUsersIndexRoute
 }
 export interface FileRoutesById {
   __root__: typeof rootRouteImport
   '/': typeof IndexRoute
   '/dashboard': typeof DashboardRouteWithChildren
+  '/forgot-password': typeof ForgotPasswordRoute
+  '/reset-password': typeof ResetPasswordRoute
   '/signin': typeof SigninRoute
   '/signup': typeof SignupRoute
-  '/dashboard/deliveries': typeof DashboardDeliveriesRoute
-  '/dashboard/notifications': typeof DashboardNotificationsRoute
-  '/dashboard/orders': typeof DashboardOrdersRoute
-  '/dashboard/products': typeof DashboardProductsRoute
-  '/dashboard/profile': typeof DashboardProfileRoute
-  '/dashboard/users': typeof DashboardUsersRoute
+  '/verify-email': typeof VerifyEmailRoute
   '/dashboard/': typeof DashboardIndexRoute
+  '/dashboard/orders/$orderId': typeof DashboardOrdersOrderIdRoute
+  '/dashboard/categories/': typeof DashboardCategoriesIndexRoute
+  '/dashboard/items/': typeof DashboardItemsIndexRoute
+  '/dashboard/notifications/': typeof DashboardNotificationsIndexRoute
+  '/dashboard/orders/': typeof DashboardOrdersIndexRoute
+  '/dashboard/profile/': typeof DashboardProfileIndexRoute
+  '/dashboard/settings/': typeof DashboardSettingsIndexRoute
+  '/dashboard/users/': typeof DashboardUsersIndexRoute
 }
 export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
   fullPaths:
     | '/'
     | '/dashboard'
+    | '/forgot-password'
+    | '/reset-password'
     | '/signin'
     | '/signup'
-    | '/dashboard/deliveries'
-    | '/dashboard/notifications'
-    | '/dashboard/orders'
-    | '/dashboard/products'
-    | '/dashboard/profile'
-    | '/dashboard/users'
+    | '/verify-email'
     | '/dashboard/'
+    | '/dashboard/orders/$orderId'
+    | '/dashboard/categories/'
+    | '/dashboard/items/'
+    | '/dashboard/notifications/'
+    | '/dashboard/orders/'
+    | '/dashboard/profile/'
+    | '/dashboard/settings/'
+    | '/dashboard/users/'
   fileRoutesByTo: FileRoutesByTo
   to:
     | '/'
+    | '/forgot-password'
+    | '/reset-password'
     | '/signin'
     | '/signup'
-    | '/dashboard/deliveries'
+    | '/verify-email'
+    | '/dashboard'
+    | '/dashboard/orders/$orderId'
+    | '/dashboard/categories'
+    | '/dashboard/items'
     | '/dashboard/notifications'
     | '/dashboard/orders'
-    | '/dashboard/products'
     | '/dashboard/profile'
+    | '/dashboard/settings'
     | '/dashboard/users'
-    | '/dashboard'
   id:
     | '__root__'
     | '/'
     | '/dashboard'
+    | '/forgot-password'
+    | '/reset-password'
     | '/signin'
     | '/signup'
-    | '/dashboard/deliveries'
-    | '/dashboard/notifications'
-    | '/dashboard/orders'
-    | '/dashboard/products'
-    | '/dashboard/profile'
-    | '/dashboard/users'
+    | '/verify-email'
     | '/dashboard/'
+    | '/dashboard/orders/$orderId'
+    | '/dashboard/categories/'
+    | '/dashboard/items/'
+    | '/dashboard/notifications/'
+    | '/dashboard/orders/'
+    | '/dashboard/profile/'
+    | '/dashboard/settings/'
+    | '/dashboard/users/'
   fileRoutesById: FileRoutesById
 }
 export interface RootRouteChildren {
   IndexRoute: typeof IndexRoute
   DashboardRoute: typeof DashboardRouteWithChildren
+  ForgotPasswordRoute: typeof ForgotPasswordRoute
+  ResetPasswordRoute: typeof ResetPasswordRoute
   SigninRoute: typeof SigninRoute
   SignupRoute: typeof SignupRoute
+  VerifyEmailRoute: typeof VerifyEmailRoute
 }
 
 declare module '@tanstack/react-router' {
   interface FileRoutesByPath {
+    '/verify-email': {
+      id: '/verify-email'
+      path: '/verify-email'
+      fullPath: '/verify-email'
+      preLoaderRoute: typeof VerifyEmailRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/signup': {
       id: '/signup'
       path: '/signup'
@@ -178,6 +250,20 @@ declare module '@tanstack/react-router' {
       path: '/signin'
       fullPath: '/signin'
       preLoaderRoute: typeof SigninRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/reset-password': {
+      id: '/reset-password'
+      path: '/reset-password'
+      fullPath: '/reset-password'
+      preLoaderRoute: typeof ResetPasswordRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/forgot-password': {
+      id: '/forgot-password'
+      path: '/forgot-password'
+      fullPath: '/forgot-password'
+      preLoaderRoute: typeof ForgotPasswordRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/dashboard': {
@@ -201,69 +287,87 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof DashboardIndexRouteImport
       parentRoute: typeof DashboardRoute
     }
-    '/dashboard/users': {
-      id: '/dashboard/users'
+    '/dashboard/users/': {
+      id: '/dashboard/users/'
       path: '/users'
-      fullPath: '/dashboard/users'
-      preLoaderRoute: typeof DashboardUsersRouteImport
+      fullPath: '/dashboard/users/'
+      preLoaderRoute: typeof DashboardUsersIndexRouteImport
       parentRoute: typeof DashboardRoute
     }
-    '/dashboard/profile': {
-      id: '/dashboard/profile'
+    '/dashboard/settings/': {
+      id: '/dashboard/settings/'
+      path: '/settings'
+      fullPath: '/dashboard/settings/'
+      preLoaderRoute: typeof DashboardSettingsIndexRouteImport
+      parentRoute: typeof DashboardRoute
+    }
+    '/dashboard/profile/': {
+      id: '/dashboard/profile/'
       path: '/profile'
-      fullPath: '/dashboard/profile'
-      preLoaderRoute: typeof DashboardProfileRouteImport
+      fullPath: '/dashboard/profile/'
+      preLoaderRoute: typeof DashboardProfileIndexRouteImport
       parentRoute: typeof DashboardRoute
     }
-    '/dashboard/products': {
-      id: '/dashboard/products'
-      path: '/products'
-      fullPath: '/dashboard/products'
-      preLoaderRoute: typeof DashboardProductsRouteImport
-      parentRoute: typeof DashboardRoute
-    }
-    '/dashboard/orders': {
-      id: '/dashboard/orders'
+    '/dashboard/orders/': {
+      id: '/dashboard/orders/'
       path: '/orders'
-      fullPath: '/dashboard/orders'
-      preLoaderRoute: typeof DashboardOrdersRouteImport
+      fullPath: '/dashboard/orders/'
+      preLoaderRoute: typeof DashboardOrdersIndexRouteImport
       parentRoute: typeof DashboardRoute
     }
-    '/dashboard/notifications': {
-      id: '/dashboard/notifications'
+    '/dashboard/notifications/': {
+      id: '/dashboard/notifications/'
       path: '/notifications'
-      fullPath: '/dashboard/notifications'
-      preLoaderRoute: typeof DashboardNotificationsRouteImport
+      fullPath: '/dashboard/notifications/'
+      preLoaderRoute: typeof DashboardNotificationsIndexRouteImport
       parentRoute: typeof DashboardRoute
     }
-    '/dashboard/deliveries': {
-      id: '/dashboard/deliveries'
-      path: '/deliveries'
-      fullPath: '/dashboard/deliveries'
-      preLoaderRoute: typeof DashboardDeliveriesRouteImport
+    '/dashboard/items/': {
+      id: '/dashboard/items/'
+      path: '/items'
+      fullPath: '/dashboard/items/'
+      preLoaderRoute: typeof DashboardItemsIndexRouteImport
+      parentRoute: typeof DashboardRoute
+    }
+    '/dashboard/categories/': {
+      id: '/dashboard/categories/'
+      path: '/categories'
+      fullPath: '/dashboard/categories/'
+      preLoaderRoute: typeof DashboardCategoriesIndexRouteImport
+      parentRoute: typeof DashboardRoute
+    }
+    '/dashboard/orders/$orderId': {
+      id: '/dashboard/orders/$orderId'
+      path: '/orders/$orderId'
+      fullPath: '/dashboard/orders/$orderId'
+      preLoaderRoute: typeof DashboardOrdersOrderIdRouteImport
       parentRoute: typeof DashboardRoute
     }
   }
 }
 
 interface DashboardRouteChildren {
-  DashboardDeliveriesRoute: typeof DashboardDeliveriesRoute
-  DashboardNotificationsRoute: typeof DashboardNotificationsRoute
-  DashboardOrdersRoute: typeof DashboardOrdersRoute
-  DashboardProductsRoute: typeof DashboardProductsRoute
-  DashboardProfileRoute: typeof DashboardProfileRoute
-  DashboardUsersRoute: typeof DashboardUsersRoute
   DashboardIndexRoute: typeof DashboardIndexRoute
+  DashboardOrdersOrderIdRoute: typeof DashboardOrdersOrderIdRoute
+  DashboardCategoriesIndexRoute: typeof DashboardCategoriesIndexRoute
+  DashboardItemsIndexRoute: typeof DashboardItemsIndexRoute
+  DashboardNotificationsIndexRoute: typeof DashboardNotificationsIndexRoute
+  DashboardOrdersIndexRoute: typeof DashboardOrdersIndexRoute
+  DashboardProfileIndexRoute: typeof DashboardProfileIndexRoute
+  DashboardSettingsIndexRoute: typeof DashboardSettingsIndexRoute
+  DashboardUsersIndexRoute: typeof DashboardUsersIndexRoute
 }
 
 const DashboardRouteChildren: DashboardRouteChildren = {
-  DashboardDeliveriesRoute: DashboardDeliveriesRoute,
-  DashboardNotificationsRoute: DashboardNotificationsRoute,
-  DashboardOrdersRoute: DashboardOrdersRoute,
-  DashboardProductsRoute: DashboardProductsRoute,
-  DashboardProfileRoute: DashboardProfileRoute,
-  DashboardUsersRoute: DashboardUsersRoute,
   DashboardIndexRoute: DashboardIndexRoute,
+  DashboardOrdersOrderIdRoute: DashboardOrdersOrderIdRoute,
+  DashboardCategoriesIndexRoute: DashboardCategoriesIndexRoute,
+  DashboardItemsIndexRoute: DashboardItemsIndexRoute,
+  DashboardNotificationsIndexRoute: DashboardNotificationsIndexRoute,
+  DashboardOrdersIndexRoute: DashboardOrdersIndexRoute,
+  DashboardProfileIndexRoute: DashboardProfileIndexRoute,
+  DashboardSettingsIndexRoute: DashboardSettingsIndexRoute,
+  DashboardUsersIndexRoute: DashboardUsersIndexRoute,
 }
 
 const DashboardRouteWithChildren = DashboardRoute._addFileChildren(
@@ -273,8 +377,11 @@ const DashboardRouteWithChildren = DashboardRoute._addFileChildren(
 const rootRouteChildren: RootRouteChildren = {
   IndexRoute: IndexRoute,
   DashboardRoute: DashboardRouteWithChildren,
+  ForgotPasswordRoute: ForgotPasswordRoute,
+  ResetPasswordRoute: ResetPasswordRoute,
   SigninRoute: SigninRoute,
   SignupRoute: SignupRoute,
+  VerifyEmailRoute: VerifyEmailRoute,
 }
 export const routeTree = rootRouteImport
   ._addFileChildren(rootRouteChildren)

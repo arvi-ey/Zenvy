@@ -30,13 +30,14 @@ model User {
   lastName  String @db.VarChar(100)
 
   email String @unique @db.VarChar(255)
-  phone String @unique @db.VarChar(20)
+  phone String? @unique @db.VarChar(20)
 
   // Authentication
-  password String @db.VarChar(255)
+  passwordHash String @db.VarChar(255)
 
   // Verification
-  verificationCode String? @db.VarChar(10)
+  verificationTokenHash String? @db.VarChar()
+  verificationTokenExpiresAt DateTime?
   verified         Boolean @default(false)
 
   // User Role

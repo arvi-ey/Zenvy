@@ -1,223 +1,163 @@
-import { Link, createFileRoute } from "@tanstack/react-router";
-import { motion } from "framer-motion";
-import { ArrowRight, BarChart3, Bell, Package, Shield, Sparkles, Star, Truck, Users } from "lucide-react";
-import { useTheme } from "@/lib/theme";
-import { Button } from "@/components/ui/button";
-import { Input } from "@/components/ui/input";
-import { Moon, Sun } from "lucide-react";
-import { toast } from "sonner";
+import { createFileRoute, Link } from "@tanstack/react-router";
+import { ArrowRight, BarChart3, Bell, Boxes, ShieldCheck, Sparkles, Users, Zap, Globe2, Shirt, Truck, Tag } from "lucide-react";
+import { BrandMark } from "@/components/BrandMark";
 
 export const Route = createFileRoute("/")({
-  component: Home,
   head: () => ({
     meta: [
-      { title: "Luxe — Premium E-Commerce Admin Dashboard" },
-      { name: "description", content: "A modern, luxury admin dashboard for ambitious commerce teams. Analytics, orders, deliveries, and more." },
-      { property: "og:title", content: "Luxe — Premium E-Commerce Admin Dashboard" },
-      { property: "og:description", content: "Run your store with a beautiful, fast, premium admin experience." },
+      { title: "Zenvy — T-Shirt Commerce Admin" },
+      { name: "description", content: "The all-in-one admin dashboard powering Zenvy — manage tees, inventory, orders and customers from one premium command center." },
     ],
   }),
+  component: Landing,
 });
 
-const features = [
-  { icon: BarChart3, title: "Realtime analytics", desc: "Beautiful charts that reveal trends and revenue at a glance." },
-  { icon: Package, title: "Catalog control", desc: "Add, edit and organize products with effortless precision." },
-  { icon: Truck, title: "Delivery tracking", desc: "Live shipping timelines, drivers, and on-time performance." },
-  { icon: Users, title: "Customer insights", desc: "Roles, segments and behavior — all in one place." },
-  { icon: Bell, title: "Notifications", desc: "Send push, email and scheduled campaigns instantly." },
-  { icon: Shield, title: "Enterprise security", desc: "2FA, audit logs and role-based permissions out of the box." },
-];
-
-const stats = [
-  { v: "$2.4B+", l: "GMV processed" },
-  { v: "12,000+", l: "Stores" },
-  { v: "99.99%", l: "Uptime" },
-  { v: "120ms", l: "Avg. response" },
-];
-
-const testimonials = [
-  { name: "Amelia Park", role: "COO, Halcyon Goods", quote: "Luxe transformed how we run operations. It's the most beautiful admin we've ever shipped to our team." },
-  { name: "Noah Bennett", role: "Founder, Cirrus", quote: "From product to delivery, every workflow feels considered. Our team simply loves using it." },
-  { name: "Sofia Reyes", role: "Head of Growth, Mira", quote: "The analytics alone are worth it. We make better decisions, faster." },
-];
-
-function Home() {
-  const { theme, toggle } = useTheme();
+function Landing() {
   return (
-    <div className="min-h-screen bg-background text-foreground">
+    <div className="min-h-screen">
       {/* Nav */}
-      <header className="sticky top-0 z-40 glass border-b border-border/50">
-        <div className="container mx-auto max-w-7xl px-4 sm:px-6 h-16 flex items-center justify-between">
-          <Link to="/" className="flex items-center gap-2">
-            <div className="size-9 rounded-xl gradient-primary grid place-items-center shadow-glow">
-              <Sparkles className="size-5 text-primary-foreground" />
-            </div>
-            <span className="font-display text-xl font-semibold">Luxe</span>
-          </Link>
-          <nav className="hidden md:flex items-center gap-7 text-sm text-muted-foreground">
+      <header className="sticky top-0 z-30 glass border-b border-border">
+        <div className="mx-auto max-w-7xl flex items-center justify-between px-4 lg:px-8 h-16">
+          <BrandMark />
+          <nav className="hidden md:flex items-center gap-8 text-sm text-muted-foreground">
             <a href="#features" className="hover:text-foreground transition-colors">Features</a>
-            <a href="#stats" className="hover:text-foreground transition-colors">Numbers</a>
-            <a href="#testimonials" className="hover:text-foreground transition-colors">Customers</a>
+            <a href="#collection" className="hover:text-foreground transition-colors">Collection</a>
+            <a href="#contact" className="hover:text-foreground transition-colors">Contact</a>
           </nav>
           <div className="flex items-center gap-2">
-            <Button variant="ghost" size="icon" onClick={toggle} aria-label="Toggle theme">
-              {theme === "dark" ? <Sun className="size-5" /> : <Moon className="size-5" />}
-            </Button>
-            <Button asChild variant="ghost" className="hidden sm:inline-flex"><Link to="/signin">Sign in</Link></Button>
-            <Button asChild className="gradient-primary text-primary-foreground border-0 shadow-glow rounded-xl">
-              <Link to="/dashboard">Open dashboard</Link>
-            </Button>
+            <Link to="/signin" className="hidden sm:inline-flex h-9 px-3 items-center text-sm font-medium hover:text-foreground text-muted-foreground">Sign in</Link>
+            <Link to="/signup" className="inline-flex h-9 px-4 items-center rounded-md bg-primary text-primary-foreground text-sm font-semibold press lift shadow-glow">Open dashboard</Link>
           </div>
         </div>
       </header>
 
       {/* Hero */}
-      <section className="relative aurora-bg overflow-hidden">
-        <div className="container mx-auto max-w-7xl px-4 sm:px-6 py-20 sm:py-28 lg:py-36 text-center">
-          <motion.div initial={{ opacity: 0, y: 14 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.5 }}
-            className="inline-flex items-center gap-2 rounded-full glass px-4 py-1.5 text-xs uppercase tracking-wider">
-            <Sparkles className="size-3.5 text-primary" /> New · v2.0 launching
-          </motion.div>
-          <motion.h1 initial={{ opacity: 0, y: 18 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.6, delay: 0.05 }}
-            className="mt-6 text-5xl sm:text-6xl lg:text-7xl font-display font-semibold leading-[1.05] tracking-tight">
-            The premium admin <br />for <span className="gradient-text">modern commerce</span>
-          </motion.h1>
-          <motion.p initial={{ opacity: 0, y: 14 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.6, delay: 0.15 }}
-            className="mx-auto mt-6 max-w-2xl text-lg text-muted-foreground">
-            Run your store from a single, beautiful workspace. Analytics, orders, deliveries, and customers — designed to feel effortless.
-          </motion.p>
-          <motion.div initial={{ opacity: 0, y: 14 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.6, delay: 0.25 }}
-            className="mt-8 flex flex-col sm:flex-row gap-3 justify-center">
-            <Button asChild size="lg" className="gradient-primary text-primary-foreground border-0 shadow-glow rounded-xl h-12 px-7">
-              <Link to="/dashboard">Explore dashboard <ArrowRight className="size-4 ml-1.5" /></Link>
-            </Button>
-            <Button asChild size="lg" variant="outline" className="rounded-xl h-12 px-7 glass">
-              <Link to="/signup">Create free account</Link>
-            </Button>
-          </motion.div>
+      <section className="relative">
+        <div className="mx-auto max-w-7xl px-4 lg:px-8 pt-20 pb-24 text-center">
+          <span className="inline-flex items-center gap-2 rounded-full border border-border bg-card/60 px-3 py-1 text-xs font-medium text-muted-foreground anim-fade-in">
+            <Sparkles className="h-3.5 w-3.5" style={{ color: "var(--gold)" }} /> Zenvy Admin · Fall '26 drop is live
+          </span>
+          <h1 className="mt-6 text-5xl md:text-7xl font-semibold tracking-tight leading-[1.05] anim-fade-in-up">
+            Run your tee brand <br className="hidden md:block" />
+            <span className="text-gradient">from one command center</span>
+          </h1>
+          <p className="mt-6 text-lg text-muted-foreground max-w-2xl mx-auto anim-fade-in-up" style={{ animationDelay: ".1s" }}>
+            Zenvy is the operations dashboard for our t-shirt brand — manage drops, inventory, orders and customers with the polish of a flagship boutique.
+          </p>
+          <div className="mt-8 flex flex-wrap items-center justify-center gap-3 anim-fade-in-up" style={{ animationDelay: ".2s" }}>
+            <Link to="/dashboard" className="inline-flex h-11 items-center gap-2 rounded-lg bg-primary text-primary-foreground px-5 text-sm font-semibold press lift shadow-glow">
+              Open dashboard <ArrowRight className="h-4 w-4" />
+            </Link>
+            <a href="#features" className="inline-flex h-11 items-center rounded-lg border border-border bg-card px-5 text-sm font-semibold hover:bg-accent press">See what's inside</a>
+          </div>
 
-          {/* Hero preview card */}
-          <motion.div initial={{ opacity: 0, y: 30 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.7, delay: 0.35 }}
-            className="mt-16 mx-auto max-w-5xl rounded-3xl glass shadow-glow p-2 sm:p-3">
-            <div className="rounded-2xl bg-card/80 border border-border/60 overflow-hidden">
-              <div className="flex items-center gap-1.5 px-4 py-3 border-b border-border/60">
-                <span className="size-2.5 rounded-full bg-destructive/70" />
-                <span className="size-2.5 rounded-full bg-warning/70" />
-                <span className="size-2.5 rounded-full bg-success/70" />
-                <span className="ml-3 text-xs text-muted-foreground">luxe.app/dashboard</span>
-              </div>
-              <div className="grid grid-cols-3 gap-3 p-4 sm:p-6">
-                {[
-                  { l: "Revenue", v: "$382K", d: "+12%" },
-                  { l: "Orders", v: "6,820", d: "+8%" },
-                  { l: "Customers", v: "14.3K", d: "+4%" },
-                ].map((s) => (
-                  <div key={s.l} className="rounded-xl bg-background/60 border border-border/60 p-3 sm:p-4 text-left">
-                    <p className="text-[10px] sm:text-xs uppercase tracking-wider text-muted-foreground">{s.l}</p>
-                    <p className="text-base sm:text-2xl font-display font-semibold mt-1">{s.v}</p>
-                    <p className="text-xs text-success mt-1">{s.d}</p>
+          {/* Hero card mock */}
+          <div className="relative mt-16 mx-auto max-w-5xl anim-scale-in" style={{ animationDelay: ".25s" }}>
+            <div className="absolute -inset-1 rounded-3xl bg-gradient-primary opacity-20 blur-2xl" />
+            <div className="relative rounded-3xl border border-border bg-card shadow-elev overflow-hidden">
+              <div className="grid grid-cols-12 gap-px bg-border">
+                <div className="col-span-12 md:col-span-3 bg-sidebar text-sidebar-foreground p-5">
+                  <BrandMark />
+                  <div className="mt-6 space-y-1.5 text-sm">
+                    {["Analytics", "Orders", "Customers", "Tees", "Notifications"].map((l, i) => (
+                      <div key={l} className={`rounded-md px-3 py-2 ${i === 0 ? "bg-sidebar-accent text-sidebar-foreground" : "text-sidebar-foreground/60"}`}>{l}</div>
+                    ))}
                   </div>
-                ))}
-                <div className="col-span-3 h-32 sm:h-44 rounded-xl bg-gradient-to-br from-primary/20 via-accent/10 to-transparent border border-border/60 relative overflow-hidden">
-                  <div className="absolute inset-0 gradient-aurora opacity-60" style={{ background: "var(--gradient-aurora)" }} />
+                </div>
+                <div className="col-span-12 md:col-span-9 bg-background p-5">
+                  <div className="grid grid-cols-2 lg:grid-cols-4 gap-3">
+                    {[
+                      ["Revenue", "$284K", "+22.4%"],
+                      ["Tees Sold", "8,402", "+14.1%"],
+                      ["Customers", "21.7K", "+9.2%"],
+                      ["Avg. Order", "$58.40", "+3.6%"],
+                    ].map(([l, v, d]) => (
+                      <div key={l} className="rounded-xl border border-border bg-card p-3 text-left">
+                        <p className="text-[10px] uppercase tracking-wider text-muted-foreground">{l}</p>
+                        <p className="mt-1 text-lg font-semibold tabular-nums">{v}</p>
+                        <p className="text-[11px] text-success">{d}</p>
+                      </div>
+                    ))}
+                  </div>
+                  <div className="mt-4 h-40 rounded-xl border border-border bg-gradient-to-tr from-primary/15 via-transparent to-[oklch(0.79_0.13_85_/_0.18)] relative overflow-hidden">
+                    <svg viewBox="0 0 400 120" preserveAspectRatio="none" className="absolute inset-0 w-full h-full">
+                      <defs>
+                        <linearGradient id="g" x1="0" x2="0" y1="0" y2="1">
+                          <stop offset="0" stopColor="var(--primary)" stopOpacity="0.6" />
+                          <stop offset="1" stopColor="var(--primary)" stopOpacity="0" />
+                        </linearGradient>
+                      </defs>
+                      <path d="M0 90 L40 70 L80 80 L120 50 L160 60 L200 30 L240 45 L280 20 L320 35 L360 10 L400 25 L400 120 L0 120 Z" fill="url(#g)" />
+                      <path d="M0 90 L40 70 L80 80 L120 50 L160 60 L200 30 L240 45 L280 20 L320 35 L360 10 L400 25" stroke="var(--primary)" strokeWidth="2" fill="none" />
+                    </svg>
+                  </div>
                 </div>
               </div>
             </div>
-          </motion.div>
+          </div>
+        </div>
+      </section>
+
+      {/* Collection strip */}
+      <section id="collection" className="border-y border-border bg-card/40">
+        <div className="mx-auto max-w-7xl px-4 lg:px-8 py-8 grid grid-cols-2 sm:grid-cols-3 md:grid-cols-6 gap-6 text-muted-foreground/70">
+          {["CLASSICS", "GRAPHIC", "VINTAGE", "OVERSIZED", "PREMIUM", "LIMITED"].map((l) => (
+            <div key={l} className="text-center font-semibold tracking-[0.2em] text-sm">{l}</div>
+          ))}
         </div>
       </section>
 
       {/* Features */}
-      <section id="features" className="container mx-auto max-w-7xl px-4 sm:px-6 py-20 sm:py-28">
-        <div className="text-center max-w-2xl mx-auto">
-          <h2 className="text-4xl sm:text-5xl font-display font-semibold">Everything you need, <span className="gradient-text">nothing you don't</span></h2>
-          <p className="mt-4 text-muted-foreground">A complete operating system for modern commerce teams.</p>
+      <section id="features" className="mx-auto max-w-7xl px-4 lg:px-8 py-24">
+        <div className="max-w-2xl">
+          <p className="text-xs font-semibold uppercase tracking-[0.18em] text-primary">Operations</p>
+          <h2 className="mt-3 text-4xl font-semibold tracking-tight">Every drop, every order, one workspace.</h2>
+          <p className="mt-3 text-muted-foreground">From print runs to fulfillment — Zenvy Admin keeps the entire t-shirt business in sync.</p>
         </div>
-        <div className="mt-12 grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-5">
-          {features.map((f, i) => (
-            <motion.div key={f.title} initial={{ opacity: 0, y: 18 }} whileInView={{ opacity: 1, y: 0 }}
-              viewport={{ once: true, margin: "-60px" }} transition={{ duration: 0.5, delay: i * 0.05 }}
-              className="rounded-2xl glass shadow-card p-6 hover:shadow-glow transition-shadow group">
-              <div className="size-12 rounded-xl gradient-primary grid place-items-center shadow-glow group-hover:scale-110 transition-transform">
-                <f.icon className="size-6 text-primary-foreground" />
+        <div className="mt-12 grid md:grid-cols-2 lg:grid-cols-3 gap-5 stagger">
+          {[
+            { icon: Shirt, title: "Catalog & Drops", body: "Manage tees, variants, SKUs and imagery with up to 3 product photos per item." },
+            { icon: Boxes, title: "Inventory by Size", body: "Track stock across sizes and prints; low-stock alerts keep best-sellers live." },
+            { icon: Truck, title: "Orders & Fulfillment", body: "End-to-end order lifecycle with smart status flows and shipping handoffs." },
+            { icon: Users, title: "Customer 360", body: "Unified profiles, lifetime spend and segments across web and pop-ups." },
+            { icon: BarChart3, title: "Realtime Analytics", body: "Revenue, AOV and category mix updated by the minute." },
+            { icon: Tag, title: "Promos & Drops", body: "Schedule capsule launches and discount codes with one click." },
+            { icon: Bell, title: "Omnichannel Comms", body: "Email + WhatsApp campaigns built for fashion-grade tone." },
+            { icon: ShieldCheck, title: "Brand-grade Security", body: "Granular roles for designers, ops, support and finance." },
+            { icon: Zap, title: "Fast by default", body: "Sub-second navigation across every screen of the admin." },
+          ].map((f) => (
+            <div key={f.title} className="lift rounded-2xl border border-border bg-card p-6">
+              <div className="h-10 w-10 rounded-xl bg-gradient-primary text-primary-foreground flex items-center justify-center shadow-glow">
+                <f.icon className="h-5 w-5" />
               </div>
-              <h3 className="mt-5 font-display text-xl font-semibold">{f.title}</h3>
-              <p className="mt-2 text-sm text-muted-foreground">{f.desc}</p>
-            </motion.div>
-          ))}
-        </div>
-      </section>
-
-      {/* Stats */}
-      <section id="stats" className="container mx-auto max-w-7xl px-4 sm:px-6 py-16">
-        <div className="rounded-3xl glass shadow-card p-8 sm:p-12 grid grid-cols-2 lg:grid-cols-4 gap-6">
-          {stats.map((s) => (
-            <div key={s.l} className="text-center">
-              <p className="text-3xl sm:text-4xl font-display font-semibold gradient-text">{s.v}</p>
-              <p className="mt-1 text-sm text-muted-foreground">{s.l}</p>
+              <h3 className="mt-4 font-semibold">{f.title}</h3>
+              <p className="mt-1.5 text-sm text-muted-foreground">{f.body}</p>
             </div>
           ))}
         </div>
       </section>
 
-      {/* Testimonials */}
-      <section id="testimonials" className="container mx-auto max-w-7xl px-4 sm:px-6 py-20 sm:py-28">
-        <div className="text-center max-w-2xl mx-auto">
-          <h2 className="text-4xl sm:text-5xl font-display font-semibold">Loved by <span className="gradient-text">teams worldwide</span></h2>
-        </div>
-        <div className="mt-12 grid grid-cols-1 lg:grid-cols-3 gap-5">
-          {testimonials.map((t, i) => (
-            <motion.div key={t.name} initial={{ opacity: 0, y: 18 }} whileInView={{ opacity: 1, y: 0 }}
-              viewport={{ once: true }} transition={{ duration: 0.5, delay: i * 0.07 }}
-              className="rounded-2xl glass shadow-card p-6">
-              <div className="flex gap-1 text-warning">
-                {Array.from({ length: 5 }).map((_, k) => <Star key={k} className="size-4 fill-current" />)}
-              </div>
-              <p className="mt-4 text-base">"{t.quote}"</p>
-              <div className="mt-5 flex items-center gap-3">
-                <div className="size-10 rounded-full gradient-primary grid place-items-center text-primary-foreground text-xs font-semibold">
-                  {t.name.split(" ").map((n) => n[0]).join("")}
-                </div>
-                <div>
-                  <p className="text-sm font-medium">{t.name}</p>
-                  <p className="text-xs text-muted-foreground">{t.role}</p>
-                </div>
-              </div>
-            </motion.div>
-          ))}
-        </div>
-      </section>
-
-      {/* Newsletter / CTA */}
-      <section className="container mx-auto max-w-7xl px-4 sm:px-6 pb-20">
-        <div className="relative overflow-hidden rounded-3xl gradient-primary p-10 sm:p-14 text-center shadow-glow">
-          <div className="absolute inset-0 opacity-30" style={{ background: "var(--gradient-aurora)" }} />
-          <div className="relative">
-            <h3 className="text-3xl sm:text-4xl font-display font-semibold text-primary-foreground">Stay in the loop</h3>
-            <p className="mt-3 text-primary-foreground/80 max-w-xl mx-auto">Product updates, design notes and stories from the Luxe team.</p>
-            <form onSubmit={(e) => { e.preventDefault(); toast.success("Subscribed"); }}
-              className="mt-6 flex flex-col sm:flex-row gap-2 max-w-md mx-auto">
-              <Input required type="email" placeholder="you@company.com"
-                className="h-12 rounded-xl bg-background/90 border-0 text-foreground" />
-              <Button className="h-12 rounded-xl bg-foreground text-background hover:bg-foreground/90">Subscribe</Button>
-            </form>
+      {/* CTA */}
+      <section className="mx-auto max-w-7xl px-4 lg:px-8 py-24">
+        <div className="relative overflow-hidden rounded-3xl border border-border p-10 md:p-16 text-center bg-gradient-to-br from-primary/15 via-transparent to-[oklch(0.79_0.13_85_/_0.12)]">
+          <Globe2 className="mx-auto h-10 w-10 text-primary anim-float" />
+          <h2 className="mt-4 text-4xl md:text-5xl font-semibold tracking-tight">Built for the Zenvy team.</h2>
+          <p className="mt-3 text-muted-foreground max-w-xl mx-auto">Sign in to manage drops, orders and customers across every channel.</p>
+          <div className="mt-8 flex flex-wrap justify-center gap-3">
+            <Link to="/dashboard" className="inline-flex h-11 items-center gap-2 rounded-lg bg-primary text-primary-foreground px-5 text-sm font-semibold press lift shadow-glow">Open dashboard <ArrowRight className="h-4 w-4" /></Link>
+            <Link to="/signin" className="inline-flex h-11 items-center rounded-lg border border-border bg-card px-5 text-sm font-semibold hover:bg-accent press">Sign in</Link>
           </div>
         </div>
       </section>
 
-      <footer className="border-t border-border/60">
-        <div className="container mx-auto max-w-7xl px-4 sm:px-6 py-10 flex flex-col sm:flex-row items-center justify-between gap-4 text-sm text-muted-foreground">
-          <div className="flex items-center gap-2">
-            <div className="size-7 rounded-lg gradient-primary grid place-items-center">
-              <Sparkles className="size-4 text-primary-foreground" />
-            </div>
-            <span className="font-display font-semibold text-foreground">Luxe</span>
-            <span>· © 2025</span>
-          </div>
-          <div className="flex gap-6">
-            <a href="#" className="hover:text-foreground transition-colors">Privacy</a>
-            <a href="#" className="hover:text-foreground transition-colors">Terms</a>
-            <a href="#" className="hover:text-foreground transition-colors">Contact</a>
+      <footer id="contact" className="border-t border-border">
+        <div className="mx-auto max-w-7xl px-4 lg:px-8 py-10 flex flex-col md:flex-row items-center justify-between gap-4 text-sm text-muted-foreground">
+          <BrandMark />
+          <p>© {new Date().getFullYear()} Zenvy T-Shirt Co. All rights reserved.</p>
+          <div className="flex gap-4">
+            <a href="#" className="hover:text-foreground">Privacy</a>
+            <a href="#" className="hover:text-foreground">Terms</a>
+            <a href="#" className="hover:text-foreground">Security</a>
           </div>
         </div>
       </footer>

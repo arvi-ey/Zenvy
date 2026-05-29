@@ -1,75 +1,91 @@
+import { createFileRoute, Link, useNavigate } from "@tanstack/react-router";
 import { useState } from "react";
-import { Link, createFileRoute, useNavigate } from "@tanstack/react-router";
-import { motion } from "framer-motion";
-import { Loader2, Sparkles } from "lucide-react";
-import { Button } from "@/components/ui/button";
+import { AuthShell } from "@/components/auth/AuthShell";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+import { countryCodes } from "@/constants";
+import { useAppDispatch } from "@/redux/store";
+import { startVerification } from "@/redux/slices/authSlice";
+import { Check, X } from "lucide-react";
 import { toast } from "sonner";
 
 export const Route = createFileRoute("/signup")({
+  head: () => ({ meta: [{ title: "Create your account — Northstar" }] }),
   component: SignUp,
-  head: () => ({ meta: [{ title: "Sign up — Luxe Admin" }] }),
 });
 
 function SignUp() {
-  const [loading, setLoading] = useState(false);
+  const [form, setForm] = useState({
+    firstName: "", lastName: "", email: "", phone: "", countryCode: "+1", password: "", confirm: "",
+  });
+  const dispatch = useAppDispatch();
   const navigate = useNavigate();
-  const [form, setForm] = useState({ name: "", email: "", password: "" });
 
-  const submit = (e: React.FormEvent) => {
-    e.preventDefault();
-    if (!form.name || !form.email || form.password.length < 6) return toast.error("Please complete the form (min 6-char password)");
-    setLoading(true);
-    setTimeout(() => {
-      setLoading(false);
-      toast.success("Account created");
-      navigate({ to: "/dashboard" });
-    }, 900);
+  const set = (k: keyof typeof form, v: string) => setForm((f) => ({ ...f, [k]: v }));
+  const rules = {
+    length: form.password.length >= 8,
+    upper: /[A-Z]/.test(form.password),
+    number: /[0-9]/.test(form.password),
+    match: !!form.password && form.password === form.confirm,
   };
 
+  function submit(e: React.FormEvent) {
+    e.preventDefault();
+    if (!form.firstName || !form.lastName) return toast.error("Please enter your full name.");
+    if (!form.email.includes("@")) return toast.error("Enter a valid email.");
+    if (!Object.values(rules).every(Boolean)) return toast.error("Password requirements not met.");
+    dispatch(startVerification({ email: form.email, flow: "signup" }));
+    toast.success("We sent a 6-digit code to " + form.email);
+    navigate({ to: "/verify-email" });
+  }
+
   return (
-    <div className="min-h-screen aurora-bg flex items-center justify-center p-4 bg-background">
-      <motion.div
-        initial={{ opacity: 0, y: 20, scale: 0.98 }}
-        animate={{ opacity: 1, y: 0, scale: 1 }}
-        transition={{ duration: 0.5 }}
-        className="w-full max-w-md rounded-3xl glass shadow-glow p-8 sm:p-10"
-      >
-        <Link to="/" className="inline-flex items-center gap-2 mb-8">
-          <div className="size-9 rounded-xl gradient-primary grid place-items-center">
-            <Sparkles className="size-5 text-primary-foreground" />
+    <AuthShell
+      title="Create your workspace"
+      subtitle="Get started with Northstar in under a minute."
+      footer={<>Already have an account? <Link to="/signin" className="text-primary font-medium hover:underline">Sign in</Link></>}
+    >
+      <form onSubmit={submit} className="space-y-4">
+        <div className="grid grid-cols-2 gap-3">
+          <Field label="First name"><Input value={form.firstName} onChange={(e) => set("firstName", e.target.value)} placeholder="Alex" className="h-11" required /></Field>
+          <Field label="Last name"><Input value={form.lastName} onChange={(e) => set("lastName", e.target.value)} placeholder="Hayes" className="h-11" required /></Field>
+        </div>
+        <Field label="Work email"><Input type="email" value={form.email} onChange={(e) => set("email", e.target.value)} placeholder="alex@company.com" className="h-11" required /></Field>
+        <div className="space-y-1.5">
+          <Label>Phone number</Label>
+          <div className="flex gap-2">
+            <Select value={form.countryCode} onValueChange={(v) => set("countryCode", v)}>
+              <SelectTrigger className="h-11 w-[140px]"><SelectValue /></SelectTrigger>
+              <SelectContent className="max-h-72">
+                {countryCodes.map((c) => (
+                  <SelectItem key={`${c.country}-${c.code}`} value={c.code}>{c.flag} {c.code} {c.country}</SelectItem>
+                ))}
+              </SelectContent>
+            </Select>
+            <Input value={form.phone} onChange={(e) => set("phone", e.target.value)} placeholder="555 0124 998" className="h-11 flex-1" />
           </div>
-          <span className="font-display text-xl font-semibold">Luxe</span>
-        </Link>
+        </div>
+        <Field label="Password"><Input type="password" value={form.password} onChange={(e) => set("password", e.target.value)} className="h-11" required /></Field>
+        <Field label="Confirm password"><Input type="password" value={form.confirm} onChange={(e) => set("confirm", e.target.value)} className="h-11" required /></Field>
 
-        <h1 className="text-3xl font-display font-semibold">Create your account</h1>
-        <p className="text-sm text-muted-foreground mt-1">Start managing your store in minutes</p>
+        <ul className="grid grid-cols-2 gap-1 text-xs text-muted-foreground">
+          <Rule ok={rules.length}>At least 8 characters</Rule>
+          <Rule ok={rules.upper}>One uppercase letter</Rule>
+          <Rule ok={rules.number}>One number</Rule>
+          <Rule ok={rules.match}>Passwords match</Rule>
+        </ul>
 
-        <form onSubmit={submit} className="mt-6 space-y-4">
-          <div className="grid gap-1.5">
-            <Label>Full name</Label>
-            <Input value={form.name} onChange={(e) => setForm({ ...form, name: e.target.value })} className="rounded-xl h-11" placeholder="Alex Lin" />
-          </div>
-          <div className="grid gap-1.5">
-            <Label>Email</Label>
-            <Input type="email" value={form.email} onChange={(e) => setForm({ ...form, email: e.target.value })} className="rounded-xl h-11" placeholder="alex@luxe.com" />
-          </div>
-          <div className="grid gap-1.5">
-            <Label>Password</Label>
-            <Input type="password" value={form.password} onChange={(e) => setForm({ ...form, password: e.target.value })} className="rounded-xl h-11" placeholder="••••••••" />
-          </div>
-
-          <Button type="submit" disabled={loading} className="w-full h-11 gradient-primary text-primary-foreground border-0 shadow-glow rounded-xl text-base font-medium">
-            {loading && <Loader2 className="size-4 mr-2 animate-spin" />}
-            Create account
-          </Button>
-        </form>
-
-        <p className="mt-6 text-center text-sm text-muted-foreground">
-          Already have an account? <Link to="/signin" className="text-primary hover:underline font-medium">Sign in</Link>
-        </p>
-      </motion.div>
-    </div>
+        <button className="w-full h-11 rounded-lg bg-primary text-primary-foreground font-semibold press lift shadow-glow">Create account</button>
+        <p className="text-xs text-center text-muted-foreground">By signing up you agree to our Terms & Privacy.</p>
+      </form>
+    </AuthShell>
   );
+}
+
+function Field({ label, children }: { label: string; children: React.ReactNode }) {
+  return <div className="space-y-1.5"><Label>{label}</Label>{children}</div>;
+}
+function Rule({ ok, children }: { ok: boolean; children: React.ReactNode }) {
+  return <li className={`flex items-center gap-1 ${ok ? "text-success" : ""}`}>{ok ? <Check className="h-3 w-3" /> : <X className="h-3 w-3 opacity-60" />} {children}</li>;
 }

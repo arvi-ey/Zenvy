@@ -1,86 +1,68 @@
+import { createFileRoute, Link, useNavigate } from "@tanstack/react-router";
 import { useState } from "react";
-import { Link, createFileRoute, useNavigate } from "@tanstack/react-router";
-import { motion } from "framer-motion";
-import { Eye, EyeOff, Loader2, Sparkles } from "lucide-react";
-import { Button } from "@/components/ui/button";
+import { AuthShell } from "@/components/auth/AuthShell";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Checkbox } from "@/components/ui/checkbox";
+import { Eye, EyeOff } from "lucide-react";
+import { useAppDispatch } from "@/redux/store";
+import { signIn } from "@/redux/slices/authSlice";
 import { toast } from "sonner";
 
 export const Route = createFileRoute("/signin")({
+  head: () => ({ meta: [{ title: "Sign in — Northstar" }] }),
   component: SignIn,
-  head: () => ({ meta: [{ title: "Sign in — Luxe Admin" }] }),
 });
 
 function SignIn() {
+  const [email, setEmail] = useState("admin@northstar.io");
+  const [password, setPassword] = useState("••••••••");
   const [show, setShow] = useState(false);
   const [loading, setLoading] = useState(false);
-  const [email, setEmail] = useState("alex@luxe.com");
-  const [password, setPassword] = useState("password");
+  const dispatch = useAppDispatch();
   const navigate = useNavigate();
 
-  const submit = (e: React.FormEvent) => {
+  function submit(e: React.FormEvent) {
     e.preventDefault();
-    if (!email || !password) return toast.error("Please fill all fields");
+    if (!email.includes("@")) return toast.error("Enter a valid email.");
     setLoading(true);
     setTimeout(() => {
-      setLoading(false);
+      dispatch(signIn({ email }));
       toast.success("Welcome back");
       navigate({ to: "/dashboard" });
-    }, 900);
-  };
+    }, 600);
+  }
 
   return (
-    <div className="min-h-screen aurora-bg flex items-center justify-center p-4 bg-background">
-      <motion.div
-        initial={{ opacity: 0, y: 20, scale: 0.98 }}
-        animate={{ opacity: 1, y: 0, scale: 1 }}
-        transition={{ duration: 0.5, ease: "easeOut" }}
-        className="w-full max-w-md rounded-3xl glass shadow-glow p-8 sm:p-10"
-      >
-        <Link to="/" className="inline-flex items-center gap-2 mb-8">
-          <div className="size-9 rounded-xl gradient-primary grid place-items-center">
-            <Sparkles className="size-5 text-primary-foreground" />
-          </div>
-          <span className="font-display text-xl font-semibold">Luxe</span>
-        </Link>
-
-        <h1 className="text-3xl font-display font-semibold">Welcome back</h1>
-        <p className="text-sm text-muted-foreground mt-1">Sign in to manage your store</p>
-
-        <form onSubmit={submit} className="mt-6 space-y-4">
-          <div className="grid gap-1.5">
-            <Label htmlFor="email">Email</Label>
-            <Input id="email" type="email" value={email} onChange={(e) => setEmail(e.target.value)} className="rounded-xl h-11" />
-          </div>
-          <div className="grid gap-1.5">
+    <AuthShell
+      title="Welcome back"
+      subtitle="Sign in to your Northstar workspace."
+      footer={<>Don't have an account? <Link to="/signup" className="text-primary font-medium hover:underline">Create one</Link></>}
+    >
+      <form onSubmit={submit} className="space-y-4">
+        <div className="space-y-1.5">
+          <Label htmlFor="email">Email</Label>
+          <Input id="email" type="email" value={email} onChange={(e) => setEmail(e.target.value)} placeholder="you@company.com" className="h-11" required />
+        </div>
+        <div className="space-y-1.5">
+          <div className="flex items-center justify-between">
             <Label htmlFor="password">Password</Label>
-            <div className="relative">
-              <Input id="password" type={show ? "text" : "password"} value={password} onChange={(e) => setPassword(e.target.value)} className="rounded-xl h-11 pr-10" />
-              <button type="button" onClick={() => setShow((s) => !s)} className="absolute right-3 top-1/2 -translate-y-1/2 text-muted-foreground">
-                {show ? <EyeOff className="size-4" /> : <Eye className="size-4" />}
-              </button>
-            </div>
+            <Link to="/forgot-password" className="text-xs text-primary hover:underline">Forgot password?</Link>
           </div>
-
-          <div className="flex items-center justify-between text-sm">
-            <label className="flex items-center gap-2 cursor-pointer">
-              <Checkbox defaultChecked /> <span>Remember me</span>
-            </label>
-            <Link to="/signin" className="text-primary hover:underline">Forgot password?</Link>
+          <div className="relative">
+            <Input id="password" type={show ? "text" : "password"} value={password} onChange={(e) => setPassword(e.target.value)} className="h-11 pr-10" required />
+            <button type="button" onClick={() => setShow((s) => !s)} className="absolute right-3 top-1/2 -translate-y-1/2 text-muted-foreground hover:text-foreground">
+              {show ? <EyeOff className="h-4 w-4" /> : <Eye className="h-4 w-4" />}
+            </button>
           </div>
-
-          <Button type="submit" disabled={loading} className="w-full h-11 gradient-primary text-primary-foreground border-0 shadow-glow rounded-xl text-base font-medium">
-            {loading && <Loader2 className="size-4 mr-2 animate-spin" />}
-            Sign in
-          </Button>
-        </form>
-
-        <p className="mt-6 text-center text-sm text-muted-foreground">
-          New to Luxe? <Link to="/signup" className="text-primary hover:underline font-medium">Create an account</Link>
-        </p>
-      </motion.div>
-    </div>
+        </div>
+        <label className="flex items-center gap-2 text-sm text-muted-foreground">
+          <Checkbox defaultChecked /> Remember me for 30 days
+        </label>
+        <button disabled={loading} className="w-full h-11 rounded-lg bg-primary text-primary-foreground font-semibold press lift shadow-glow disabled:opacity-60">
+          {loading ? "Signing in…" : "Sign in"}
+        </button>
+      </form>
+    </AuthShell>
   );
 }
