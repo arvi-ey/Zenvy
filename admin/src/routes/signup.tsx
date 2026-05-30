@@ -41,11 +41,7 @@ function SignUp() {
   }
 
   return (
-    <AuthShell
-      title="Create your workspace"
-      subtitle="Get started with Northstar in under a minute."
-      footer={<>Already have an account? <Link to="/signin" className="text-primary font-medium hover:underline">Sign in</Link></>}
-    >
+    <div className="w-full h-full flex justify-center items-center !bg-amber-400">
       <form onSubmit={submit} className="space-y-4">
         <div className="grid grid-cols-2 gap-3">
           <Field label="First name"><Input value={form.firstName} onChange={(e) => set("firstName", e.target.value)} placeholder="Alex" className="h-11" required /></Field>
@@ -78,8 +74,20 @@ function SignUp() {
 
         <button className="w-full h-11 rounded-lg bg-primary text-primary-foreground font-semibold press lift shadow-glow">Create account</button>
         <p className="text-xs text-center text-muted-foreground">By signing up you agree to our Terms & Privacy.</p>
-      </form>
-    </AuthShell>
+        <div className="w-full max-w-md ">
+          <div className="anim-fade-in-up">
+            <div className="mt-6 text-sm text-center text-muted-foreground">
+              <>Already have an account? <Link to="/signin" className="text-primary font-medium hover:underline">Sign in</Link></>
+            </div>
+          </div>
+          <p className="mt-10 text-xs text-center text-muted-foreground">
+            <Link to="/" className="hover:text-foreground">← Back to home</Link>
+          </p>
+        </div>
+      </form >
+
+
+    </div >
   );
 }
 

@@ -1,0 +1,299 @@
+@import "tailwindcss";
+@import "tw-animate-css";
+@import "shadcn/tailwind.css";
+@import "@fontsource-variable/geist";
+
+@custom-variant dark (&:is(.dark *));
+
+
+@theme {
+  --color-background: var(--background);
+  --color-foreground: var(--foreground);
+
+  --color-card: var(--card);
+  --color-card-foreground: var(--card-foreground);
+
+  --color-primary: var(--primary);
+  --color-primary-foreground: var(--primary-foreground);
+
+  --color-border: var(--border);
+  --color-text: var(--text);
+
+  --color-success: var(--success);
+  --color-warning: var(--warning);
+  --color-destructive: var(--destructive);
+  --color-destructive-foreground: var(--destructive-foreground);
+  --color-muted-foreground: var(--muted-foreground);
+}
+
+
+
+:root {
+  --background: oklch(1 0 0);
+  --foreground: oklch(0.145 0 0);
+
+  --card: oklch(1 0 0);
+  --card-foreground: oklch(0.145 0 0);
+  --text: oklch(0.205 0 0);
+
+  --primary: oklch(0.918 0.187 125.4);
+  --primary-foreground: oklch(0.985 0 0);
+
+  --border: oklch(0.922 0 0);
+
+  --destructive: oklch(0.68 0.2 25);
+  --destructive-foreground: oklch(0.99 0 0);
+  --success: oklch(0.72 0.16 155);
+  --warning: oklch(0.82 0.15 75);
+  --muted-foreground: oklch(0.52 0.025 260);
+
+  --shadow-glow: 0 0 0 1px oklch(0.52 0.22 274 / 0.2), 0 8px 32px -8px oklch(0.52 0.22 274 / 0.4);
+}
+
+.dark {
+  --background: oklch(0.145 0 0);
+  --foreground: oklch(0.985 0 0);
+
+  --card: oklch(0.205 0 0);
+  --card-foreground: oklch(0.985 0 0);
+
+  --primary: oklch(0.918 0.187 125.4);
+  --primary-foreground: oklch(0.205 0 0);
+
+  --border: oklch(0.269 0 0);
+
+  --text: oklch(1 0 0);
+
+  --destructive: oklch(0.68 0.2 25);
+  --destructive-foreground: oklch(0.99 0 0);
+  --success: oklch(0.72 0.16 155);
+  --warning: oklch(0.82 0.15 75);
+  --muted-foreground: oklch(0.7 0.02 260);
+
+  --shadow-glow: 0 0 0 1px oklch(0.65 0.22 280 / 0.3), 0 8px 32px -8px oklch(0.65 0.22 280 / 0.5);
+
+}
+
+body {
+  background: var(--background);
+  color: var(--foreground);
+}
+
+/* ===== Vanilla CSS animations ===== */
+@keyframes fade-in {
+  from {
+    opacity: 0;
+    transform: translateY(8px);
+  }
+
+  to {
+    opacity: 1;
+    transform: none;
+  }
+}
+
+@keyframes fade-in-up {
+  from {
+    opacity: 0;
+    transform: translateY(20px);
+  }
+
+  to {
+    opacity: 1;
+    transform: none;
+  }
+}
+
+@keyframes scale-in {
+  from {
+    opacity: 0;
+    transform: scale(.96);
+  }
+
+  to {
+    opacity: 1;
+    transform: scale(1);
+  }
+}
+
+@keyframes slide-in-left {
+  from {
+    opacity: 0;
+    transform: translateX(-16px);
+  }
+
+  to {
+    opacity: 1;
+    transform: none;
+  }
+}
+
+@keyframes shimmer {
+  0% {
+    background-position: -1000px 0;
+  }
+
+  100% {
+    background-position: 1000px 0;
+  }
+}
+
+@keyframes pulse-glow {
+
+  0%,
+  100% {
+    box-shadow: 0 0 0 0 oklch(0.52 0.22 274 / 0.4);
+  }
+
+  50% {
+    box-shadow: 0 0 0 12px oklch(0.52 0.22 274 / 0);
+  }
+}
+
+@keyframes chart-rise {
+  from {
+    transform: scaleY(0);
+    opacity: 0;
+  }
+
+  to {
+    transform: scaleY(1);
+    opacity: 1;
+  }
+}
+
+@keyframes spin-slow {
+  to {
+    transform: rotate(360deg);
+  }
+}
+
+@keyframes float {
+
+  0%,
+  100% {
+    transform: translateY(0);
+  }
+
+  50% {
+    transform: translateY(-6px);
+  }
+}
+
+.anim-fade-in {
+  animation: fade-in .5s ease-out both;
+}
+
+.anim-fade-in-up {
+  animation: fade-in-up .6s cubic-bezier(.2, .7, .2, 1) both;
+}
+
+.anim-scale-in {
+  animation: scale-in .4s ease-out both;
+}
+
+.anim-slide-in-left {
+  animation: slide-in-left .35s ease-out both;
+}
+
+.anim-pulse-glow {
+  animation: pulse-glow 2s ease-out infinite;
+}
+
+.anim-float {
+  animation: float 4s ease-in-out infinite;
+}
+
+.stagger>* {
+  animation: fade-in-up .55s cubic-bezier(.2, .7, .2, 1) both;
+}
+
+.stagger>*:nth-child(1) {
+  animation-delay: .05s
+}
+
+.stagger>*:nth-child(2) {
+  animation-delay: .1s
+}
+
+.stagger>*:nth-child(3) {
+  animation-delay: .15s
+}
+
+.stagger>*:nth-child(4) {
+  animation-delay: .2s
+}
+
+.stagger>*:nth-child(5) {
+  animation-delay: .25s
+}
+
+.stagger>*:nth-child(6) {
+  animation-delay: .3s
+}
+
+.stagger>*:nth-child(7) {
+  animation-delay: .35s
+}
+
+.stagger>*:nth-child(8) {
+  animation-delay: .4s
+}
+
+/* Recharts surface anim */
+.recharts-wrapper {
+  animation: fade-in .6s ease-out both;
+}
+
+.recharts-layer.recharts-bar-rectangle,
+.recharts-line-curve,
+.recharts-area-area {
+  animation: fade-in .9s ease-out both;
+}
+
+/* Hover micro-interactions */
+.lift {
+  transition: transform .25s cubic-bezier(.2, .7, .2, 1), box-shadow .25s ease;
+}
+
+.lift:hover {
+  transform: translateY(-2px);
+  box-shadow: var(--shadow-elev);
+}
+
+.press {
+  transition: transform .15s ease;
+}
+
+.press:active {
+  transform: scale(.97);
+}
+
+/* Sidebar collapse transition */
+.sidebar-shell {
+  transition: width .35s cubic-bezier(.4, .1, .2, 1);
+}
+
+.sidebar-item {
+  transition: background-color .2s ease, color .2s ease, padding .2s ease;
+}
+
+/* Page transition wrapper */
+.page-enter {
+  animation: fade-in-up .4s cubic-bezier(.2, .7, .2, 1) both;
+}
+
+/* Custom scrollbar */
+::-webkit-scrollbar {
+  width: 10px;
+  height: 10px;
+}
+
+::-webkit-scrollbar-thumb {
+  background: color-mix(in oklab, var(--color-foreground) 18%, transparent);
+  border-radius: 999px;
+}
+
+::-webkit-scrollbar-thumb:hover {
+  background: color-mix(in oklab, var(--color-foreground) 30%, transparent);
+}
