@@ -36,8 +36,8 @@ export default function SignUp() {
 
     return (
         <div className="w-full min-h-screen flex justify-center items-center bg-background ">
-            <form onSubmit={submit} className="space-y-4">
-                <div className="grid grid-cols-2 gap-3">
+            <form onSubmit={submit} className="w-full max-w-lg px-4 sm:px-6 space-y-4">
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
                     <Field label="First name"><Input value={form.firstName} onChange={(e) => set("firstName", e.target.value)} placeholder="Alex" className="h-11" required /></Field>
                     <Field label="Last name"><Input value={form.lastName} onChange={(e) => set("lastName", e.target.value)} placeholder="Hayes" className="h-11" required /></Field>
                 </div>
@@ -46,7 +46,7 @@ export default function SignUp() {
                     <Label>Phone number</Label>
                     <div className="flex items-center gap-2">
                         <Select value={form.countryCode} onValueChange={(v) => set("countryCode", v)}  >
-                            <SelectTrigger className="h-11 w-[150px] !bg-card border border-foreground text-foreground"><SelectValue /></SelectTrigger>
+                            <SelectTrigger className="h-11 sm:w-[150px] w-[150px] !bg-card border border-foreground text-foreground"><SelectValue /></SelectTrigger>
                             <SelectContent className="max-h-72">
                                 {countryCodes.map((c) => (
                                     <SelectItem key={`${c.country}-${c.code}`} value={c.code}>{c.flag} {c.code} {c.country}</SelectItem>
