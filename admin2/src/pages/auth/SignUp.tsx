@@ -45,15 +45,15 @@ export default function SignUp() {
                 <div className="space-y-1.5">
                     <Label>Phone number</Label>
                     <div className="flex items-center gap-2">
-                        <Select value={form.countryCode} onValueChange={(v) => set("countryCode", v)}>
-                            <SelectTrigger className="h-11 w-[140px] bg-card border border-foreground text-foreground"><SelectValue /></SelectTrigger>
+                        <Select value={form.countryCode} onValueChange={(v) => set("countryCode", v)}  >
+                            <SelectTrigger className="h-11 w-[150px] !bg-card border border-foreground text-foreground"><SelectValue /></SelectTrigger>
                             <SelectContent className="max-h-72">
                                 {countryCodes.map((c) => (
                                     <SelectItem key={`${c.country}-${c.code}`} value={c.code}>{c.flag} {c.code} {c.country}</SelectItem>
                                 ))}
                             </SelectContent>
                         </Select>
-                        <Input value={form.phone} onChange={(e) => set("phone", e.target.value)} placeholder="555 0124 998" className="h-11 flex-1" />
+                        <Input value={form.phone} onChange={(e) => set("phone", e.target.value)} placeholder="555 0124 998" className="h-11 flex-1" required />
                     </div>
                 </div>
                 <Field label="Password"><Input type="password" value={form.password} onChange={(e) => set("password", e.target.value)} className="h-11" required /></Field>
