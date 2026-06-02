@@ -1,5 +1,6 @@
 generator client {
-  provider = "prisma-client-js"
+  provider        = "prisma-client-js"
+  previewFeatures = ["driverAdapters"]
 }
 
 datasource db {
@@ -29,16 +30,16 @@ model User {
   firstName String @db.VarChar(100)
   lastName  String @db.VarChar(100)
 
-  email String @unique @db.VarChar(255)
+  email String  @unique @db.VarChar(255)
   phone String? @unique @db.VarChar(20)
 
   // Authentication
   passwordHash String @db.VarChar(255)
 
   // Verification
-  verificationTokenHash String? @db.VarChar()
+  verificationTokenHash      String?   @db.VarChar()
   verificationTokenExpiresAt DateTime?
-  verified         Boolean @default(false)
+  verified                   Boolean   @default(false)
 
   // User Role
   userType UserType @default(user)
