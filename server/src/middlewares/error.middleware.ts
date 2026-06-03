@@ -1,5 +1,5 @@
 import { Request, Response, NextFunction } from "express";
-
+import { env } from "node:process";
 const globalErrorHandler = (
     err: any,
     req: Request,
@@ -24,7 +24,7 @@ const globalErrorHandler = (
         success: false,
         message: err.message || "Internal Server Error",
         stack:
-            process.env.NODE_ENV === "development"
+            env.NODE_ENV === "development"
                 ? err.stack
                 : undefined,
     });
