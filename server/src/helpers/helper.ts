@@ -1,47 +1,50 @@
 import crypto from "crypto";
 import bcrypt from "bcrypt";
+import { env } from "../config/env.js";
 
 
 
 export const generateHash = async (val: string) => {
-    const hashedval = await bcrypt.hash(
-        val,
-        10
-    );
-    return hashedval
+  const hashedval = await bcrypt.hash(
+    val,
+    10
+  );
+  return hashedval
 }
 
 export const compareHash = async (hashedval: string, rawval: string) => {
-    const isMatch = await bcrypt.compare(rawval, hashedval);
-    return isMatch
+  const isMatch = await bcrypt.compare(rawval, hashedval);
+  return isMatch
 
 }
 
 
 
 export const generateVerificationToken = () => {
-    const rawToken = crypto.randomBytes(32).toString("hex");
+  const rawToken = crypto.randomBytes(32).toString("hex");
 
-    const hashedToken = crypto
-        .createHash("sha256")
-        .update(rawToken)
-        .digest("hex");
+  const hashedToken = crypto
+    .createHash("sha256")
+    .update(rawToken)
+    .digest("hex");
 
-    const expiresAt = new Date(Date.now() + 10 * 60 * 1000);
+  const expiresAt = new Date(Date.now() + 10 * 60 * 1000);
 
-    return {
-        rawToken,
-        hashedToken,
-        expiresAt,
-    };
+  return {
+    rawToken,
+    hashedToken,
+    expiresAt,
+  };
 };
 
 
+const frontendurl = env.NODE_ENV == "production" ? env.FRONTEND_BASE_URL_PROD : env.FRONTEND_BASE_URL_DEV
 
+console.log(frontendurl)
 
 export const verificationEmailTemplate = (
-    firstName: string,
-    verificationUrl: string
+  firstName: string,
+  verificationUrl: string
 ) => `
 <!DOCTYPE html>
 <html>
@@ -100,7 +103,7 @@ export const verificationEmailTemplate = (
 
               <div style="text-align:center; margin:32px 0;">
                 <a
-                  href="${verificationUrl}"
+                  href="${frontendurl}verify-email?v=${verificationUrl}"
                   style="
                     display:inline-block;
                     padding:14px 28px;
