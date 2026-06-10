@@ -37,10 +37,19 @@ export const generateVerificationToken = () => {
   };
 };
 
+export const getHashed = (token: string) => {
+  const hashedToken = crypto
+    .createHash("sha256")
+    .update(token)
+    .digest("hex");
+
+  return hashedToken
+};
+
 
 const frontendurl = env.NODE_ENV == "production" ? env.FRONTEND_BASE_URL_PROD : env.FRONTEND_BASE_URL_DEV
 
-console.log(frontendurl)
+
 
 export const verificationEmailTemplate = (
   firstName: string,
@@ -183,3 +192,13 @@ export const verificationEmailTemplate = (
 </body>
 </html>
 `;
+
+export type authTokenPayload = {
+  id: string,
+  email: string,
+  role: string
+}
+export const generateAuthToken = async (payload: authTokenPayload) => {
+
+
+}

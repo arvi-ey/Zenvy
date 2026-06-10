@@ -1,10 +1,11 @@
 import express from "express";
-import { verifyRegistration } from "../controllers/auth.controller.js";
-import { signupSchema } from "../validators/authvalidator.js";
+import { verifyRegistration, verifySignUp } from "../controllers/auth.controller.js";
+import { signupSchema, verifysignuproute } from "../validators/authvalidator.js";
 import { validate } from "../middlewares/routeValidator.js";
 const router = express.Router()
 
 
 router.post('/verify-registration', validate(signupSchema), verifyRegistration)
+router.post('/verify-signin', validate(verifysignuproute), verifySignUp)
 
 export default router

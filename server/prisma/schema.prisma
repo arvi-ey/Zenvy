@@ -37,7 +37,7 @@ model User {
   passwordHash String @db.VarChar(255)
 
   // Verification
-  verificationTokenHash      String?   @db.VarChar()
+  verificationTokenHash      String?   @unique @db.VarChar()
   verificationTokenExpiresAt DateTime?
   verified                   Boolean   @default(false)
 

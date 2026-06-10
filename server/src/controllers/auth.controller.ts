@@ -1,4 +1,4 @@
-import { generateVerificationToken, verificationEmailTemplate } from "../helpers/helper.js";
+import { generateVerificationToken, getHashed, verificationEmailTemplate } from "../helpers/helper.js";
 
 import catchAsync from "../utils/catchAsync.js";
 import prisma from "../config/prisma.js";
@@ -22,7 +22,6 @@ export const verifyRegistration = catchAsync(async (req: Request, res: Response,
             message: "An account with this email already exists."
         });
     }
-
 
     const verificationToken = generateVerificationToken();
     if (existingUser && !existingUser.verified) {
@@ -81,6 +80,48 @@ export const verifyRegistration = catchAsync(async (req: Request, res: Response,
         success: true,
         message: "A verification link has been sent to your email. Please verify to continue."
     });
+})
+
+export const verifySignUp = catchAsync(async (req: Request, res: Response, next: NextFunction) => {
+
+    const { token } = req.body
+    const hashedToken = getHashed(token)
+    const user = await prisma.user.findUnique({
+        where: {
+            verificationTokenHash: hashedToken,
+        },
+    });
+    if (!user) return next(new AppError("Invalid token", 400))
+    if (user?.verified) return res.status(200).json({ success: false, message: "Email already verified" })
+    const currentTime = new Date().getTime()
+    const expiryTime = user.verificationTokenExpiresAt?.getTime();
+    if (currentTime > expiryTime!) return res.status(200).json({ success: false, message: "Session Expired, request for verify again" })
+
+
+    const result = await prisma.user.update({
+        where: {
+            id: user.id
+        },
+        data: {
+            verified: true,
+            verificationTokenHash: null,
+            verificationTokenExpiresAt: null
+        }
+    })
+
+    return res.status(200).json({
+        success: true,
+        message: "Email verified successfully",
+        data: {
+            id: user.id,
+            email: user.email
+        }
+    })
+})
+
+
+export const verifySignIn = catchAsync(async (req: Request, res: Response, next: NextFunction) => {
+
 })
 
 
