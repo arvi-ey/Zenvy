@@ -1,4 +1,4 @@
-import { generateVerificationToken, getHashed, verificationEmailTemplate } from "../helpers/helper.js";
+import { generateAccessToken, generateRefreshToken, generateVerificationToken, getDeviceInfo, getHashed, verificationEmailTemplate } from "../helpers/helper.js";
 
 import catchAsync from "../utils/catchAsync.js";
 import prisma from "../config/prisma.js";
@@ -6,11 +6,13 @@ import AppError from "../utils/AppError.js";
 import { NextFunction, Request, Response } from "express";
 import { generateHash } from "../helpers/helper.js";
 import { sendEmail } from "../helpers/mailService.js";
+import { env } from "../config/env.js";
 
 
 
 
 export const verifyRegistration = catchAsync(async (req: Request, res: Response, next: NextFunction) => {
+
     const { email, password, firstName, lastName, phone } = req.body
     const existingUser = await prisma.user.findUnique({
         where: { email }
@@ -113,15 +115,39 @@ export const verifySignUp = catchAsync(async (req: Request, res: Response, next:
         success: true,
         message: "Email verified successfully",
         data: {
-            id: user.id,
-            email: user.email
+            id: result.id,
+            email: result.email
         }
     })
 })
 
 
 export const verifySignIn = catchAsync(async (req: Request, res: Response, next: NextFunction) => {
+    const { id } = req.body
+    const user = await prisma.user.findUnique({
+        where: {
+            id,
+        }
+    })
+    if (!user) return next(new AppError("User not foundf", 400))
+    if (!user.verified) return next(new AppError("User is not verified", 400))
+    const accessToken = generateAccessToken({ id: user.id, userType: user.userType, email: user.email })
+    const { refreshToken, expiresAt } = generateRefreshToken()
+    res.cookie("accessToken", accessToken, {
+        httpOnly: true,
+        secure: env.NODE_ENV == "production",
+        sameSite: "strict",
+        maxAge: Number(env.ACCESS_TOKEN_MAX_AGE) * 60 * 1000
+    });
+    res.cookie("refreshToken", refreshToken, {
+        httpOnly: true,
+        secure: env.NODE_ENV == "production",
+        sameSite: "strict",
+        expires: expiresAt
+    });
 
+
+    res.status(200).json({ success: true, message: "User logged in successfully" })
 })
 
 

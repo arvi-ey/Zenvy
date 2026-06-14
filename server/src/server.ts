@@ -4,6 +4,8 @@ import cors from "cors";
 import globalErrorHandler from "./middlewares/error.middleware.js";
 import cookieParser from "cookie-parser";
 import authRouter from "./router/authrouter.js"
+import { getDeviceInfo } from "./helpers/helper.js";
+import { routeLimiter } from "./middlewares/rateLimiter.js";
 
 
 
@@ -16,8 +18,11 @@ app.use(express.urlencoded({ extended: true }));
 
 const PORT = env.PORT || 5000;
 
-app.get("/", (req, res) => {
-    res.send("Server is running...");
+app.get("/", routeLimiter(1, 6, "Too many request"), async (req, res) => {
+
+
+    return res.send("HELLO")
+
 });
 
 

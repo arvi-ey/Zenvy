@@ -23,9 +23,9 @@ export const signupSchema = z.object({
         .min(8, "Password must be at least 8 characters")
         .regex(/[A-Z]/, "Must contain uppercase")
         .regex(/[0-9]/, "Must contain number"),
-});
+},).strict()
 export const verifysignuproute = z.object({
     token: z
         .string()
         .min(1, "Tokwn is required"),
-});
+}).strict()

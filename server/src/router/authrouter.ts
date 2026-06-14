@@ -6,6 +6,6 @@ const router = express.Router()
 
 
 router.post('/verify-registration', validate(signupSchema), verifyRegistration)
-router.post('/verify-signin', validate(verifysignuproute), verifySignUp)
+router.post('/verify-email', validate(verifysignuproute), verifySignUp)
 
 export default router

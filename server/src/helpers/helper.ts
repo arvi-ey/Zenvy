@@ -1,6 +1,8 @@
 import crypto from "crypto";
 import bcrypt from "bcrypt";
 import { env } from "../config/env.js";
+import jwt, { SignOptions } from "jsonwebtoken";
+import { Request } from "express";
 
 
 
@@ -196,9 +198,87 @@ export const verificationEmailTemplate = (
 export type authTokenPayload = {
   id: string,
   email: string,
-  role: string
+  userType: string
 }
-export const generateAuthToken = async (payload: authTokenPayload) => {
 
 
+export const generateAccessToken = (payload: authTokenPayload) => {
+  const accessToken = jwt.sign(
+    {
+      id: payload.id,
+      email: payload.email,
+      role: payload.userType,
+    },
+    env.JWT_ACCESS_SECRET!,
+    {
+      expiresIn: env.ACCESS_TOKEN_EXPIRES_IN as SignOptions["expiresIn"],
+    }
+  );
+  return accessToken
+
 }
+
+export const generateRefreshToken = () => {
+  const refreshToken = crypto.randomBytes(64).toString("hex");
+  const expiresAt = new Date(
+    Date.now() + 30 * 24 * 60 * 60 * 1000
+  );
+
+  return { refreshToken, expiresAt }
+}
+
+
+export const getDeviceInfo = async (req: Request) => {
+  const userAgent = req.headers["user-agent"] || "";
+  let browser = "Unknown";
+  let os = "Unknown";
+  let deviceType = "desktop";
+
+  // Browser
+  if (userAgent.includes("Chrome")) {
+    browser = "Chrome";
+  } else if (userAgent.includes("Firefox")) {
+    browser = "Firefox";
+  } else if (userAgent.includes("Safari")) {
+    browser = "Safari";
+  } else if (userAgent.includes("Postman")) {
+    browser = "Postman";
+  }
+
+  // OS
+  if (userAgent.includes("Windows")) {
+    os = "Windows";
+  } else if (userAgent.includes("Linux")) {
+    os = "Linux";
+  } else if (userAgent.includes("Mac")) {
+    os = "MacOS";
+  } else if (userAgent.includes("Android")) {
+    os = "Android";
+    deviceType = "mobile";
+  } else if (
+    userAgent.includes("iPhone") ||
+    userAgent.includes("iPad")
+  ) {
+    os = "iOS";
+    deviceType = "mobile";
+  }
+  else if (userAgent.includes("Tablet")) {
+    deviceType = "tablet";
+  }
+
+
+  const response = await fetch(
+    `http://ip-api.com/json/${req.ip}`
+  );
+  const locationData = await response.json();
+  console.log(locationData)
+
+  let payloadObj: any = {}
+  payloadObj.browser = browser
+  payloadObj.os = os
+  payloadObj.deviceType = deviceType
+  let returnobj = { ...payloadObj, locationData }
+
+  return returnobj
+};
+
