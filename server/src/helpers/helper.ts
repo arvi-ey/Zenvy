@@ -3,6 +3,7 @@ import bcrypt from "bcrypt";
 import { env } from "../config/env.js";
 import jwt, { SignOptions } from "jsonwebtoken";
 import { Request } from "express";
+import catchAsync from "../utils/catchAsync.js";
 
 
 
@@ -228,6 +229,7 @@ export const generateRefreshToken = () => {
 }
 
 
+
 export const getDeviceInfo = async (req: Request) => {
   const userAgent = req.headers["user-agent"] || "";
   let browser = "Unknown";
@@ -245,7 +247,6 @@ export const getDeviceInfo = async (req: Request) => {
     browser = "Postman";
   }
 
-  // OS
   if (userAgent.includes("Windows")) {
     os = "Windows";
   } else if (userAgent.includes("Linux")) {
@@ -268,10 +269,9 @@ export const getDeviceInfo = async (req: Request) => {
 
 
   const response = await fetch(
-    `http://ip-api.com/json/${req.ip}`
+    `http://ip-api.com/json/${"203.0.113.10"}`
   );
   const locationData = await response.json();
-  console.log(locationData)
 
   let payloadObj: any = {}
   payloadObj.browser = browser
@@ -282,3 +282,12 @@ export const getDeviceInfo = async (req: Request) => {
   return returnobj
 };
 
+
+
+
+export const generatecategorySlug = (name: string) => {
+  return name
+    .toLowerCase()
+    .trim()
+    .replace(/\s+/g, "-");
+}

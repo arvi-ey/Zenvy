@@ -6,6 +6,7 @@ import cookieParser from "cookie-parser";
 import authRouter from "./router/authrouter.js"
 import { getDeviceInfo } from "./helpers/helper.js";
 import { routeLimiter } from "./middlewares/rateLimiter.js";
+import { pool } from "./config/db.js";
 
 
 
@@ -18,13 +19,19 @@ app.use(express.urlencoded({ extended: true }));
 
 const PORT = env.PORT || 5000;
 
-app.get("/", routeLimiter(1, 6, "Too many request"), async (req, res) => {
 
+async function connectDB() {
+    try {
+        const result = await pool.query("SELECT NOW()");
+        console.log(result.rows[0]);
+    } catch (error) {
+        console.error("❌ Database Connection Failed");
+        console.error(error);
+        process.exit(1);
+    }
+}
 
-    return res.send("HELLO")
-
-});
-
+connectDB();
 
 
 
@@ -55,6 +62,7 @@ app.listen(PORT, () => {
 //Most used prisma comands
 
 // npx prisma format
-// npx prisma migrate dev--name your_change
+// npx prisma migrate dev --name product-category-image-table-added
+
 // npx prisma studio
 // npx prisma generate
