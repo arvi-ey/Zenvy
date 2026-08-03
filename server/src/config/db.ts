@@ -3,7 +3,7 @@ import dotenv from "dotenv";
 
 dotenv.config();
 
-export const pool = new Pool({
+const pool = new Pool({
     host: process.env.DB_HOST,
     port: Number(process.env.DB_PORT),
     database: process.env.DB_NAME,
@@ -26,3 +26,15 @@ pool.on("connect", () => {
 pool.on("error", (err) => {
     console.error("❌ PostgreSQL Error:", err);
 });
+
+
+export async function connectDB() {
+    try {
+        await pool.query("SELECT 1");
+        console.log("✅ Database connection established");
+    } catch (error) {
+        console.error("❌ Failed to connect to PostgreSQL");
+        console.error(error);
+        process.exit(1);
+    }
+}
