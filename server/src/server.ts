@@ -6,7 +6,7 @@ import cookieParser from "cookie-parser";
 import { getDeviceInfo } from "./helpers/helper.js";
 import { routeLimiter } from "./middlewares/rateLimiter.js";
 import { connectDB } from "./config/db.js";
-
+import ProductCategoryRouter from "./routes/productcategory.route.js"
 
 
 const app = express();
@@ -21,6 +21,14 @@ connectDB()
 
 const PORT = env.PORT || 5000;
 
+
+
+
+
+
+
+//Routes
+app.use(`${env.API_VERSION}/product-category`, ProductCategoryRouter)
 
 
 app.use(globalErrorHandler)

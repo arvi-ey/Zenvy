@@ -12,13 +12,14 @@ export interface ProductCategory {
 export class ProductCategoryModel {
     // Create
     static async create(name: string): Promise<ProductCategory> {
+        const slugname = name
         const query = `
       INSERT INTO product_category (name, slug)
-      VALUES ($1, generate_slug($1))
+      VALUES ($1, generate_slug($2))
       RETURNING *;
     `;
 
-        const { rows } = await pool.query<ProductCategory>(query, [name]);
+        const { rows } = await pool.query<ProductCategory>(query, [name, slugname]);
 
         return rows[0];
     }
@@ -28,7 +29,7 @@ export class ProductCategoryModel {
         const query = `
       SELECT *
       FROM product_category
-      WHERE deleted_at IS NULL
+      WHERE deleted_at IS NULL AND status = 'active'
       ORDER BY id ASC ;
     `;
 
@@ -42,7 +43,7 @@ export class ProductCategoryModel {
         const query = `
       SELECT *
       FROM product_category
-      WHERE id = $1 AND  deleted_at IS NULL;
+      WHERE id = $1 AND  deleted_at IS NULL AND status = 'active';
     `;
 
         const { rows } = await pool.query<ProductCategory>(query, [id]);
