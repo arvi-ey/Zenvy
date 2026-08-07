@@ -24,7 +24,7 @@ const globalErrorHandler = (
         // NOT NULL
         case "23502":
             statusCode = 400;
-            message = `'${err.column}' is required.`;
+            message = `${err.column} is required.`;
             break;
 
         // CHECK constraint

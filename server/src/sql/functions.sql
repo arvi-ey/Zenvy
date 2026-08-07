@@ -1,4 +1,4 @@
--- slug geneeration 
+-- slug geneeration function
 
 CREATE OR REPLACE FUNCTION generate_slug(input_text TEXT)
 RETURNS TEXT
@@ -17,7 +17,22 @@ END;
 $$;
 
 
---Updated at auto update
+--set unique slug function
+CREATE OR REPLACE FUNCTION set_slug()
+RETURNS TRIGGER
+LANGUAGE plpgsql
+AS $$
+BEGIN
+    NEW.slug :=
+        generate_slug(NEW.name)
+        || '-'
+        || LEFT(md5(random()::text), 8);
+
+    RETURN NEW;
+END;
+$$;
+
+--Updated at auto update function
 CREATE OR REPLACE FUNCTION update_updated_at()
 RETURNS TRIGGER
 LANGUAGE plpgsql
@@ -29,9 +44,3 @@ END;
 $$;
 
 
--- trigger for updatedat (table name chnages for other table)
-CREATE TRIGGER trg_product_category_updated_at
-BEFORE UPDATE
-ON product_category
-FOR EACH ROW
-EXECUTE FUNCTION update_updated_at();

@@ -4,6 +4,7 @@ export interface ProductCategory {
     id: number;
     name: string;
     slug: string;
+    status: string;
     created_at: Date;
     updated_at: Date;
     deleted_at: Date
@@ -11,29 +12,36 @@ export interface ProductCategory {
 
 export class ProductCategoryModel {
     // Create
-    static async create(name: string): Promise<ProductCategory> {
-        const slugname = name
+    static async create(name: string, image: string): Promise<ProductCategory> {
         const query = `
-      INSERT INTO product_category (name, slug)
-      VALUES ($1, generate_slug($2))
+      INSERT INTO product_category (name,image)
+      VALUES ($1,$2)
       RETURNING *;
     `;
 
-        const { rows } = await pool.query<ProductCategory>(query, [name, slugname]);
+        const { rows } = await pool.query<ProductCategory>(query, [name, image]);
 
         return rows[0];
     }
 
     // Get All
-    static async findAll(): Promise<ProductCategory[]> {
-        const query = `
+    static async findAll(status: 'active' | 'inactive' | 'all' | null = 'active'): Promise<ProductCategory[]> {
+
+        console.log(status)
+        let query = `
       SELECT *
       FROM product_category
-      WHERE deleted_at IS NULL AND status = 'active'
-      ORDER BY id ASC ;
+      WHERE deleted_at IS NULL
     `;
+        const values: string[] = [];
 
-        const { rows } = await pool.query<ProductCategory>(query);
+        if (status && status !== "all") {
+            query += `AND status = $1`
+            values.push(status);
+        }
+
+        query += ` ORDER BY id ASC`;
+        const { rows } = await pool.query<ProductCategory>(query, values);
 
         return rows;
     }
