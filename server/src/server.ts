@@ -3,11 +3,9 @@ import express from "express";
 import cors from "cors";
 import globalErrorHandler from "./middlewares/error.middleware.js";
 import cookieParser from "cookie-parser";
-import { getDeviceInfo } from "./helpers/helper.js";
-import { routeLimiter } from "./middlewares/rateLimiter.js";
 import { connectDB } from "./config/db.js";
 import ProductCategoryRouter from "./routes/productcategory.route.js"
-
+import ProductRouter from "./routes/product.route.js"
 
 const app = express();
 
@@ -29,6 +27,7 @@ const PORT = env.PORT || 5000;
 
 //Routes
 app.use(`${env.API_VERSION}/product-category`, ProductCategoryRouter)
+app.use(`${env.API_VERSION}/product`, ProductRouter)
 
 
 app.use(globalErrorHandler)

@@ -16,9 +16,10 @@ deleted_at timestamptz default null
 CREATE TABLE product (
     id SERIAL PRIMARY KEY,
     title VARCHAR(150) NOT NULL,
-    slug VARCHAR(180) UNIQUE NOT NULL,
+    slug TEXT UNIQUE NOT NULL,
     description TEXT NOT NULL,
     category_id INT NOT NULL,
+    stock NUMERIC NOT NULL DEFAULT(0),
     price NUMERIC(10, 2) NOT NULL
         CHECK (price >= 0),
     status VARCHAR(20) NOT NULL
