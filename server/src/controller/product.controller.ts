@@ -17,5 +17,5 @@ export const addProduct = catchAsync(async (req: Request, res: Response, next: N
         )
     }
 
-
 })
+const getProducts = catchAsync(async (req: Request, res: Response, next: NextFunction))
