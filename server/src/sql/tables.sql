@@ -54,3 +54,38 @@ CREATE TABLE product_images (
         REFERENCES product(id)
         ON DELETE CASCADE
 );
+
+
+--Product reviews table
+CREATE TABLE product_reviews (
+    id SERIAL PRIMARY KEY,
+
+    product_id INT NOT NULL,
+    user_id INT NOT NULL,
+
+    rating INT NOT NULL
+        CHECK (rating >= 1 AND rating <= 5),
+
+    review TEXT,
+
+    created_at TIMESTAMPTZ NOT NULL
+        DEFAULT CURRENT_TIMESTAMP,
+
+    updated_at TIMESTAMPTZ NOT NULL
+        DEFAULT CURRENT_TIMESTAMP,
+
+    deleted_at TIMESTAMPTZ DEFAULT NULL,
+
+    CONSTRAINT fk_review_product
+        FOREIGN KEY (product_id)
+        REFERENCES product(id)
+        ON DELETE CASCADE,
+
+    CONSTRAINT fk_review_user
+        FOREIGN KEY (user_id)
+        REFERENCES users(id)
+        ON DELETE CASCADE,
+
+    CONSTRAINT unique_user_product_review
+        UNIQUE (user_id, product_id)
+);
