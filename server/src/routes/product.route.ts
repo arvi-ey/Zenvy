@@ -1,7 +1,7 @@
 import { z } from "zod";
 import { Router } from "express";
 import { validate } from "../middlewares/routeValidator.js";
-import { addProduct } from "../controller/product.controller.js";
+import { addProduct, getProducts } from "../controller/product.controller.js";
 const router = Router()
 export const createProductSchema = z.object({
     name: z
@@ -36,7 +36,15 @@ export const createProductSchema = z.object({
 }).strict();
 
 
-router.post('/add-product', validate(createProductSchema), addProduct)
+const getProductsQuerySchema = z.object({
+    limit: z.coerce.number().int().positive().optional(),
+    page: z.coerce.number().int().positive().optional(),
+    category: z.coerce.number().int().positive().optional(),
+    orderBy: z.enum(["ASC", "DESC"]).optional()
+}).strict();
+
+router.post('/add-product', validate(createProductSchema, "body"), addProduct)
+router.get('/get-products', validate(getProductsQuerySchema, "query"), getProducts)
 
 
 export default router

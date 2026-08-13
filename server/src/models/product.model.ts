@@ -11,7 +11,7 @@ interface GetProductsOptions {
 
 export class ProductModel {
     static async getProducts({
-        limit,
+        limit = 10,
         offset,
         category,
         orderBy = "ASC"
