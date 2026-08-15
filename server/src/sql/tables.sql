@@ -89,3 +89,54 @@ CREATE TABLE product_reviews (
     CONSTRAINT unique_user_product_review
         UNIQUE (user_id, product_id)
 );
+
+--users table
+CREATE TABLE users (
+   id SERIAL PRIMARY KEY,
+   first_name VARCHAR(50) NOT NULL,
+   last_name VARCHAR(50) NOT NULL,
+   email VARCHAR(100) UNIQUE NOT NULL,
+   phone VARCHAR(15) UNIQUE NOT NULL,
+   avatar TEXT,
+   status VARCHAR(20) NOT NULL DEFAULT 'active' CHECK (status IN ('active', 'not_active', 'suspended')), 
+   verified BOOLEAN NOT NULL DEFAULT FALSE,
+   created_at TIMESTAMPTZ NOT NULL DEFAULT CURRENT_TIMESTAMP,
+   updated_at TIMESTAMPTZ NOT NULL DEFAULT CURRENT_TIMESTAMP,
+   deleted_at TIMESTAMPTZ DEFAULT NULL
+);
+
+
+
+--Address table
+CREATE TABLE address (
+    id SERIAL PRIMARY KEY,
+
+  user_id INT NOT NULL,
+
+    street TEXT NOT NULL,
+    landmark TEXT,
+
+    pincode VARCHAR(20) NOT NULL,
+    state VARCHAR(110) NOT NULL,
+    district VARCHAR(100) NOT NULL,
+
+    type VARCHAR(20)
+        NOT NULL
+        DEFAULT 'others'
+        CHECK (type IN ('office', 'home', 'others')),
+
+    created_at TIMESTAMPTZ
+        NOT NULL
+        DEFAULT CURRENT_TIMESTAMP,
+
+    updated_at TIMESTAMPTZ
+        NOT NULL
+        DEFAULT CURRENT_TIMESTAMP,
+
+    deleted_at TIMESTAMPTZ DEFAULT NULL,
+
+    CONSTRAINT address_fkey_user
+        FOREIGN KEY (user_id)
+        REFERENCES users(id)
+        ON DELETE CASCADE
+);
