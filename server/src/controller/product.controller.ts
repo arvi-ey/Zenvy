@@ -3,6 +3,7 @@ import catchAsync from "../utils/catchAsync.js";
 import { sendResponse } from "../utils/response.js";
 import { AddProduct } from "../services/product.services.js";
 import { ProductModel } from "../models/product.model.js";
+import AppError from "../utils/AppError.js";
 
 
 export const addProduct = catchAsync(async (req: Request, res: Response, next: NextFunction) => {
@@ -35,12 +36,45 @@ export const getProducts = catchAsync(async (req: Request, res: Response, next: 
                 ? "DESC"
                 : "ASC"
     })
-    if (response !== null) {
-        sendResponse(
+    if (response?.length === 0) {
+        return sendResponse(
             res,
             200,
-            "Product fetched successfully",
+            "No products found",
+            []
+        )
+    }
+
+    sendResponse(
+        res,
+        200,
+        "Product fetched successfully",
+        response
+    )
+})
+
+
+export const getProductDetails = catchAsync(async (req: Request, res: Response, next: NextFunction) => {
+
+    const { id, slug } = req.query
+    const parsedId = id ? Number(id) : undefined
+    const parsedSlug = typeof slug === "string"
+        ? slug
+        : undefined;
+    const response = await ProductModel.getproductdetails({ id: parsedId, slug: parsedSlug })
+    if (response == null) {
+        return sendResponse(
+            res,
+            200,
+            "No product found",
             response
         )
     }
+
+    sendResponse(
+        res,
+        200,
+        "Product fetched successfully",
+        response
+    )
 })

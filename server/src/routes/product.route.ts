@@ -1,7 +1,7 @@
 import { z } from "zod";
 import { Router } from "express";
 import { validate } from "../middlewares/routeValidator.js";
-import { addProduct, getProducts } from "../controller/product.controller.js";
+import { addProduct, getProducts, getProductDetails } from "../controller/product.controller.js";
 const router = Router()
 export const createProductSchema = z.object({
     name: z
@@ -43,8 +43,23 @@ const getProductsQuerySchema = z.object({
     orderBy: z.enum(["ASC", "DESC"]).optional()
 }).strict();
 
+const getProductsDetailsSchema = z
+    .object({
+        id: z.coerce.number().int().positive().optional(),
+
+        slug: z.string().min(1).optional(),
+    })
+    .strict()
+    .refine(
+        (data) => data.id !== undefined || data.slug !== undefined,
+        {
+            message: "Either id or slug is required",
+        }
+    );
+
 router.post('/add-product', validate(createProductSchema, "body"), addProduct)
 router.get('/get-products', validate(getProductsQuerySchema, "query"), getProducts)
+router.get('/get-product-details', validate(getProductsDetailsSchema, "query"), getProductDetails)
 
 
 export default router
