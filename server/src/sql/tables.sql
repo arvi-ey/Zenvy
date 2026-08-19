@@ -140,3 +140,18 @@ CREATE TABLE address (
         REFERENCES users(id)
         ON DELETE CASCADE
 );
+
+
+
+--Cart Table
+create table cart(
+id SERIAL PRIMARY KEY,
+product_id INT NOT NULL,
+product_count INT NOT NULL DEFAULT 1 CHECK (product_count >0),
+user_id INT NOT NULL,
+created_at TIMESTAMPTZ NOT NULL DEFAULT CURRENT_TIMESTAMP,
+updated_at TIMESTAMPTZ NOT NULL DEFAULT CURRENT_TIMESTAMP,
+deleted_at TIMESTAMPTZ DEFAULT NULL,
+CONSTRAINT product_fkey FOREIGN KEY (product_id) REFERENCES product(id),
+CONSTRAINT users_fkey FOREIGN KEY (user_id) REFERENCES users(id)
+);
