@@ -15,7 +15,7 @@ deleted_at timestamptz default null
 --Products table
 CREATE TABLE product (
     id SERIAL PRIMARY KEY,
-    title VARCHAR(150) NOT NULL,
+    name VARCHAR(150) NOT NULL,
     slug TEXT UNIQUE NOT NULL,
     description TEXT NOT NULL,
     category_id INT NOT NULL,
