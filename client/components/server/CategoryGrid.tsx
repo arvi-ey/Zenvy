@@ -1,9 +1,39 @@
+"use client"
 import Link from 'next/link'
 import Image from 'next/image'
-import { categories } from '@/data/products'
-import { ArrowRight } from 'lucide-react'
 
+import { ArrowRight } from 'lucide-react'
+import useCategory from '@/hooks/useCategory'
+import { useEffect, useState } from 'react'
+
+// types/category.ts
+
+export interface Category {
+  id: number;
+  name: string;
+  slug: string;
+  created_at: string;
+  updated_at: string;
+  deleted_at: string | null;
+  status: 'active' | 'inactive' | 'draft'; // or string if more statuses exist
+  image: string;
+}
 export function CategoryGrid() {
+  const { getCategories, loading } = useCategory()
+  const [categories, setCategories] = useState<Category[]>([])
+
+  useEffect(() => {
+    async function fetchcategories() {
+      const data = await getCategories()
+      if (data !== null && data.length > 0) {
+        setCategories(data)
+        console.log("hello")
+      }
+    }
+    fetchcategories()
+  }, [])
+
+  console.log(categories)
   return (
     <section className="py-8 sm:py-10 lg:py-12">
       <div className="mx-auto max-w-7xl px-4 lg:px-6">
@@ -37,9 +67,6 @@ export function CategoryGrid() {
                 <h3 className="text-sm sm:text-xl font-bold text-white dark:text-white">
                   {category.name}
                 </h3>
-                <p className="mt-0.5 text-xs text-white/80">
-                  {category.productCount} items
-                </p>
               </div>
             </Link>
           ))}
