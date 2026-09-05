@@ -4,7 +4,7 @@ import wishlistReducer from './slices/wishlistSlice'
 import filterReducer from './slices/filterSlice'
 import checkoutReducer from './slices/checkoutSlice'
 import uiReducer from './slices/uiSlice'
-
+import ProductReducer from "./slices/productSlicer"
 export const store = configureStore({
   reducer: {
     cart: cartReducer,
@@ -12,6 +12,7 @@ export const store = configureStore({
     filters: filterReducer,
     checkout: checkoutReducer,
     ui: uiReducer,
+    product: ProductReducer
   },
 })
 

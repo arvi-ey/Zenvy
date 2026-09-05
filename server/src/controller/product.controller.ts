@@ -6,6 +6,8 @@ import { ProductModel } from "../models/product.model.js";
 import AppError from "../utils/AppError.js";
 
 
+
+
 export const addProduct = catchAsync(async (req: Request, res: Response, next: NextFunction) => {
 
 
@@ -18,6 +20,11 @@ export const addProduct = catchAsync(async (req: Request, res: Response, next: N
             response
         )
     }
+
+    // for (let index in demoProducts) {
+    //     const response = await AddProduct(demoProducts[index])
+    // }
+    // res.send("DATA SUCCESS")
 
 })
 export const getProducts = catchAsync(async (req: Request, res: Response, next: NextFunction) => {
@@ -78,3 +85,31 @@ export const getProductDetails = catchAsync(async (req: Request, res: Response, 
         response
     )
 })
+
+
+
+
+// {
+
+//     "name": "OFFICIAL LOONEY TUNES MERCHANDISE",
+//         "description": "Men's Gardenia Who Cares Graphic Printed Oversized T-shirt",
+//             "category_id": 21,
+//                 "stock": 110,
+//                     "price": 899,
+//                         "status": "active",
+
+//                             "images": [
+//                                 {
+//                                     "url": "https://images.bewakoof.com/t1080/men-s-gardenia-who-cares-graphic-printed-oversized-t-shirt-646664-1731329946-1.jpg",
+//                                     "is_main": true
+//                                 },
+//                                 {
+//                                     "url": "https://images.bewakoof.com/t1080/men-s-gardenia-who-cares-graphic-printed-oversized-t-shirt-646664-1731329951-2.jpg",
+//                                     "is_main": false
+//                                 },
+//                                 {
+//                                     "url": "https://images.bewakoof.com/t1080/men-s-gardenia-who-cares-graphic-printed-oversized-t-shirt-646664-1731329968-6.jpg",
+//                                     "is_main": false
+//                                 }
+//                             ]
+// }

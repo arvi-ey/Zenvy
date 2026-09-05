@@ -57,7 +57,8 @@ const getProductsDetailsSchema = z
         }
     );
 
-router.post('/add-product', validate(createProductSchema, "body"), addProduct)
+// router.post('/add-product', validate(createProductSchema, "body"), addProduct)
+router.post('/add-product', addProduct)
 router.get('/get-products', validate(getProductsQuerySchema, "query"), getProducts)
 router.get('/get-product-details', validate(getProductsDetailsSchema, "query"), getProductDetails)
 

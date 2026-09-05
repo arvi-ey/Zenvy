@@ -4,16 +4,14 @@ import api from '@/api/api'
 const BASE = 'product-category'
 const useCategory = () => {
 
-    const [loading, setLoading] = useState<boolean>(false)
+    const [loading, setLoading] = useState<boolean>(true)
 
 
     const getCategories = async () => {
-        setLoading(false)
+        setLoading(true)
         try {
             const res = await api.get(`${BASE}/get-categories`)
-            console.log(res)
             if (res.data && res.data.success) {
-                console.log("HELLO")
                 return res.data.data
             }
             return null
@@ -23,7 +21,7 @@ const useCategory = () => {
 
         }
         finally {
-            setLoading(true)
+            setLoading(false)
         }
 
     }

@@ -4,7 +4,7 @@ import { useMemo } from 'react'
 import { useAppSelector } from '@/store/hooks'
 import { selectFilters } from '@/store/slices/filterSlice'
 import { ProductCard } from './ProductCard'
-import type { Product } from '@/types'
+import { Product } from '@/store/slices/productSlicer'
 
 interface ProductGridProps {
   products: Product[]

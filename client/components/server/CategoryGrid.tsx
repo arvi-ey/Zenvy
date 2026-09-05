@@ -27,13 +27,12 @@ export function CategoryGrid() {
       const data = await getCategories()
       if (data !== null && data.length > 0) {
         setCategories(data)
-        console.log("hello")
       }
     }
     fetchcategories()
   }, [])
 
-  console.log(categories)
+
   return (
     <section className="py-8 sm:py-10 lg:py-12">
       <div className="mx-auto max-w-7xl px-4 lg:px-6">
@@ -49,27 +48,31 @@ export function CategoryGrid() {
         </div>
 
         <div className="mt-5 grid grid-cols-2 gap-3 sm:grid-cols-3 sm:gap-4 lg:grid-cols-5">
-          {categories.map((category) => (
-            <Link
-              key={category.id}
-              href={`/collections/${category.slug}`}
-              className="group relative aspect-[3/4] overflow-hidden rounded-lg bg-muted"
-            >
-              <Image
-                src={category.image}
-                alt={category.name}
-                fill
-                className="object-cover transition-transform duration-500 group-hover:scale-105"
-                sizes="(max-width: 640px) 50vw, (max-width: 1024px) 33vw, 20vw"
-              />
-              <div className="absolute inset-0 bg-gradient-to-t from-black/60 via-black/20 to-transparent" />
-              <div className="absolute inset-x-0 bottom-0 p-3 sm:p-4">
-                <h3 className="text-sm sm:text-xl font-bold text-white dark:text-white">
-                  {category.name}
-                </h3>
-              </div>
-            </Link>
-          ))}
+
+          {
+            loading ? Array.from({ length: 6 }).map((_, index) => (<div key={index} className="relative aspect-[3/4] overflow-hidden rounded-lg bg-muted animate-pulse" />))
+
+              : categories.map((category) => (
+                <Link
+                  key={category.id}
+                  href={`/collections/${category.slug}`}
+                  className="group relative aspect-[3/4] overflow-hidden rounded-lg bg-muted"
+                >
+                  <Image
+                    src={category.image}
+                    alt={category.name}
+                    fill
+                    className="object-cover transition-transform duration-500 group-hover:scale-105"
+                    sizes="(max-width: 640px) 50vw, (max-width: 1024px) 33vw, 20vw"
+                  />
+                  <div className="absolute inset-0 bg-gradient-to-t from-black/60 via-black/20 to-transparent" />
+                  <div className="absolute inset-x-0 bottom-0 p-3 sm:p-4">
+                    <h3 className="text-sm sm:text-xl font-bold text-white dark:text-white">
+                      {category.name}
+                    </h3>
+                  </div>
+                </Link>
+              ))}
         </div>
       </div>
     </section>

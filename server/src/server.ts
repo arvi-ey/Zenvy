@@ -7,6 +7,8 @@ import { connectDB } from "./config/db.js";
 import ProductCategoryRouter from "./routes/productcategory.route.js"
 import ProductRouter from "./routes/product.route.js"
 
+import fs from "node:fs";
+
 const app = express();
 
 app.use(cookieParser());
@@ -23,6 +25,8 @@ const PORT = env.PORT || 5000;
 
 
 
+
+// converter()
 
 
 //Routes
