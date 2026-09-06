@@ -155,3 +155,21 @@ deleted_at TIMESTAMPTZ DEFAULT NULL,
 CONSTRAINT product_fkey FOREIGN KEY (product_id) REFERENCES product(id),
 CONSTRAINT users_fkey FOREIGN KEY (user_id) REFERENCES users(id)
 );
+
+
+
+--reviw table
+CREATE TABLE reviews(
+id SERIAL PRIMARY KEY,
+product_id INTEGER NOT NULL,
+user_id INTEGER NOT NULL,
+description TEXT NOT NULL,
+rating SMALLINT NOT NULL CHECK (rating BETWEEN 1 AND 5),
+created_at TIMESTAMPTZ NOT NULL DEFAULT CURRENT_TIMESTAMP,
+updated_at TIMESTAMPTZ NOT NULL DEFAULT CURRENT_TIMESTAMP,
+deleted_at TIMESTAMPTZ DEFAULT NULL,
+CONSTRAINT fk_product_id_review FOREIGN KEY (product_id) REFERENCES product(id)
+ON DELETE CASCADE,
+CONSTRAINT fk_review_user_id FOREIGN KEY (user_id) REFERENCES users(id),
+CONSTRAINT uq_product_user_review UNIQUE (product_id, user_id)
+);

@@ -69,24 +69,6 @@ export function Header() {
           Zenvy
         </Link>
 
-        {/* Desktop Navigation */}
-        <nav className="hidden lg:flex lg:items-center lg:gap-6">
-          {navLinks.map((link) => (
-            <Link
-              key={link.href}
-              href={link.href}
-              className={cn(
-                'text-sm font-medium transition-colors duration-200 hover:text-primary',
-                pathname === link.href
-                  ? 'text-primary'
-                  : 'text-muted-foreground'
-              )}
-            >
-              {link.label}
-            </Link>
-          ))}
-        </nav>
-
         {/* Actions */}
         <div className="flex items-center gap-1 sm:gap-2">
           <Button
