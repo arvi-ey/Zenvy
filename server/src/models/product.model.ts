@@ -5,7 +5,7 @@ import { pool } from "../config/db.js";
 interface GetProductsOptions {
     limit?: number;
     offset?: number;
-    category?: number;
+    category?: string;
     orderBy?: "ASC" | "DESC";
 }
 
@@ -25,7 +25,7 @@ export class ProductModel {
 
         let query = `
         SELECT
-            p.*,
+            p.* ,
             JSON_AGG(
                 JSON_BUILD_OBJECT(
                     'url', pi.url,
@@ -35,15 +35,16 @@ export class ProductModel {
         FROM product AS p
         INNER JOIN product_images AS pi
             ON p.id = pi.product_id
+            INNER JOIN product_category as pc on pc.id = p.category_id
         WHERE p.deleted_at IS NULL
     `;
 
-        const values: (number)[] = [];
+        const values: (number | string)[] = [];
         let paramIndex = 0;
 
-        if (category !== undefined) {
+        if (category !== undefined && category !== "all") {
             paramIndex += 1
-            query += ` AND p.category_id = $${paramIndex}`;
+            query += ` pc.slug = $${paramIndex}`;
             values.push(category);
 
         }

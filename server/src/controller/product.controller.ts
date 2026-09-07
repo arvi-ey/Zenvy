@@ -33,11 +33,15 @@ export const getProducts = catchAsync(async (req: Request, res: Response, next: 
     const parsedPage = page ? Number(page) : 1;
 
     const offset: number = (parsedPage - 1) * parsedLimit
+    const parsedCategory =
+        typeof category === "string"
+            ? category
+            : undefined;
+
     const response = await ProductModel.getProducts({
         limit: parsedLimit,
         offset,
-        category: category ? Number(category) : undefined,
-
+        category: parsedCategory,
         orderBy:
             orderBy === "DESC"
                 ? "DESC"

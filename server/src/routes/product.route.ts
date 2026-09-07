@@ -39,7 +39,7 @@ export const createProductSchema = z.object({
 const getProductsQuerySchema = z.object({
     limit: z.coerce.number().int().positive().optional(),
     page: z.coerce.number().int().positive().optional(),
-    category: z.coerce.number().int().positive().optional(),
+    category: z.coerce.string().optional(),
     orderBy: z.enum(["ASC", "DESC"]).optional()
 }).strict();
 
