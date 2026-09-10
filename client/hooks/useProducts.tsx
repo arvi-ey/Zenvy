@@ -5,6 +5,7 @@ export interface GetProductParams {
     page?: number,
     limit?: number,
     orderBy?: string,
+    is_featured?: boolean
 }
 function useProducts() {
     const [productsLoading, setProductsLoading] = useState<boolean>(true)

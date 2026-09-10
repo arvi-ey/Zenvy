@@ -4,7 +4,7 @@ import { CartDrawer } from '@/components/client/CartDrawer'
 import { SearchModal } from '@/components/client/SearchModal'
 import CompactHero from '@/components/server/CompactHero'
 import { CategoryGrid } from '@/components/server/CategoryGrid'
-import { ProductSection } from '@/components/server/ProductSection'
+import ProductSection from '@/components/server/ProductSection'
 import { BrandStory } from '@/components/server/BrandStory'
 import {
   getFeaturedProducts,
@@ -32,46 +32,11 @@ export default function HomePage() {
 
         {/* Featured Products Grid */}
         <ProductSection
-          title="Featured Products"
-          products={featuredProducts}
-          viewAllHref="/collections/all"
-          priority
         />
-
-        {/* Trending Products */}
-        <ProductSection
-          title="Trending Now"
-          products={trendingProducts}
-          viewAllHref="/collections/trending"
-        />
-
-        {/* New Arrivals */}
-        {newArrivals.length > 0 && (
-          <ProductSection
-            title="New Arrivals"
-            products={newArrivals}
-            viewAllHref="/collections/new-arrivals"
-          />
-        )}
-
-        {/* Best Sellers */}
-        {bestSellers.length > 0 && (
-          <ProductSection
-            title="Best Sellers"
-            products={bestSellers}
-            viewAllHref="/collections/bestsellers"
-          />
-        )}
 
         {/* Brand Story Section */}
         <BrandStory />
 
-        {/* All Products Preview */}
-        <ProductSection
-          title="Shop All"
-          products={products.slice(0, 8)}
-          viewAllHref="/collections/all"
-        />
       </main>
     </>
   )

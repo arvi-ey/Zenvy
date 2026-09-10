@@ -28,7 +28,7 @@ export const addProduct = catchAsync(async (req: Request, res: Response, next: N
 
 })
 export const getProducts = catchAsync(async (req: Request, res: Response, next: NextFunction) => {
-    const { limit, category, orderBy, page } = req.query
+    const { limit, category, orderBy, page, is_featured } = req.query
     const parsedLimit = limit ? Number(limit) : 10;
     const parsedPage = page ? Number(page) : 1;
 
@@ -37,6 +37,7 @@ export const getProducts = catchAsync(async (req: Request, res: Response, next: 
         typeof category === "string"
             ? category
             : undefined;
+    const parsedFeatured = is_featured == "true" ? true : undefined
 
     const response = await ProductModel.getProducts({
         limit: parsedLimit,
@@ -45,7 +46,8 @@ export const getProducts = catchAsync(async (req: Request, res: Response, next: 
         orderBy:
             orderBy === "DESC"
                 ? "DESC"
-                : "ASC"
+                : "ASC",
+        is_featured: parsedFeatured
     })
     if (response?.length === 0) {
         return sendResponse(

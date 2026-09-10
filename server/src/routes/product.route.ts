@@ -40,7 +40,8 @@ const getProductsQuerySchema = z.object({
     limit: z.coerce.number().int().positive().optional(),
     page: z.coerce.number().int().positive().optional(),
     category: z.coerce.string().optional(),
-    orderBy: z.enum(["ASC", "DESC"]).optional()
+    orderBy: z.enum(["ASC", "DESC"]).optional(),
+    is_featured: z.enum(["true", "false"]).optional()
 }).strict();
 
 const getProductsDetailsSchema = z

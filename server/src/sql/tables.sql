@@ -18,6 +18,7 @@ CREATE TABLE product (
     name VARCHAR(150) NOT NULL,
     slug TEXT UNIQUE NOT NULL,
     description TEXT NOT NULL,
+    is_featured boolean default false
     category_id INT NOT NULL,
     stock NUMERIC NOT NULL DEFAULT(0),
     price NUMERIC(10, 2) NOT NULL

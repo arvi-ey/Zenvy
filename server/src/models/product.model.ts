@@ -1,3 +1,4 @@
+import { is } from "zod/locales";
 import { pool } from "../config/db.js";
 
 
@@ -7,6 +8,7 @@ interface GetProductsOptions {
     offset?: number;
     category?: string;
     orderBy?: "ASC" | "DESC";
+    is_featured?: boolean
 }
 
 
@@ -20,7 +22,8 @@ export class ProductModel {
         limit = 10,
         offset,
         category,
-        orderBy = "ASC"
+        orderBy = "ASC",
+        is_featured
     }: GetProductsOptions = {}) {
 
         let query = `
@@ -39,7 +42,7 @@ export class ProductModel {
         WHERE p.deleted_at IS NULL 
     `;
 
-        const values: (number | string)[] = [];
+        const values: (number | string | boolean)[] = [];
         let paramIndex = 0;
 
         if (category !== undefined && category !== "all") {
@@ -47,6 +50,12 @@ export class ProductModel {
             query += `AND pc.slug = $${paramIndex}`;
             values.push(category);
 
+        }
+
+        if (is_featured !== undefined) {
+            paramIndex += 1
+            query += `AND p.is_featured = $${paramIndex}`
+            values.push(is_featured)
         }
 
         query += ` GROUP BY p.id`;
@@ -71,6 +80,14 @@ export class ProductModel {
         }
 
         query += `;`;
+
+        console.log("========== QUERY ==========");
+        console.log(query);
+        console.log("========== VALUES ==========");
+        console.log(values);
+        console.log("========== COUNT ==========", values.length);
+
+
 
         const { rows } = await pool.query(query, values);
 
