@@ -36,7 +36,7 @@ export class ProductModel {
         INNER JOIN product_images AS pi
             ON p.id = pi.product_id
             INNER JOIN product_category as pc on pc.id = p.category_id
-        WHERE p.deleted_at IS NULL
+        WHERE p.deleted_at IS NULL 
     `;
 
         const values: (number | string)[] = [];
@@ -44,7 +44,7 @@ export class ProductModel {
 
         if (category !== undefined && category !== "all") {
             paramIndex += 1
-            query += ` pc.slug = $${paramIndex}`;
+            query += `AND pc.slug = $${paramIndex}`;
             values.push(category);
 
         }

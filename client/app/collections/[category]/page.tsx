@@ -33,30 +33,29 @@ export default function CollectionPage() {
   const category = params.category as string
 
   useEffect(() => {
+    let cancelled = false
+
     const fetchProducts = async () => {
-      const params = {
+      const data = await getProducts({
         category,
         orderBy: 'ASC',
         page: count,
-      }
-      const data = await getProducts(params)
-      console.log(data, "DATA")
+      })
+
+      if (cancelled) return   // <-- ignore stale responses
 
       if (data && data.length > 0) {
-        if (count == 1) {
-          dispatch(setProducts(data))
-        }
-        else {
-          dispatch(appendProducts(data))
-        }
-      }
-      else {
+        if (count === 1) dispatch(setProducts(data))
+        else dispatch(appendProducts(data))
+      } else {
         setNoproduct(true)
       }
     }
 
     fetchProducts()
-  }, [count, category])
+
+    return () => { cancelled = true }   // <-- cleanup
+  }, [count, category, dispatch])       // note: do NOT add getProducts
 
 
   const HandleClick = () => {
