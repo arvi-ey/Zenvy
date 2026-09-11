@@ -81,11 +81,7 @@ export class ProductModel {
 
         query += `;`;
 
-        console.log("========== QUERY ==========");
-        console.log(query);
-        console.log("========== VALUES ==========");
-        console.log(values);
-        console.log("========== COUNT ==========", values.length);
+
 
 
 

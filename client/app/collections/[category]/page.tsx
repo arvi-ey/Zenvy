@@ -23,6 +23,7 @@ export default function CollectionPage() {
   )
 
   const params = useParams()
+  console.log(params, "PARAMS")
 
   const { getProducts, productsLoading } = useProducts()
   const [count, setCount] = useState(1)
@@ -32,17 +33,31 @@ export default function CollectionPage() {
 
   const category = params.category as string
 
+
+
   useEffect(() => {
     let cancelled = false
 
     const fetchProducts = async () => {
-      const data = await getProducts({
-        category,
-        orderBy: 'ASC',
-        page: count,
-      })
+      let payload
+      if (category == "featured") {
+        payload = {
+          is_featured: true,
+          orderBy: 'ASC',
+          page: count,
+        }
+      }
+      else {
 
-      if (cancelled) return   // <-- ignore stale responses
+        payload = {
+          category,
+          orderBy: 'ASC',
+          page: count,
+        }
+      }
+      const data = await getProducts(payload)
+
+      if (cancelled) return
 
       if (data && data.length > 0) {
         if (count === 1) dispatch(setProducts(data))
@@ -54,8 +69,8 @@ export default function CollectionPage() {
 
     fetchProducts()
 
-    return () => { cancelled = true }   // <-- cleanup
-  }, [count, category, dispatch])       // note: do NOT add getProducts
+    return () => { cancelled = true }
+  }, [count, category, dispatch])
 
 
   const HandleClick = () => {

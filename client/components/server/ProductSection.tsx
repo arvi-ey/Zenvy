@@ -8,6 +8,7 @@ import { useParams } from "next/navigation"
 import useProducts from "@/hooks/useProducts"
 import { useAppDispatch, useAppSelector } from "@/store/hooks"
 import { setProducts, appendProducts } from "@/store/slices/productSlicer"
+import { ArrowRight } from "lucide-react"
 
 
 interface hoveredItem {
@@ -31,7 +32,6 @@ export default function ProductSection() {
 
 
 
-
   useEffect(() => {
     let cancelled = false
 
@@ -40,7 +40,8 @@ export default function ProductSection() {
 
         orderBy: 'ASC',
         page: count,
-        is_featured: true
+        is_featured: true,
+        limit: 10
       })
 
       if (cancelled) return   // <-- ignore stale responses
@@ -59,20 +60,22 @@ export default function ProductSection() {
   }, [count, dispatch])       // note: do NOT add getProducts
 
 
-  const HandleClick = () => {
-    setCount(count + 1)
-  }
-
 
 
   return (
-    <main className="min-h-screen bg-gray-50 px-4 py-8 dark:bg-gray-950 sm:px-6 lg:px-8">
+    <section className="py-8 sm:py-10 lg:py-12">
       <div className="mx-auto max-w-7xl">
 
 
         <div className="mb-8 flex flex-col gap-4 sm:flex-row sm:items-end sm:justify-between">
           <p className="font-extrabold text-2xl">FEATURED PRODUCTS</p>
-
+          <Link
+            href="/collections/featured"
+            className="flex items-center gap-1 text-sm font-medium text-muted-foreground transition-colors hover:text-foreground"
+          >
+            View All Featured Products
+            <ArrowRight className="h-4 w-4" />
+          </Link>
 
         </div>
 
@@ -186,6 +189,6 @@ export default function ProductSection() {
 
 
       </div>
-    </main>
+    </section>
   )
 }
