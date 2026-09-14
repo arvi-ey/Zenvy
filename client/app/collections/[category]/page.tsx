@@ -8,7 +8,7 @@ import { useParams } from "next/navigation"
 import useProducts from "@/hooks/useProducts"
 import { useAppDispatch, useAppSelector } from "@/store/hooks"
 import { setProducts, appendProducts } from "@/store/slices/productSlicer"
-
+import { useRouter } from "next/navigation"
 
 interface hoveredItem {
   entered: boolean,
@@ -17,6 +17,7 @@ interface hoveredItem {
 
 export default function CollectionPage() {
   const dispatch = useAppDispatch()
+  const router = useRouter()
 
   const { products } = useAppSelector(
     (state) => state.product
@@ -160,6 +161,12 @@ export default function CollectionPage() {
                 <div
                   key={product.id}
                   onMouseEnter={() => setMouseEntered({ entered: true, item: product.id })}
+                  onClick={() => {
+                    setMouseEntered({ entered: false, item: null })
+                    router.push(`/${product.slug}`)
+
+                  }
+                  }
                   onMouseLeave={() => setMouseEntered({ entered: false, item: null })}
                   className="group cursor-pointer overflow-hidden rounded-2xl border border-gray-200 bg-white transition duration-300 hover:-translate-y-1 hover:shadow-xl dark:border-gray-800 dark:bg-gray-900"
                 >
