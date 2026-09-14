@@ -16,6 +16,7 @@ import {
 } from 'lucide-react';
 
 import { useParams } from 'next/navigation';
+import useProducts from '@/hooks/useProducts';
 
 
 interface ProductImage {
@@ -287,21 +288,24 @@ const SizeSelector: React.FC<SizeSelectorProps> = ({ selected, onSelect }) => (
 
 
 const ProductDetailPage: React.FC = () => {
+    const { getProductDetails, productsLoading } = useProducts()
     const [loading, setLoading] = useState<boolean>(true);
     const [product, setProduct] = useState<Product | null>(null);
     const [selectedImage, setSelectedImage] = useState<number>(0);
     const [selectedSize, setSelectedSize] = useState<string>('M');
     const [quantity, setQuantity] = useState<number>(1);
     const [isWishlisted, setIsWishlisted] = useState<boolean>(false);
-    const params = useParams().slug
+    const params = useParams()
+    console.log(typeof params)
 
 
     useEffect(() => {
-        const timer = setTimeout(() => {
-            setProduct(MOCK_PRODUCT);
-            setLoading(false);
-        }, 1800);
-        return () => clearTimeout(timer);
+        const getDetails = async () => {
+            if (!params.slug) return
+            const data = await getProductDetails(params.slug)
+            if (data) setProduct(data)
+        }
+        getDetails()
     }, [params]);
 
 
@@ -328,7 +332,7 @@ const ProductDetailPage: React.FC = () => {
         return () => window.removeEventListener('keydown', handleKeyDown);
     }, [loading, product, goToPrev, goToNext]);
 
-    if (loading || !product) return <ProductDetailSkeleton />;
+    if (productsLoading || !product) return <ProductDetailSkeleton />;
 
     const mainImage = product.images[selectedImage];
     const price = parseFloat(product.price);

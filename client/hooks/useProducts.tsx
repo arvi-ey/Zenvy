@@ -28,8 +28,28 @@ function useProducts() {
         }
     }
 
+    const getProductDetails = async (slug: string) => {
+        setProductsLoading(true)
+
+        try {
+            const res = await api.get(`product/get-product-details?slug=${slug}`)
+            if (res.data.success) {
+                return res.data.data
+            }
+            return null
+        }
+        catch (error) {
+            return null
+        }
+        finally {
+            setProductsLoading(false)
+
+        }
+    }
+
     return {
         getProducts,
+        getProductDetails,
         productsLoading
     }
 }
