@@ -174,3 +174,20 @@ ON DELETE CASCADE,
 CONSTRAINT fk_review_user_id FOREIGN KEY (user_id) REFERENCES users(id),
 CONSTRAINT uq_product_user_review UNIQUE (product_id, user_id)
 );
+
+
+
+--Product Variants
+CREATE TABLE product_variants(
+id SERIAL PRIMARY KEY,
+product_id INTEGER NOT NULL,
+size VARCHAR(5) NOT NULL CHECK(size in ('M','L','S','XS','XL','XXL','XXL','FREE')),
+stock INTEGER NOT NULL CHECK(stock >=0) DEFAULT 0,
+created_at TIMESTAMPTZ NOT NULL DEFAULT CURRENT_TIMESTAMP,
+updated_at TIMESTAMPTZ NOT NULL DEFAULT CURRENT_TIMESTAMP,
+
+CONSTRAINT fk_product_id FOREIGN KEY (product_id) REFERENCES product(id)
+ON DELETE CASCADE,
+ CONSTRAINT unique_product_size
+        UNIQUE (product_id, size)
+);
