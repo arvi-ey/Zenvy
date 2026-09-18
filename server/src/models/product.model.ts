@@ -95,11 +95,19 @@ export class ProductModel {
     static async getproductdetails({ id, slug }: getProductdetailsOption = {}) {
 
         let query = `
-        SELECT p.*, JSON_AGG(JSON_BUILD_OBJECT(
+        SELECT p.*, JSON_AGG(
+        DISTINCT JSONB_BUILD_OBJECT(
         'url',pi.url,
         'is_main',pi.is_main
-        )) AS images FROM product AS p
-        INNER JOIN product_images AS pi ON p.id = pi.product_id`
+        )) AS images ,
+         JSON_AGG(
+         DISTINCT JSONB_BUILD_OBJECT(
+        'size',pv.size,
+        'stock',pv.stock 
+        )) AS stocks FROM product AS p
+        INNER JOIN product_images AS pi ON p.id = pi.product_id
+        INNER JOIN product_variants as pv ON p.id = pv.product_id
+        `
         let num = 1
         let values = []
 
