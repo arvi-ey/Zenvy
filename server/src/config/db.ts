@@ -20,7 +20,7 @@ export const pool = new Pool({
 });
 
 pool.on("connect", () => {
-    console.log("✅ PostgreSQL Connected");
+    console.log(`✅Database ${process.env.DB_NAME} Connected`);
 });
 
 pool.on("error", (err) => {

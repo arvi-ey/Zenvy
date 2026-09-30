@@ -11,3 +11,10 @@ BEFORE INSERT OR UPDATE OF name
 ON product_category
 FOR EACH ROW
 EXECUTE FUNCTION set_slug();
+
+--trigger for category slug
+CREATE TRIGGER product_category_slug_trigger
+BEFORE INSERT OR UPDATE OF name
+ON product_category
+FOR EACH ROW
+EXECUTE FUNCTION set_product_category_slug();

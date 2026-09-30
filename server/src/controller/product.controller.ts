@@ -8,6 +8,7 @@ import AppError from "../utils/AppError.js";
 
 
 
+
 export const addProduct = catchAsync(async (req: Request, res: Response, next: NextFunction) => {
 
 
@@ -21,8 +22,8 @@ export const addProduct = catchAsync(async (req: Request, res: Response, next: N
         )
     }
 
-    // for (let index in demoProducts) {
-    //     const response = await AddProduct(demoProducts[index])
+    // for (let index in Demodata) {
+    //     const response = await AddProduct(Demodata[index])
     // }
     // res.send("DATA SUCCESS")
 
@@ -97,7 +98,7 @@ export const getProductDetails = catchAsync(async (req: Request, res: Response, 
 
 // {
 
-//     "name": "OFFICIAL LOONEY TUNES MERCHANDISE",
+//     "name": "OFFICIAL LOONEY TUNES converterMERCHANDISE",
 //         "description": "Men's Gardenia Who Cares Graphic Printed Oversized T-shirt",
 //             "category_id": 21,
 //                 "stock": 110,

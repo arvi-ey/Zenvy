@@ -17,6 +17,18 @@ END;
 $$;
 
 
+-- Unique slug for category
+CREATE OR REPLACE FUNCTION set_product_category_slug()
+RETURNS TRIGGER
+LANGUAGE plpgsql
+AS $$
+BEGIN
+    NEW.slug := generate_slug(NEW.name);
+
+    RETURN NEW;
+END;
+$$;
+
 --set unique slug function
 CREATE OR REPLACE FUNCTION set_slug()
 RETURNS TRIGGER
