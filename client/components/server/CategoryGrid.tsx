@@ -32,6 +32,7 @@ export function CategoryGrid() {
     fetchcategories()
   }, [])
 
+  console.log(categories, "categories")
 
   return (
     <section className="py-8 sm:py-10 lg:py-12">

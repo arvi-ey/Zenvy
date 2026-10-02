@@ -73,7 +73,7 @@ const MOCK_PRODUCT: Product = {
     slug: "grey-textured-stripes-shirt-e3454abe",
     description: "Maintain a timeless look as you transition between smart and casual in timeless style with snitch's new season collection of men's shirts. No matter what your style is, you need this half sleeve box fit shirt in your wardrobe. It is made from 100% polyester and features a roomy cut for a casual style.",
     category_id: 23,
-    price: "699.00",
+    price: "699MOCK_PRODUCT.00",
     status: "active",
     created_at: "2026-09-05T07:03:24.650Z",
     updated_at: "2026-09-10T16:05:48.643Z",
@@ -288,6 +288,7 @@ const SizeSelector: React.FC<SizeSelectorProps> = ({ selected, onSelect }) => (
 
 
 const ProductDetailPage: React.FC = () => {
+    // console.log("🔥 PRODUCT DETAIL COMPONENT RENDERED");
     const { getProductDetails, productsLoading } = useProducts()
     const [loading, setLoading] = useState<boolean>(true);
     const [product, setProduct] = useState<Product | null>(null);
@@ -296,17 +297,27 @@ const ProductDetailPage: React.FC = () => {
     const [quantity, setQuantity] = useState<number>(1);
     const [isWishlisted, setIsWishlisted] = useState<boolean>(false);
     const params = useParams()
-    console.log(typeof params)
+    console.log(params, "Params")
+
 
 
     useEffect(() => {
+        console.log("🔥 EFFECT RUNNING");
+        console.log("🔥 PARAMS:", params);
+        console.log("🔥 SLUG:", params.slug);
+    }, []);
+
+    useEffect(() => {
         const getDetails = async () => {
+            console.log(params.slug, "PARAMS SLUG")
             if (!params.slug) return
             const data = await getProductDetails(params.slug)
             if (data) setProduct(data)
         }
         getDetails()
     }, [params]);
+
+    console.log(product, "Product")
 
 
     const goToPrev = useCallback(() => {
@@ -332,13 +343,13 @@ const ProductDetailPage: React.FC = () => {
         return () => window.removeEventListener('keydown', handleKeyDown);
     }, [loading, product, goToPrev, goToNext]);
 
-    if (productsLoading || !product) return <ProductDetailSkeleton />;
+    if (productsLoading && !product) return <ProductDetailSkeleton />;
 
-    const mainImage = product.images[selectedImage];
-    const price = parseFloat(product.price);
+    const mainImage = product?.images[selectedImage];
+    const price = parseFloat(product?.price);
     const originalPrice = price * 1.6; // Mock original price for discount display
     const discountPercent = Math.round(((originalPrice - price) / originalPrice) * 100);
-    const stockCount = parseInt(product.stock, 10);
+    const stockCount = parseInt(product?.stock, 10);
     const inStock = stockCount > 0;
 
     return (
@@ -352,7 +363,7 @@ const ProductDetailPage: React.FC = () => {
                     <ChevronRight className="h-3.5 w-3.5" />
                     <a href="/men/shirts" className="transition-colors hover:text-foreground">Shirts</a>
                     <ChevronRight className="h-3.5 w-3.5" />
-                    <span className="truncate font-medium text-foreground">{product.name}</span>
+                    <span className="truncate font-medium text-foreground">{product?.name}</span>
                 </nav>
 
                 <div className="grid grid-cols-1 gap-10 lg:grid-cols-2 lg:gap-16">
@@ -360,7 +371,7 @@ const ProductDetailPage: React.FC = () => {
                     <div className="flex flex-col-reverse gap-4 sm:flex-row">
                         {/* Thumbnails */}
                         <ThumbnailGallery
-                            images={product.images}
+                            images={product?.images}
                             selectedIndex={selectedImage}
                             onSelect={setSelectedImage}
                         />
@@ -368,9 +379,9 @@ const ProductDetailPage: React.FC = () => {
                         {/* Main Image */}
                         <div className="group relative aspect-[4/5] w-full flex-1 overflow-hidden rounded-2xl bg-muted">
                             <img
-                                key={mainImage.url}
-                                src={mainImage.url}
-                                alt={product.name}
+                                key={mainImage?.url}
+                                src={mainImage?.url}
+                                alt={product?.name}
                                 className="h-full w-full object-cover transition-all duration-500 ease-out"
                             />
 

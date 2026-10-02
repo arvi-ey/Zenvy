@@ -128,6 +128,7 @@ export class ProductModel {
         }
         query += ` GROUP BY p.id;`
         const { rows } = await pool.query(query, values)
+        console.log(rows)
 
         return rows[0] ?? null;
 

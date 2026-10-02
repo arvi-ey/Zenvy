@@ -191,3 +191,19 @@ ON DELETE CASCADE,
  CONSTRAINT unique_product_size
         UNIQUE (product_id, size)
 );
+
+
+--auto insert products
+-- INSERT INTO product_variants (product_id, size, stock)
+-- SELECT
+--     p.id,
+--     s.size,
+--     CASE
+--         WHEN random() < 0.20 THEN 0
+--         WHEN random() < 0.35 THEN (1 + floor(random() * 5))::int
+--         WHEN random() < 0.65 THEN (6 + floor(random() * 25))::int
+--         ELSE (31 + floor(random() * 90))::int
+--     END
+-- FROM product p
+-- CROSS JOIN (VALUES ('S'), ('M'), ('L'), ('XL'), ('XXL')) AS s(size)
+-- WHERE p.deleted_at IS NULL;

@@ -24,7 +24,7 @@ export default function CollectionPage() {
   )
 
   const params = useParams()
-  console.log(params, "PARAMS")
+  // console.log(params, "PARAMS")
 
   const { getProducts, productsLoading } = useProducts()
   const [count, setCount] = useState(1)
@@ -162,6 +162,8 @@ export default function CollectionPage() {
                   key={product.id}
                   onMouseEnter={() => setMouseEntered({ entered: true, item: product.id })}
                   onClick={() => {
+                    console.log(product.slug)
+                    // return
                     setMouseEntered({ entered: false, item: null })
                     router.push(`/${product.slug}`)
 
