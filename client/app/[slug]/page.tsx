@@ -1,6 +1,7 @@
 "use client"
 
 import React, { useState, useEffect, useCallback } from 'react';
+import Link from 'next/link';
 import {
     ChevronLeft,
     ChevronRight,
@@ -12,16 +13,22 @@ import {
     Star,
     Minus,
     Plus,
-    ShoppingBag
+    ShoppingBag,
+    PackageX,
 } from 'lucide-react';
 
 import { useParams } from 'next/navigation';
 import useProducts from '@/hooks/useProducts';
 
-
+// ─── Types ────────────────────────────────────────────────────────────────────
 interface ProductImage {
     url: string;
     is_main: boolean;
+}
+
+interface ProductVariant {
+    size: string;
+    stock: number;
 }
 
 interface Product {
@@ -38,73 +45,17 @@ interface Product {
     stock: string;
     is_featured: boolean;
     images: ProductImage[];
+    stocks: ProductVariant[];
 }
 
-interface SkeletonBlockProps {
-    className?: string;
-}
-
-interface StarRatingProps {
-    rating?: number;
-    count?: number;
-}
-
-interface ThumbnailGalleryProps {
-    images: ProductImage[];
-    selectedIndex: number;
-    onSelect: (index: number) => void;
-}
-
-interface QuantitySelectorProps {
-    value: number;
-    onChange: (value: number) => void;
-    max?: number;
-}
-
-interface SizeSelectorProps {
-    selected: string;
-    onSelect: (size: string) => void;
-}
-
-
-const MOCK_PRODUCT: Product = {
-    id: 271,
-    name: "Grey Textured Stripes Shirt",
-    slug: "grey-textured-stripes-shirt-e3454abe",
-    description: "Maintain a timeless look as you transition between smart and casual in timeless style with snitch's new season collection of men's shirts. No matter what your style is, you need this half sleeve box fit shirt in your wardrobe. It is made from 100% polyester and features a roomy cut for a casual style.",
-    category_id: 23,
-    price: "699MOCK_PRODUCT.00",
-    status: "active",
-    created_at: "2026-09-05T07:03:24.650Z",
-    updated_at: "2026-09-10T16:05:48.643Z",
-    deleted_at: null,
-    stock: "57",
-    is_featured: false,
-    images: [
-        {
-            url: "https://www.snitch.co.in/cdn/shop/files/295014313658542e3afc806877753ff2.jpg?v=1731388711&width=1800",
-            is_main: true
-        },
-        {
-            url: "https://www.snitch.co.in/cdn/shop/files/983fe8e27a1aacdb3edcde42a6a02ea7.jpg?v=1731388711&width=1800",
-            is_main: false
-        },
-        {
-            url: "https://www.snitch.co.in/cdn/shop/files/42fd58682cd2425853cf0c2855d66d61.jpg?v=1731388711&width=1800",
-            is_main: false
-        }
-    ]
-};
-
-// ─── Skeleton Components ──────────────────────────────────────────────────────
-const SkeletonBlock: React.FC<SkeletonBlockProps> = ({ className = '' }) => (
+// ─── Skeleton ─────────────────────────────────────────────────────────────────
+const SkeletonBlock: React.FC<{ className?: string }> = ({ className = '' }) => (
     <div className={`animate-pulse rounded-lg bg-muted ${className}`} />
 );
 
 const ProductDetailSkeleton: React.FC = () => (
     <div className="min-h-screen bg-background">
         <div className="mx-auto max-w-7xl px-4 py-8 sm:px-6 lg:px-8">
-            {/* Breadcrumb skeleton */}
             <div className="mb-8 flex gap-2">
                 <SkeletonBlock className="h-4 w-16" />
                 <SkeletonBlock className="h-4 w-4" />
@@ -112,21 +63,15 @@ const ProductDetailSkeleton: React.FC = () => (
                 <SkeletonBlock className="h-4 w-4" />
                 <SkeletonBlock className="h-4 w-32" />
             </div>
-
             <div className="grid grid-cols-1 gap-10 lg:grid-cols-2 lg:gap-16">
-                {/* Left – Image Gallery Skeleton */}
                 <div className="flex flex-col-reverse gap-4 sm:flex-row">
-                    {/* Thumbnails */}
                     <div className="flex flex-row gap-3 sm:flex-col">
                         {[1, 2, 3].map((i) => (
                             <SkeletonBlock key={i} className="h-20 w-20 shrink-0 rounded-xl sm:h-24 sm:w-24" />
                         ))}
                     </div>
-                    {/* Main Image */}
                     <SkeletonBlock className="aspect-[4/5] w-full flex-1 rounded-2xl" />
                 </div>
-
-                {/* Right – Product Info Skeleton */}
                 <div className="flex flex-col gap-6">
                     <div>
                         <SkeletonBlock className="mb-3 h-4 w-24" />
@@ -159,8 +104,32 @@ const ProductDetailSkeleton: React.FC = () => (
     </div>
 );
 
-// ─── Star Rating Component ───────────────────────────────────────────────────
-const StarRating: React.FC<StarRatingProps> = ({ rating = 4.5, count = 128 }) => {
+// ─── Not Found ────────────────────────────────────────────────────────────────
+const ProductNotFound: React.FC = () => (
+    <div className="flex min-h-screen items-center justify-center bg-background px-4">
+        <div className="text-center">
+            <div className="mx-auto mb-4 flex h-16 w-16 items-center justify-center rounded-full bg-muted">
+                <PackageX className="h-8 w-8 text-muted-foreground" />
+            </div>
+            <h1 className="text-xl font-semibold text-foreground">Product not found</h1>
+            <p className="mt-2 text-sm text-muted-foreground">
+                The product you're looking for doesn't exist or has been removed.
+            </p>
+            <Link
+                href="/"
+                className="mt-6 inline-flex h-11 items-center justify-center rounded-xl bg-primary px-6 text-sm font-semibold text-primary-foreground transition hover:brightness-110"
+            >
+                Back to Home
+            </Link>
+        </div>
+    </div>
+);
+
+// ─── Star Rating ──────────────────────────────────────────────────────────────
+const StarRating: React.FC<{ rating?: number; count?: number }> = ({
+    rating = 4.5,
+    count = 128,
+}) => {
     const fullStars = Math.floor(rating);
     const hasHalf = rating % 1 >= 0.5;
 
@@ -190,8 +159,12 @@ const StarRating: React.FC<StarRatingProps> = ({ rating = 4.5, count = 128 }) =>
     );
 };
 
-
-const ThumbnailGallery: React.FC<ThumbnailGalleryProps> = ({ images, selectedIndex, onSelect }) => (
+// ─── Thumbnail Gallery ────────────────────────────────────────────────────────
+const ThumbnailGallery: React.FC<{
+    images: ProductImage[];
+    selectedIndex: number;
+    onSelect: (index: number) => void;
+}> = ({ images, selectedIndex, onSelect }) => (
     <div className="flex flex-row gap-3 sm:flex-col">
         {images.map((image, index) => (
             <button
@@ -224,168 +197,257 @@ const ThumbnailGallery: React.FC<ThumbnailGalleryProps> = ({ images, selectedInd
     </div>
 );
 
-
-const QuantitySelector: React.FC<QuantitySelectorProps> = ({ value, onChange, max = 99 }) => (
-    <div className="flex items-center rounded-xl border border-input bg-background">
-        <button
-            type="button"
-            onClick={() => onChange(Math.max(1, value - 1))}
-            disabled={value <= 1}
-            className="flex h-12 w-12 items-center justify-center text-muted-foreground transition-colors hover:text-foreground disabled:opacity-30"
-            aria-label="Decrease quantity"
-        >
-            <Minus className="h-4 w-4" />
-        </button>
-        <span className="flex h-12 w-12 items-center justify-center text-sm font-semibold tabular-nums">
-            {value}
-        </span>
-        <button
-            type="button"
-            onClick={() => onChange(Math.min(max, value + 1))}
-            disabled={value >= max}
-            className="flex h-12 w-12 items-center justify-center text-muted-foreground transition-colors hover:text-foreground disabled:opacity-30"
-            aria-label="Increase quantity"
-        >
-            <Plus className="h-4 w-4" />
-        </button>
-    </div>
-);
-
-
-const SIZE_OPTIONS = ['XS', 'S', 'M', 'L', 'XL', 'XXL'] as const;
-
-const SizeSelector: React.FC<SizeSelectorProps> = ({ selected, onSelect }) => (
-    <div>
-        <div className="mb-3 flex items-center justify-between">
-            <span className="text-sm font-medium text-foreground">Size</span>
+// ─── Quantity Selector ────────────────────────────────────────────────────────
+const QuantitySelector: React.FC<{
+    value: number;
+    onChange: (value: number) => void;
+    max?: number;
+}> = ({ value, onChange, max = 99 }) => {
+    const upper = Math.max(1, max);
+    return (
+        <div className="flex items-center rounded-xl border border-input bg-background">
             <button
                 type="button"
-                className="text-xs font-medium text-muted-foreground underline underline-offset-4 hover:text-foreground"
+                onClick={() => onChange(Math.max(1, value - 1))}
+                disabled={value <= 1}
+                className="flex h-12 w-12 items-center justify-center text-muted-foreground transition-colors hover:text-foreground disabled:opacity-30"
+                aria-label="Decrease quantity"
             >
-                Size Guide
+                <Minus className="h-4 w-4" />
+            </button>
+            <span className="flex h-12 w-12 items-center justify-center text-sm font-semibold tabular-nums">
+                {value}
+            </span>
+            <button
+                type="button"
+                onClick={() => onChange(Math.min(upper, value + 1))}
+                disabled={value >= upper}
+                className="flex h-12 w-12 items-center justify-center text-muted-foreground transition-colors hover:text-foreground disabled:opacity-30"
+                aria-label="Increase quantity"
+            >
+                <Plus className="h-4 w-4" />
             </button>
         </div>
-        <div className="flex flex-wrap gap-2.5">
-            {SIZE_OPTIONS.map((size) => (
+    );
+};
+
+const SizeSelector: React.FC<{
+    variants: ProductVariant[];
+    selected: string | null;
+    onSelect: (size: string, stock: number) => void;
+}> = ({ variants, selected, onSelect }) => {
+    if (!variants?.length) return null;
+
+    return (
+        <div>
+            <div className="mb-3 flex items-center justify-between">
+                <span className="text-sm font-medium text-foreground">Size</span>
                 <button
-                    key={size}
                     type="button"
-                    onClick={() => onSelect(size)}
-                    className={`
-                        flex h-11 min-w-[3rem] items-center justify-center rounded-xl border text-sm font-medium transition-all duration-200
-                        ${selected === size
-                            ? 'border-primary bg-primary text-primary-foreground shadow-sm'
-                            : 'border-input bg-background text-foreground hover:border-foreground/40'
-                        }
-                    `}
+                    className="text-xs font-medium text-muted-foreground underline underline-offset-4 hover:text-foreground"
                 >
-                    {size}
+                    Size Guide
                 </button>
-            ))}
+            </div>
+
+            <div className="flex flex-wrap gap-3">
+                {variants.map((variant) => {
+                    const disabled = variant.stock === 0;
+                    const isSelected = selected === variant.size;
+                    const isLowStock = !disabled && variant.stock <= 5;
+
+                    return (
+                        <button
+                            key={variant.size}
+                            type="button"
+                            disabled={disabled}
+                            onClick={() => !disabled && onSelect(variant.size, variant.stock)}
+                            aria-label={
+                                disabled
+                                    ? `${variant.size} — out of stock`
+                                    : `${variant.size} — ${variant.stock} in stock`
+                            }
+                            aria-pressed={isSelected}
+                            className={`
+                                group relative flex h-14 min-w-[3.5rem] flex-col items-center justify-center
+                                rounded-xl border px-3 text-sm font-semibold transition-all duration-200
+                                ${isSelected
+                                    ? 'border-primary bg-primary text-primary-foreground shadow-sm'
+                                    : 'border-input bg-background text-foreground hover:border-foreground/40'
+                                }
+                                ${disabled
+                                    ? 'cursor-not-allowed opacity-40 hover:border-input'
+                                    : ''
+                                }
+                            `}
+                        >
+                            <span className={disabled ? 'line-through' : ''}>
+                                {variant.size}
+                            </span>
+
+                            {/* Stock hint under size — fixed height to prevent layout shift */}
+                            <span
+                                className={`mt-0.5 text-[10px] font-medium leading-none ${isSelected
+                                    ? 'text-primary-foreground/80'
+                                    : isLowStock
+                                        ? 'text-amber-600 dark:text-amber-400'
+                                        : 'text-muted-foreground'
+                                    }`}
+                            >
+                                {disabled
+                                    ? 'out of stock'
+                                    : isLowStock
+                                        ? `${variant.stock} left`
+                                        : `${variant.stock} in stock`
+                                }
+                            </span>
+                        </button>
+                    );
+                })}
+            </div>
         </div>
-    </div>
-);
+    );
+};
 
-
+// ─── Main Component ───────────────────────────────────────────────────────────
 const ProductDetailPage: React.FC = () => {
-    // console.log("🔥 PRODUCT DETAIL COMPONENT RENDERED");
-    const { getProductDetails, productsLoading } = useProducts()
-    const [loading, setLoading] = useState<boolean>(true);
+    const { getProductDetails, productsLoading } = useProducts();
+    const params = useParams();
+    const slug = params.slug as string;
+
     const [product, setProduct] = useState<Product | null>(null);
-    const [selectedImage, setSelectedImage] = useState<number>(0);
-    const [selectedSize, setSelectedSize] = useState<string>('M');
-    const [quantity, setQuantity] = useState<number>(1);
-    const [isWishlisted, setIsWishlisted] = useState<boolean>(false);
-    const params = useParams()
-    console.log(params, "Params")
+    const [notFound, setNotFound] = useState(false);
+    const [selectedImage, setSelectedImage] = useState(0);
+    const [selectedSize, setSelectedSize] = useState<string | null>(null);
+    const [availableStock, setavailableStock] = useState<number>()
+    const [quantity, setQuantity] = useState(1);
+    const [isWishlisted, setIsWishlisted] = useState(false);
 
+    const inStock = true
 
-
-    useEffect(() => {
-        console.log("🔥 EFFECT RUNNING");
-        console.log("🔥 PARAMS:", params);
-        console.log("🔥 SLUG:", params.slug);
-    }, []);
+    // Fetch product when slug changes
 
     useEffect(() => {
-        const getDetails = async () => {
-            console.log(params.slug, "PARAMS SLUG")
-            if (!params.slug) return
-            const data = await getProductDetails(params.slug)
-            if (data) setProduct(data)
-        }
-        getDetails()
-    }, [params]);
+        console.log(selectedSize)
 
-    console.log(product, "Product")
+    }, [selectedSize])
+    useEffect(() => {
+        if (!slug) return;
+        let cancelled = false;
 
+        (async () => {
+            setNotFound(false);
+            const data = await getProductDetails(slug);
+            if (cancelled) return;
+            if (data) {
+                setProduct(data);
+                setSelectedImage(0);
+                setQuantity(1);
+            } else {
+                setProduct(null);
+                setNotFound(true);
+            }
+        })();
+
+        return () => {
+            cancelled = true;
+        };
+        // eslint-disable-next-line react-hooks/exhaustive-deps
+    }, [slug]);
+
+    // Auto-select first in-stock variant when product loads
+    useEffect(() => {
+        if (!product?.stocks?.length) return;
+        const firstInStock = product.stocks.find((v) => v.stock > 0);
+        setSelectedSize(firstInStock?.size ?? product.stocks[0].size);
+        setavailableStock(firstInStock?.stock ?? product.stocks[0].stock)
+
+    }, [product]);
 
     const goToPrev = useCallback(() => {
         if (!product) return;
-        setSelectedImage((prev) => (prev === 0 ? product.images.length - 1 : prev - 1));
+        setSelectedImage((prev) =>
+            prev === 0 ? product.images.length - 1 : prev - 1
+        );
     }, [product]);
 
     const goToNext = useCallback(() => {
         if (!product) return;
-        setSelectedImage((prev) => (prev === product.images.length - 1 ? 0 : prev + 1));
+        setSelectedImage((prev) =>
+            prev === product.images.length - 1 ? 0 : prev + 1
+        );
     }, [product]);
 
-
     useEffect(() => {
-        if (loading || !product) return;
-
-        const handleKeyDown = (e: KeyboardEvent): void => {
+        if (!product) return;
+        const handler = (e: KeyboardEvent) => {
             if (e.key === 'ArrowLeft') goToPrev();
             if (e.key === 'ArrowRight') goToNext();
         };
+        window.addEventListener('keydown', handler);
+        return () => window.removeEventListener('keydown', handler);
+    }, [product, goToPrev, goToNext]);
 
-        window.addEventListener('keydown', handleKeyDown);
-        return () => window.removeEventListener('keydown', handleKeyDown);
-    }, [loading, product, goToPrev, goToNext]);
-
+    // ─── Render states ────────────────────────────────────────────────────────
     if (productsLoading && !product) return <ProductDetailSkeleton />;
+    if (notFound || !product) return <ProductNotFound />;
 
-    const mainImage = product?.images[selectedImage];
-    const price = parseFloat(product?.price);
-    const originalPrice = price * 1.6; // Mock original price for discount display
-    const discountPercent = Math.round(((originalPrice - price) / originalPrice) * 100);
-    const stockCount = parseInt(product?.stock, 10);
-    const inStock = stockCount > 0;
+
+
+
+    const mainImage = product.images[selectedImage] ?? product.images[0];
+    const price = parseFloat(product.price) || 0;
+    const totalPrice = price * quantity;
+
+    const handleSizeSelect = (size: string, stock: number) => {
+        setSelectedSize(size)
+        setavailableStock(stock)
+        setQuantity(1);
+    };
 
     return (
         <div className="min-h-screen bg-background">
             <div className="mx-auto max-w-7xl px-4 py-8 sm:px-6 lg:px-8">
-                {/* ── Breadcrumb ─────────────────────────────────────────────── */}
+                {/* Breadcrumb */}
                 <nav className="mb-8 flex items-center gap-2 text-sm text-muted-foreground">
-                    <a href="/" className="transition-colors hover:text-foreground">Home</a>
+                    <Link href="/" className="transition-colors hover:text-foreground">
+                        Home
+                    </Link>
                     <ChevronRight className="h-3.5 w-3.5" />
-                    <a href="/men" className="transition-colors hover:text-foreground">Men</a>
+                    <Link href="/men" className="transition-colors hover:text-foreground">
+                        Men
+                    </Link>
                     <ChevronRight className="h-3.5 w-3.5" />
-                    <a href="/men/shirts" className="transition-colors hover:text-foreground">Shirts</a>
+                    <Link href="/men/shirts" className="transition-colors hover:text-foreground">
+                        Shirts
+                    </Link>
                     <ChevronRight className="h-3.5 w-3.5" />
-                    <span className="truncate font-medium text-foreground">{product?.name}</span>
+                    <span className="truncate font-medium text-foreground">{product.name}</span>
                 </nav>
 
                 <div className="grid grid-cols-1 gap-10 lg:grid-cols-2 lg:gap-16">
-                    {/* ── Left Column: Image Gallery ───────────────────────────── */}
+                    {/* ── Left: Image Gallery ──────────────────────────────── */}
                     <div className="flex flex-col-reverse gap-4 sm:flex-row">
-                        {/* Thumbnails */}
                         <ThumbnailGallery
-                            images={product?.images}
+                            images={product.images}
                             selectedIndex={selectedImage}
                             onSelect={setSelectedImage}
                         />
 
-                        {/* Main Image */}
                         <div className="group relative aspect-[4/5] w-full flex-1 overflow-hidden rounded-2xl bg-muted">
-                            <img
-                                key={mainImage?.url}
-                                src={mainImage?.url}
-                                alt={product?.name}
-                                className="h-full w-full object-cover transition-all duration-500 ease-out"
-                            />
+                            {mainImage ? (
+                                <img
+                                    key={mainImage.url}
+                                    src={mainImage.url}
+                                    alt={product.name}
+                                    className="h-full w-full object-cover transition-all duration-500 ease-out"
+                                />
+                            ) : (
+                                <div className="flex h-full items-center justify-center text-sm text-muted-foreground">
+                                    No image
+                                </div>
+                            )}
 
-                            {/* Navigation Arrows */}
                             {product.images.length > 1 && (
                                 <>
                                     <button
@@ -407,13 +469,7 @@ const ProductDetailPage: React.FC = () => {
                                 </>
                             )}
 
-                            {/* Badges */}
                             <div className="absolute left-4 top-4 flex flex-col gap-2">
-                                {discountPercent > 0 && (
-                                    <span className="rounded-full bg-destructive px-3 py-1 text-xs font-bold uppercase tracking-wider text-destructive-foreground shadow-sm">
-                                        {discountPercent}% OFF
-                                    </span>
-                                )}
                                 {product.is_featured && (
                                     <span className="rounded-full bg-amber-500 px-3 py-1 text-xs font-bold uppercase tracking-wider text-white shadow-sm">
                                         Featured
@@ -421,16 +477,16 @@ const ProductDetailPage: React.FC = () => {
                                 )}
                             </div>
 
-                            {/* Image counter */}
-                            <div className="absolute bottom-4 right-4 rounded-full bg-background/80 px-3 py-1 text-xs font-medium tabular-nums text-foreground backdrop-blur-sm">
-                                {selectedImage + 1} / {product.images.length}
-                            </div>
+                            {product.images.length > 0 && (
+                                <div className="absolute bottom-4 right-4 rounded-full bg-background/80 px-3 py-1 text-xs font-medium tabular-nums text-foreground backdrop-blur-sm">
+                                    {selectedImage + 1} / {product.images.length}
+                                </div>
+                            )}
                         </div>
                     </div>
 
-                    {/* ── Right Column: Product Info ───────────────────────────── */}
+                    {/* ── Right: Product Info ─────────────────────────────── */}
                     <div className="flex flex-col gap-6">
-                        {/* Title & Rating */}
                         <div>
                             <p className="mb-1 text-xs font-semibold uppercase tracking-widest text-muted-foreground">
                                 Snitch Collection
@@ -443,58 +499,44 @@ const ProductDetailPage: React.FC = () => {
                             </div>
                         </div>
 
-                        {/* Price */}
                         <div className="flex items-baseline gap-3">
                             <span className="text-3xl font-bold tracking-tight text-foreground">
                                 ₹{price.toLocaleString('en-IN', { minimumFractionDigits: 0 })}
                             </span>
-                            <span className="text-lg text-muted-foreground line-through">
-                                ₹{originalPrice.toLocaleString('en-IN', { minimumFractionDigits: 0 })}
-                            </span>
-                            <span className="rounded-md bg-green-100 px-2 py-0.5 text-xs font-semibold text-green-700 dark:bg-green-900/30 dark:text-green-400">
-                                Save {discountPercent}%
-                            </span>
                         </div>
 
-                        {/* Divider */}
                         <div className="h-px w-full bg-border" />
 
-                        {/* Description */}
                         <p className="text-sm leading-relaxed text-muted-foreground">
                             {product.description}
                         </p>
 
-                        {/* Size Selector */}
-                        <SizeSelector selected={selectedSize} onSelect={setSelectedSize} />
+                        {product.stocks?.length > 0 && (
+                            <SizeSelector
+                                variants={product.stocks}
+                                selected={selectedSize}
+                                onSelect={handleSizeSelect}
 
-                        {/* Quantity & Stock */}
+                            />
+                        )}
+
                         <div>
-                            <div className="mb-3 flex items-center justify-between">
-                                <span className="text-sm font-medium text-foreground">Quantity</span>
-                                {inStock ? (
-                                    <span className="flex items-center gap-1.5 text-xs font-medium text-green-600 dark:text-green-400">
-                                        <span className="relative flex h-2 w-2">
-                                            <span className="absolute inline-flex h-full w-full animate-ping rounded-full bg-green-400 opacity-75" />
-                                            <span className="relative inline-flex h-2 w-2 rounded-full bg-green-500" />
-                                        </span>
-                                        In Stock ({product.stock} left)
-                                    </span>
-                                ) : (
-                                    <span className="text-xs font-medium text-destructive">Out of Stock</span>
-                                )}
-                            </div>
+
                             <div className="flex items-center gap-4">
-                                <QuantitySelector value={quantity} onChange={setQuantity} max={stockCount} />
+                                <QuantitySelector
+                                    value={quantity}
+                                    onChange={setQuantity}
+                                    max={availableStock || 1}
+                                />
                                 <span className="text-sm text-muted-foreground">
                                     Subtotal:{' '}
                                     <span className="font-semibold text-foreground">
-                                        ₹{(price * quantity).toLocaleString('en-IN')}
+                                        ₹{totalPrice.toLocaleString('en-IN')}
                                     </span>
                                 </span>
                             </div>
                         </div>
 
-                        {/* Action Buttons */}
                         <div className="flex gap-3">
                             <button
                                 type="button"
@@ -534,7 +576,6 @@ const ProductDetailPage: React.FC = () => {
                             </button>
                         </div>
 
-                        {/* Trust Badges */}
                         <div className="grid grid-cols-3 gap-3 rounded-2xl border border-border bg-muted/40 p-4">
                             <div className="flex flex-col items-center gap-2 text-center">
                                 <Truck className="h-5 w-5 text-muted-foreground" />
@@ -556,16 +597,13 @@ const ProductDetailPage: React.FC = () => {
                             </div>
                         </div>
 
-                        {/* Product Meta */}
                         <div className="space-y-1.5 text-xs text-muted-foreground">
                             <p>
                                 <span className="font-medium text-foreground">SKU:</span> {product.slug}
                             </p>
                             <p>
-                                <span className="font-medium text-foreground">Category:</span> Men&apos;s Shirts
-                            </p>
-                            <p>
-                                <span className="font-medium text-foreground">Material:</span> 100% Polyester
+                                <span className="font-medium text-foreground">Category ID:</span>{' '}
+                                {product.category_id}
                             </p>
                         </div>
                     </div>
