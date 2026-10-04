@@ -149,14 +149,23 @@ create table cart(
 id SERIAL PRIMARY KEY,
 product_id INT NOT NULL,
 product_count INT NOT NULL DEFAULT 1 CHECK (product_count >0),
-user_id INT NOT NULL,
+user_id INT,
+guest_token TEXT, 
 created_at TIMESTAMPTZ NOT NULL DEFAULT CURRENT_TIMESTAMP,
 updated_at TIMESTAMPTZ NOT NULL DEFAULT CURRENT_TIMESTAMP,
 deleted_at TIMESTAMPTZ DEFAULT NULL,
 CONSTRAINT product_fkey FOREIGN KEY (product_id) REFERENCES product(id),
-CONSTRAINT users_fkey FOREIGN KEY (user_id) REFERENCES users(id)
+CONSTRAINT users_fkey FOREIGN KEY (user_id) REFERENCES users(id),
+CONSTRAINT cart_owner_chk CHECK (
+        (user_id IS NOT NULL AND guest_token IS NULL)
+     OR (user_id IS NULL     AND guest_token IS NOT NULL)
+    )
 );
 
+CREATE UNIQUE INDEX cart_user_product_unique
+ON cart (user_id, product_id)
+WHERE user_id IS NOT NULL
+AND deleted_at IS NULL;
 
 
 --reviw table
