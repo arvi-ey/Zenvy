@@ -5,10 +5,10 @@ import Image from 'next/image'
 import { X, Plus, Minus, ShoppingBag } from 'lucide-react'
 import { useAppDispatch, useAppSelector } from '@/store/hooks'
 import { setCartOpen } from '@/store/slices/uiSlice'
+import { useRemoveFromCart } from '@/hooks/useRemoveFromCart'
 import { 
   selectCartItems, 
   selectCartTotal, 
-  removeFromCart, 
   updateQuantity 
 } from '@/store/slices/cartSlice'
 import { Button } from '@/components/ui/button'
@@ -19,6 +19,7 @@ export function CartDrawer() {
   const isOpen = useAppSelector((state) => state.ui.isCartOpen)
   const items = useAppSelector(selectCartItems)
   const total = useAppSelector(selectCartTotal)
+  const { removeItem, removingProductId } = useRemoveFromCart()
 
   const formatPrice = (price: number) => {
     return new Intl.NumberFormat('en-US', {
@@ -101,15 +102,8 @@ export function CartDrawer() {
                           </p>
                         </div>
                         <button
-                          onClick={() =>
-                            dispatch(
-                              removeFromCart({
-                                productId: item.product.id,
-                                selectedSize: item.selectedSize,
-                                selectedColor: item.selectedColor,
-                              })
-                            )
-                          }
+                          onClick={() => removeItem(item.product.id)}
+                          disabled={removingProductId === item.product.id}
                           className="text-muted-foreground transition-colors hover:text-foreground"
                           aria-label="Remove item"
                         >

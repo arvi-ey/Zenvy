@@ -3,7 +3,7 @@
 import { useState } from 'react'
 import { Star, Heart, Truck, RotateCcw, Shield, Minus, Plus } from 'lucide-react'
 import { useAppDispatch, useAppSelector } from '@/store/hooks'
-import { addToCart } from '@/store/slices/cartSlice'
+import { useAddToCart } from '@/hooks/useAddToCart'
 import { toggleWishlist, selectIsInWishlist } from '@/store/slices/wishlistSlice'
 import { setCartOpen } from '@/store/slices/uiSlice'
 import { Button } from '@/components/ui/button'
@@ -16,6 +16,7 @@ interface ProductInfoProps {
 
 export function ProductInfo({ product }: ProductInfoProps) {
   const dispatch = useAppDispatch()
+  const { addItem, isAdding } = useAddToCart()
   const isWishlisted = useAppSelector(selectIsInWishlist(product.id))
   const [selectedSize, setSelectedSize] = useState(product.sizes[0]?.value || '')
   const [selectedColor, setSelectedColor] = useState(product.colors[0]?.name || '')
@@ -33,29 +34,16 @@ export function ProductInfo({ product }: ProductInfoProps) {
     ? Math.round(((product.originalPrice - product.price) / product.originalPrice) * 100)
     : 0
 
-  const handleAddToCart = () => {
-    dispatch(
-      addToCart({
-        product,
-        quantity,
-        selectedSize,
-        selectedColor,
-      })
-    )
-    dispatch(setCartOpen(true))
+  const handleAddToCart = async () => {
+    if (await addItem({ product, quantity, selectedSize, selectedColor })) {
+      dispatch(setCartOpen(true))
+    }
   }
 
-  const handleBuyNow = () => {
-    dispatch(
-      addToCart({
-        product,
-        quantity,
-        selectedSize,
-        selectedColor,
-      })
-    )
-    // In a real app, redirect to checkout
-    dispatch(setCartOpen(true))
+  const handleBuyNow = async () => {
+    if (await addItem({ product, quantity, selectedSize, selectedColor })) {
+      dispatch(setCartOpen(true))
+    }
   }
 
   return (
@@ -193,7 +181,8 @@ export function ProductInfo({ product }: ProductInfoProps) {
           </button>
           <span className="w-8 text-center font-medium">{quantity}</span>
           <button
-            onClick={() => setQuantity(quantity + 1)}
+            onClick={() => setQuantity(Math.min(10, quantity + 1))}
+            disabled={quantity >= 10}
             className="flex h-10 w-10 items-center justify-center rounded-md border border-border transition-colors hover:bg-muted"
             aria-label="Increase quantity"
           >
@@ -204,10 +193,10 @@ export function ProductInfo({ product }: ProductInfoProps) {
 
       {/* Actions */}
       <div className="mt-6 flex flex-col gap-3 sm:flex-row">
-        <Button onClick={handleAddToCart} className="flex-1" size="lg">
+        <Button onClick={handleAddToCart} disabled={isAdding} className="flex-1" size="lg">
           Add to Cart
         </Button>
-        <Button onClick={handleBuyNow} variant="secondary" className="flex-1" size="lg">
+        <Button onClick={handleBuyNow} disabled={isAdding} variant="secondary" className="flex-1" size="lg">
           Buy Now
         </Button>
         <Button

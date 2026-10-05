@@ -22,25 +22,46 @@ declare global {
 
 const ACCESS_COOKIE = "access_token";
 
-export function requireAuth(req: Request, _res: Response, next: NextFunction) {
+function authenticate(req: Request): boolean {
     const token = req.cookies?.[ACCESS_COOKIE];
 
     if (!token) {
-        return next(new AppError("Authentication is required", 401));
+        return false;
     }
+
+    let payload: AuthPayload;
     try {
-        const payload = jwt.verify(token, process.env.JWT_ACCESS_SECRET!) as AuthPayload;
-        req.user = {
-            id: payload.id,
-            email: payload.email,
-            role: payload.role,
-            firstName: payload.firstName,
-            lastName: payload.lastName,
-        };
-        return next();
+        payload = jwt.verify(token, process.env.JWT_ACCESS_SECRET!) as AuthPayload;
     } catch {
-
-        return next(new AppError("Invalid or expired token", 401));
+        throw new AppError("Invalid or expired token", 401);
     }
 
+    req.user = {
+        id: payload.id,
+        email: payload.email,
+        role: payload.role,
+        firstName: payload.firstName,
+        lastName: payload.lastName,
+    };
+    return true;
+}
+
+export function optionalAuth(req: Request, _res: Response, next: NextFunction) {
+    try {
+        authenticate(req);
+        return next();
+    } catch (error) {
+        return next(error);
+    }
+}
+
+export function requireAuth(req: Request, _res: Response, next: NextFunction) {
+    try {
+        if (!authenticate(req)) {
+            throw new AppError("Authentication is required", 401);
+        }
+        return next();
+    } catch (error) {
+        return next(error);
+    }
 }

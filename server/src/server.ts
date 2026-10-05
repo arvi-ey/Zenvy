@@ -6,13 +6,29 @@ import cookieParser from "cookie-parser";
 import { connectDB } from "./config/db.js";
 import ProductCategoryRouter from "./routes/productcategory.route.js"
 import ProductRouter from "./routes/product.route.js"
+import CartRouter from "./routes/cart.route.js"
 
 import fs from "node:fs";
 
 const app = express();
 
 app.use(cookieParser());
-app.use(cors());
+const frontendOrigin = env.NODE_ENV === "production"
+    ? env.FRONTEND_BASE_URL_PROD
+    : env.FRONTEND_BASE_URL_DEV;
+const allowedOrigins = new Set([new URL(frontendOrigin).origin]);
+
+if (env.NODE_ENV !== "production") {
+    allowedOrigins.add("http://localhost:3000");
+    allowedOrigins.add("http://127.0.0.1:3000");
+}
+
+app.use(cors({
+    origin: (origin, callback) => {
+        callback(null, !origin || allowedOrigins.has(origin));
+    },
+    credentials: true,
+}));
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
 
@@ -32,6 +48,7 @@ const PORT = env.PORT || 5000;
 //Routes
 app.use(`${env.API_VERSION}/product-category`, ProductCategoryRouter)
 app.use(`${env.API_VERSION}/product`, ProductRouter)
+app.use(`${env.API_VERSION}/cart`, CartRouter)
 
 
 app.use(globalErrorHandler)

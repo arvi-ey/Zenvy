@@ -3,7 +3,6 @@
 import { useEffect, useState } from "react"
 import Image from "next/image"
 import Link from "next/link"
-import { useParams } from "next/navigation"
 
 import useProducts from "@/hooks/useProducts"
 import { useAppDispatch, useAppSelector } from "@/store/hooks"
@@ -23,44 +22,38 @@ export default function ProductSection() {
     (state) => state.product
   )
 
-
-
   const { getProducts, productsLoading } = useProducts()
   const [count, setCount] = useState(1)
   const [mouseentered, setMouseEntered] = useState<hoveredItem>()
-  const [noproduct, setNoproduct] = useState<boolean>(false)
-
-
 
   useEffect(() => {
     let cancelled = false
 
     const fetchProducts = async () => {
-      const data = await getProducts({
-
+      let data = await getProducts({
         orderBy: 'ASC',
         page: count,
         is_featured: true,
         limit: 10
       })
 
-      if (cancelled) return   // <-- ignore stale responses
+      if (cancelled) return
 
-      if (data && data.length > 0) {
-        if (count === 1) dispatch(setProducts(data))
-        else dispatch(appendProducts(data))
-      } else {
-        setNoproduct(true)
+      if (data === null) return
+
+      if (data.length === 0) {
+        data = await getProducts({ orderBy: 'ASC', page: count, limit: 10 })
       }
+
+      if (cancelled || data === null) return
+      if (count === 1) dispatch(setProducts(data))
+      else dispatch(appendProducts(data))
     }
 
     fetchProducts()
 
-    return () => { cancelled = true }   // <-- cleanup
-  }, [count, dispatch])       // note: do NOT add getProducts
-
-
-
+    return () => { cancelled = true }
+  }, [count, dispatch, getProducts])
 
   return (
     <section className="py-8 sm:py-10 lg:py-12">
@@ -134,7 +127,9 @@ export default function ProductSection() {
                   <div className="aspect-[4/5] overflow-hidden bg-gray-100 dark:bg-gray-800">
                     {mainImage ? (
                       <Image
-                        src={mouseentered?.entered && mouseentered.item == product.id ? product.images[1].url : product.images[0].url}
+                        src={mouseentered?.entered && mouseentered.item == product.id
+                          ? (product.images[1] ?? mainImage).url
+                          : mainImage.url}
                         alt={product.name}
                         width={500}
                         height={625}
@@ -187,6 +182,11 @@ export default function ProductSection() {
             })}
         </div>
 
+        {!productsLoading && products.length === 0 && (
+            <p className="py-12 text-center text-muted-foreground">
+              No products are available right now.
+            </p>
+        )}
 
       </div>
     </section>

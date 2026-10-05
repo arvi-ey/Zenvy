@@ -2,7 +2,7 @@
 
 import { ShoppingBag } from 'lucide-react'
 import { useAppDispatch } from '@/store/hooks'
-import { addToCart } from '@/store/slices/cartSlice'
+import { useAddToCart } from '@/hooks/useAddToCart'
 import { setCartOpen } from '@/store/slices/uiSlice'
 import { Button } from '@/components/ui/button'
 import type { Product } from '@/types'
@@ -13,6 +13,7 @@ interface MobileAddToCartProps {
 
 export function MobileAddToCart({ product }: MobileAddToCartProps) {
   const dispatch = useAppDispatch()
+  const { addItem, isAdding } = useAddToCart()
 
   const formatPrice = (price: number) => {
     return new Intl.NumberFormat('en-US', {
@@ -22,16 +23,14 @@ export function MobileAddToCart({ product }: MobileAddToCartProps) {
     }).format(price)
   }
 
-  const handleAddToCart = () => {
-    dispatch(
-      addToCart({
-        product,
-        quantity: 1,
-        selectedSize: product.sizes[0]?.value || 'm',
-        selectedColor: product.colors[0]?.name || 'Black',
-      })
-    )
-    dispatch(setCartOpen(true))
+  const handleAddToCart = async () => {
+    const wasAdded = await addItem({
+      product,
+      quantity: 1,
+      selectedSize: product.sizes[0]?.value || 'm',
+      selectedColor: product.colors[0]?.name || 'Black',
+    })
+    if (wasAdded) dispatch(setCartOpen(true))
   }
 
   return (
@@ -43,7 +42,7 @@ export function MobileAddToCart({ product }: MobileAddToCartProps) {
           </p>
           <p className="text-lg font-semibold">{formatPrice(product.price)}</p>
         </div>
-        <Button onClick={handleAddToCart} size="lg" className="gap-2">
+        <Button onClick={handleAddToCart} disabled={isAdding} size="lg" className="gap-2">
           <ShoppingBag className="h-5 w-5" />
           Add to Cart
         </Button>

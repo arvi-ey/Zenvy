@@ -4,17 +4,33 @@ import type { CartItem, Product } from '@/types'
 interface CartState {
   items: CartItem[]
   isLoading: boolean
+  isHydrated: boolean
 }
 
 const initialState: CartState = {
   items: [],
   isLoading: false,
+  isHydrated: false,
 }
 
 const cartSlice = createSlice({
   name: 'cart',
   initialState,
   reducers: {
+    hydrateCart: (state, action: PayloadAction<CartItem[]>) => {
+      const merged = new Map<string, CartItem>()
+      for (const item of [...action.payload, ...state.items]) {
+        const key = `${item.product.id}:${item.selectedSize}:${item.selectedColor}`
+        const existing = merged.get(key)
+        if (existing) {
+          existing.quantity = Math.max(existing.quantity, item.quantity)
+        } else {
+          merged.set(key, item)
+        }
+      }
+      state.items = [...merged.values()]
+      state.isHydrated = true
+    },
     addToCart: (
       state,
       action: PayloadAction<{
@@ -33,9 +49,14 @@ const cartSlice = createSlice({
       )
 
       if (existingItem) {
-        existingItem.quantity += quantity
+        existingItem.quantity = Math.min(existingItem.quantity + quantity, 10)
       } else {
-        state.items.push({ product, quantity, selectedSize, selectedColor })
+        state.items.push({
+          product,
+          quantity: Math.min(quantity, 10),
+          selectedSize,
+          selectedColor,
+        })
       }
     },
     removeFromCart: (
@@ -56,6 +77,11 @@ const cartSlice = createSlice({
           )
       )
     },
+    removeProductFromCart: (state, action: PayloadAction<string>) => {
+      state.items = state.items.filter(
+        (item) => item.product.id !== action.payload
+      )
+    },
     updateQuantity: (
       state,
       action: PayloadAction<{
@@ -73,7 +99,7 @@ const cartSlice = createSlice({
           item.selectedColor === selectedColor
       )
       if (item) {
-        item.quantity = Math.max(1, quantity)
+        item.quantity = Math.min(10, Math.max(1, quantity))
       }
     },
     clearCart: (state) => {
@@ -82,7 +108,14 @@ const cartSlice = createSlice({
   },
 })
 
-export const { addToCart, removeFromCart, updateQuantity, clearCart } = cartSlice.actions
+export const {
+  hydrateCart,
+  addToCart,
+  removeFromCart,
+  removeProductFromCart,
+  updateQuantity,
+  clearCart,
+} = cartSlice.actions
 
 // Selectors
 export const selectCartItems = (state: { cart: CartState }) => state.cart.items

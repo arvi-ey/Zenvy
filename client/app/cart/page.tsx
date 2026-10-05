@@ -8,10 +8,10 @@ import { Footer } from '@/components/server/Footer'
 import { CartDrawer } from '@/components/client/CartDrawer'
 import { SearchModal } from '@/components/client/SearchModal'
 import { useAppDispatch, useAppSelector } from '@/store/hooks'
+import { useRemoveFromCart } from '@/hooks/useRemoveFromCart'
 import {
   selectCartItems,
   selectCartTotal,
-  removeFromCart,
   updateQuantity,
 } from '@/store/slices/cartSlice'
 import { Button } from '@/components/ui/button'
@@ -21,6 +21,7 @@ export default function CartPage() {
   const dispatch = useAppDispatch()
   const items = useAppSelector(selectCartItems)
   const subtotal = useAppSelector(selectCartTotal)
+  const { removeItem, removingProductId } = useRemoveFromCart()
 
   const formatPrice = (price: number) => {
     return new Intl.NumberFormat('en-US', {
@@ -98,15 +99,8 @@ export default function CartPage() {
                             </p>
                           </div>
                           <button
-                            onClick={() =>
-                              dispatch(
-                                removeFromCart({
-                                  productId: item.product.id,
-                                  selectedSize: item.selectedSize,
-                                  selectedColor: item.selectedColor,
-                                })
-                              )
-                            }
+                            onClick={() => removeItem(item.product.id)}
+                            disabled={removingProductId === item.product.id}
                             className="text-muted-foreground transition-colors hover:text-destructive"
                             aria-label="Remove item"
                           >

@@ -19,6 +19,10 @@ import {
 
 import { useParams } from 'next/navigation';
 import useProducts from '@/hooks/useProducts';
+import { useAddToCart } from '@/hooks/useAddToCart';
+import { useAppDispatch } from '@/store/hooks';
+import { setCartOpen } from '@/store/slices/uiSlice';
+import type { Product as CartProduct, ProductCategory } from '@/types';
 
 // ─── Types ────────────────────────────────────────────────────────────────────
 interface ProductImage {
@@ -46,6 +50,7 @@ interface Product {
     is_featured: boolean;
     images: ProductImage[];
     stocks: ProductVariant[];
+    category_name: string,
 }
 
 // ─── Skeleton ─────────────────────────────────────────────────────────────────
@@ -312,6 +317,8 @@ const SizeSelector: React.FC<{
 // ─── Main Component ───────────────────────────────────────────────────────────
 const ProductDetailPage: React.FC = () => {
     const { getProductDetails, productsLoading } = useProducts();
+    const { addItem, isAdding } = useAddToCart();
+    const dispatch = useAppDispatch();
     const params = useParams();
     const slug = params.slug as string;
 
@@ -322,8 +329,6 @@ const ProductDetailPage: React.FC = () => {
     const [availableStock, setavailableStock] = useState<number>()
     const [quantity, setQuantity] = useState(1);
     const [isWishlisted, setIsWishlisted] = useState(false);
-
-    const inStock = true
 
     // Fetch product when slug changes
 
@@ -394,10 +399,52 @@ const ProductDetailPage: React.FC = () => {
 
 
 
-
     const mainImage = product.images[selectedImage] ?? product.images[0];
     const price = parseFloat(product.price) || 0;
     const totalPrice = price * quantity;
+    const inStock = Boolean(selectedSize && (availableStock ?? 0) > 0);
+
+    const addCurrentProduct = async () => {
+        if (!selectedSize || !inStock) return;
+
+        const categorySlug = product.category_name.toLowerCase().replace(/[^a-z]/g, '');
+        const validCategories: ProductCategory[] = [
+            'tshirts',
+            'shirts',
+            'trousers',
+            'jackets',
+            'accessories',
+        ];
+        const cartProduct: CartProduct = {
+            id: String(product.id),
+            name: product.name,
+            slug: product.slug,
+            description: product.description,
+            price,
+            images: product.images.map((image) => image.url),
+            category: validCategories.includes(categorySlug as ProductCategory)
+                ? categorySlug as ProductCategory
+                : 'shirts',
+            sizes: product.stocks.map((variant) => ({
+                value: variant.size.toLowerCase(),
+                label: variant.size,
+                inStock: variant.stock > 0,
+            })),
+            colors: [{ name: 'Black', value: '#000000' }],
+            rating: 0,
+            reviewCount: 0,
+            inStock: Number(product.stock) > 0,
+            featured: product.is_featured,
+        };
+
+        const added = await addItem({
+            product: cartProduct,
+            quantity,
+            selectedSize,
+            selectedColor: 'Black',
+        });
+        if (added) dispatch(setCartOpen(true));
+    };
 
     const handleSizeSelect = (size: string, stock: number) => {
         setSelectedSize(size)
@@ -526,7 +573,7 @@ const ProductDetailPage: React.FC = () => {
                                 <QuantitySelector
                                     value={quantity}
                                     onChange={setQuantity}
-                                    max={availableStock || 1}
+                                    max={Math.min(availableStock || 1, 10)}
                                 />
                                 <span className="text-sm text-muted-foreground">
                                     Subtotal:{' '}
@@ -540,18 +587,20 @@ const ProductDetailPage: React.FC = () => {
                         <div className="flex gap-3">
                             <button
                                 type="button"
-                                disabled={!inStock}
+                                onClick={addCurrentProduct}
+                                disabled={!inStock || isAdding}
                                 className="group relative flex h-14 flex-1 items-center justify-center gap-2 overflow-hidden rounded-xl bg-primary text-sm font-semibold text-primary-foreground shadow-lg transition-all duration-300 hover:shadow-xl hover:brightness-110 disabled:cursor-not-allowed disabled:opacity-50"
                             >
                                 <ShoppingBag className="h-5 w-5 transition-transform duration-300 group-hover:scale-110" />
-                                Add to Cart
+                                {isAdding ? 'Adding…' : 'Add to Cart'}
                             </button>
                             <button
                                 type="button"
-                                disabled={!inStock}
+                                onClick={addCurrentProduct}
+                                disabled={!inStock || isAdding}
                                 className="flex h-14 flex-1 items-center justify-center gap-2 rounded-xl border-2 border-primary bg-transparent text-sm font-semibold text-primary transition-all duration-300 hover:bg-primary hover:text-primary-foreground disabled:cursor-not-allowed disabled:opacity-50"
                             >
-                                Buy Now
+                                {isAdding ? 'Adding…' : 'Buy Now'}
                             </button>
                             <button
                                 type="button"
@@ -596,14 +645,10 @@ const ProductDetailPage: React.FC = () => {
                                 </span>
                             </div>
                         </div>
-
                         <div className="space-y-1.5 text-xs text-muted-foreground">
                             <p>
-                                <span className="font-medium text-foreground">SKU:</span> {product.slug}
-                            </p>
-                            <p>
-                                <span className="font-medium text-foreground">Category ID:</span>{' '}
-                                {product.category_id}
+                                <span className="font-medium text-foreground">Category:</span>{' '}
+                                {product.category_name}
                             </p>
                         </div>
                     </div>

@@ -5,7 +5,7 @@ import Image from 'next/image'
 import { Heart, ShoppingBag, Star } from 'lucide-react'
 import { useAppDispatch, useAppSelector } from '@/store/hooks'
 import { toggleWishlist, selectIsInWishlist } from '@/store/slices/wishlistSlice'
-import { addToCart } from '@/store/slices/cartSlice'
+import { useAddToCart } from '@/hooks/useAddToCart'
 import { setCartOpen } from '@/store/slices/uiSlice'
 import { cn } from '@/lib/utils'
 import type { Product } from '@/types'
@@ -18,6 +18,7 @@ interface ProductCardProps {
 
 export function ProductCard({ product, priority = false }: ProductCardProps) {
   const dispatch = useAppDispatch()
+  const { addItem, isAdding } = useAddToCart()
   const isWishlisted = useAppSelector(selectIsInWishlist(product.id))
   const [imageIndex, setImageIndex] = useState(0)
   const [isHovered, setIsHovered] = useState(false)
@@ -30,18 +31,16 @@ export function ProductCard({ product, priority = false }: ProductCardProps) {
     }).format(price)
   }
 
-  const handleQuickAdd = (e: React.MouseEvent) => {
+  const handleQuickAdd = async (e: React.MouseEvent) => {
     e.preventDefault()
     e.stopPropagation()
-    dispatch(
-      addToCart({
-        product,
-        quantity: 1,
-        selectedSize: product.sizes[0]?.value || 'm',
-        selectedColor: product.colors[0]?.name || 'Black',
-      })
-    )
-    dispatch(setCartOpen(true))
+    const wasAdded = await addItem({
+      product,
+      quantity: 1,
+      selectedSize: product.sizes[0]?.value || 'm',
+      selectedColor: product.colors[0]?.name || 'Black',
+    })
+    if (wasAdded) dispatch(setCartOpen(true))
   }
 
   const handleWishlist = (e: React.MouseEvent) => {
@@ -138,6 +137,7 @@ export function ProductCard({ product, priority = false }: ProductCardProps) {
           {/* Quick Add Button */}
           <button
             onClick={handleQuickAdd}
+            disabled={isAdding}
             className={cn(
               'absolute bottom-3 left-3 right-3 flex items-center justify-center gap-2 rounded-lg bg-background/95 py-2.5 text-sm font-medium backdrop-blur-sm transition-all duration-200',
               'opacity-0 translate-y-2 group-hover:opacity-100 group-hover:translate-y-0',
