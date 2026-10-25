@@ -113,7 +113,7 @@ export function SearchModal() {
               {results.map((product) => (
                 <li key={product.id}>
                   <Link
-                    href={`/product/${product.slug}`}
+                    href={`/${product.slug}`}
                     onClick={handleClose}
                     className="flex items-center gap-4 rounded-lg p-2 transition-colors hover:bg-muted"
                   >

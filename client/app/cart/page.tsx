@@ -71,7 +71,7 @@ export default function CartPage() {
                     >
                       {/* Product Image */}
                       <Link
-                        href={`/product/${item.product.slug}`}
+                        href={`/${item.product.slug}`}
                         className="relative h-28 w-24 flex-shrink-0 overflow-hidden rounded-md bg-muted sm:h-32 sm:w-28"
                       >
                         <Image
@@ -88,7 +88,7 @@ export default function CartPage() {
                         <div className="flex justify-between">
                           <div>
                             <Link
-                              href={`/product/${item.product.slug}`}
+                              href={`/${item.product.slug}`}
                               className="font-medium transition-colors hover:text-primary"
                             >
                               {item.product.name}

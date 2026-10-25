@@ -3,16 +3,22 @@ import type { Product, WishlistItem } from '@/types'
 
 interface WishlistState {
   items: WishlistItem[]
+  isHydrated: boolean
 }
 
 const initialState: WishlistState = {
   items: [],
+  isHydrated: false,
 }
 
 const wishlistSlice = createSlice({
   name: 'wishlist',
   initialState,
   reducers: {
+    hydrateWishlist: (state, action: PayloadAction<WishlistItem[]>) => {
+      state.items = action.payload
+      state.isHydrated = true
+    },
     addToWishlist: (state, action: PayloadAction<Product>) => {
       const exists = state.items.some(
         (item) => item.product.id === action.payload.id
@@ -49,6 +55,7 @@ const wishlistSlice = createSlice({
 })
 
 export const {
+  hydrateWishlist,
   addToWishlist,
   removeFromWishlist,
   toggleWishlist,

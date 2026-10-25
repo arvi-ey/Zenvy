@@ -2,9 +2,8 @@
 
 import Link from 'next/link'
 import Image from 'next/image'
-import { Heart, ShoppingBag, Star } from 'lucide-react'
-import { useAppDispatch, useAppSelector } from '@/store/hooks'
-import { toggleWishlist, selectIsInWishlist } from '@/store/slices/wishlistSlice'
+import { ShoppingBag, Star } from 'lucide-react'
+import { useAppDispatch } from '@/store/hooks'
 import { useAddToCart } from '@/hooks/useAddToCart'
 import { setCartOpen } from '@/store/slices/uiSlice'
 import { cn } from '@/lib/utils'
@@ -19,7 +18,6 @@ interface ProductCardProps {
 export function ProductCard({ product, priority = false }: ProductCardProps) {
   const dispatch = useAppDispatch()
   const { addItem, isAdding } = useAddToCart()
-  const isWishlisted = useAppSelector(selectIsInWishlist(product.id))
   const [imageIndex, setImageIndex] = useState(0)
   const [isHovered, setIsHovered] = useState(false)
 
@@ -43,12 +41,6 @@ export function ProductCard({ product, priority = false }: ProductCardProps) {
     if (wasAdded) dispatch(setCartOpen(true))
   }
 
-  const handleWishlist = (e: React.MouseEvent) => {
-    e.preventDefault()
-    e.stopPropagation()
-    dispatch(toggleWishlist(product))
-  }
-
   const discount = product.originalPrice
     ? Math.round(((product.originalPrice - product.price) / product.originalPrice) * 100)
     : 0
@@ -56,7 +48,7 @@ export function ProductCard({ product, priority = false }: ProductCardProps) {
   return (
     <article className="group relative">
       <Link
-        href={`/product/${product.slug}`}
+        href={`/${product.slug}`}
         className="block"
         onMouseEnter={() => setIsHovered(true)}
         onMouseLeave={() => {
@@ -114,25 +106,6 @@ export function ProductCard({ product, priority = false }: ProductCardProps) {
               </span>
             )}
           </div>
-
-          {/* Wishlist Button */}
-          <button
-            onClick={handleWishlist}
-            className={cn(
-              'absolute right-2 top-2 flex h-8 w-8 items-center justify-center rounded-full bg-background/90 backdrop-blur-sm transition-all duration-200',
-              'opacity-0 group-hover:opacity-100',
-              'hover:bg-background hover:scale-110',
-              'focus:opacity-100 focus:outline-none focus:ring-2 focus:ring-ring'
-            )}
-            aria-label={isWishlisted ? 'Remove from wishlist' : 'Add to wishlist'}
-          >
-            <Heart
-              className={cn(
-                'h-4 w-4 transition-colors',
-                isWishlisted ? 'fill-destructive text-destructive' : 'text-foreground'
-              )}
-            />
-          </button>
 
           {/* Quick Add Button */}
           <button

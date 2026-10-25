@@ -205,6 +205,7 @@ export function ProductInfo({ product }: ProductInfoProps) {
           onClick={() => dispatch(toggleWishlist(product))}
           className="sm:w-auto"
           aria-label={isWishlisted ? 'Remove from wishlist' : 'Add to wishlist'}
+          aria-pressed={isWishlisted}
         >
           <Heart
             className={cn(
@@ -212,6 +213,7 @@ export function ProductInfo({ product }: ProductInfoProps) {
               isWishlisted ? 'fill-destructive text-destructive' : ''
             )}
           />
+          <span className="ml-2">{isWishlisted ? 'Wishlisted' : 'Add to Wishlist'}</span>
         </Button>
       </div>
 

@@ -32,7 +32,7 @@ export default function WishlistPage() {
               <Heart className="h-16 w-16 text-muted-foreground" />
               <h2 className="mt-4 text-xl font-semibold">Your wishlist is empty</h2>
               <p className="mt-2 max-w-md text-muted-foreground">
-                Save your favorite items by clicking the heart icon on any product.
+                Save your favorite items from their product details page.
               </p>
               <Button asChild className="mt-6">
                 <Link href="/collections/all">

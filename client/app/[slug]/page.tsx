@@ -20,8 +20,9 @@ import {
 import { useParams } from 'next/navigation';
 import useProducts from '@/hooks/useProducts';
 import { useAddToCart } from '@/hooks/useAddToCart';
-import { useAppDispatch } from '@/store/hooks';
+import { useAppDispatch, useAppSelector } from '@/store/hooks';
 import { setCartOpen } from '@/store/slices/uiSlice';
+import { selectIsInWishlist, toggleWishlist } from '@/store/slices/wishlistSlice';
 import type { Product as CartProduct, ProductCategory } from '@/types';
 
 // ─── Types ────────────────────────────────────────────────────────────────────
@@ -51,6 +52,39 @@ interface Product {
     images: ProductImage[];
     stocks: ProductVariant[];
     category_name: string,
+}
+
+function toWishlistProduct(product: Product): CartProduct {
+    const categorySlug = product.category_name.toLowerCase().replace(/[^a-z]/g, '');
+    const validCategories: ProductCategory[] = [
+        'tshirts',
+        'shirts',
+        'trousers',
+        'jackets',
+        'accessories',
+    ];
+
+    return {
+        id: String(product.id),
+        name: product.name,
+        slug: product.slug,
+        description: product.description,
+        price: parseFloat(product.price) || 0,
+        images: product.images.map((image) => image.url),
+        category: validCategories.includes(categorySlug as ProductCategory)
+            ? categorySlug as ProductCategory
+            : 'shirts',
+        sizes: product.stocks.map((variant) => ({
+            value: variant.size.toLowerCase(),
+            label: variant.size,
+            inStock: variant.stock > 0,
+        })),
+        colors: [{ name: 'Black', value: '#000000' }],
+        rating: 0,
+        reviewCount: 0,
+        inStock: Number(product.stock) > 0,
+        featured: product.is_featured,
+    };
 }
 
 // ─── Skeleton ─────────────────────────────────────────────────────────────────
@@ -328,7 +362,9 @@ const ProductDetailPage: React.FC = () => {
     const [selectedSize, setSelectedSize] = useState<string | null>(null);
     const [availableStock, setavailableStock] = useState<number>()
     const [quantity, setQuantity] = useState(1);
-    const [isWishlisted, setIsWishlisted] = useState(false);
+    const isWishlisted = useAppSelector(
+        selectIsInWishlist(product ? String(product.id) : '')
+    );
 
     // Fetch product when slug changes
 
@@ -407,38 +443,8 @@ const ProductDetailPage: React.FC = () => {
     const addCurrentProduct = async () => {
         if (!selectedSize || !inStock) return;
 
-        const categorySlug = product.category_name.toLowerCase().replace(/[^a-z]/g, '');
-        const validCategories: ProductCategory[] = [
-            'tshirts',
-            'shirts',
-            'trousers',
-            'jackets',
-            'accessories',
-        ];
-        const cartProduct: CartProduct = {
-            id: String(product.id),
-            name: product.name,
-            slug: product.slug,
-            description: product.description,
-            price,
-            images: product.images.map((image) => image.url),
-            category: validCategories.includes(categorySlug as ProductCategory)
-                ? categorySlug as ProductCategory
-                : 'shirts',
-            sizes: product.stocks.map((variant) => ({
-                value: variant.size.toLowerCase(),
-                label: variant.size,
-                inStock: variant.stock > 0,
-            })),
-            colors: [{ name: 'Black', value: '#000000' }],
-            rating: 0,
-            reviewCount: 0,
-            inStock: Number(product.stock) > 0,
-            featured: product.is_featured,
-        };
-
         const added = await addItem({
-            product: cartProduct,
+            product: toWishlistProduct(product),
             quantity,
             selectedSize,
             selectedColor: 'Black',
@@ -604,9 +610,10 @@ const ProductDetailPage: React.FC = () => {
                             </button>
                             <button
                                 type="button"
-                                onClick={() => setIsWishlisted(!isWishlisted)}
+                                onClick={() => dispatch(toggleWishlist(toWishlistProduct(product)))}
                                 aria-label={isWishlisted ? 'Remove from wishlist' : 'Add to wishlist'}
-                                className={`flex h-14 w-14 items-center justify-center rounded-xl border transition-all duration-300 ${isWishlisted
+                                aria-pressed={isWishlisted}
+                                className={`flex h-14 items-center justify-center gap-2 rounded-xl border px-4 transition-all duration-300 ${isWishlisted
                                     ? 'border-destructive bg-destructive/10 text-destructive'
                                     : 'border-input text-muted-foreground hover:border-foreground/30 hover:text-foreground'
                                     }`}
@@ -615,6 +622,9 @@ const ProductDetailPage: React.FC = () => {
                                     className={`h-5 w-5 transition-transform duration-300 ${isWishlisted ? 'scale-110 fill-current' : ''
                                         }`}
                                 />
+                                <span className="hidden text-sm font-medium sm:inline">
+                                    {isWishlisted ? 'Wishlisted' : 'Wishlist'}
+                                </span>
                             </button>
                             <button
                                 type="button"
