@@ -1,11 +1,16 @@
 'use client'
 
-import { useState } from 'react'
+import { Suspense, useEffect, useState } from 'react'
 import Link from 'next/link'
 import Image from 'next/image'
+import { useRouter } from 'next/navigation'
+import { useSearchParams } from 'next/navigation'
+import { toast } from 'sonner'
 import { ChevronLeft, Lock, Check } from 'lucide-react'
 import { useAppSelector, useAppDispatch } from '@/store/hooks'
-import { selectCartItems, selectCartTotal, clearCart } from '@/store/slices/cartSlice'
+import { selectCartItems, clearCart, removeFromCart } from '@/store/slices/cartSlice'
+import { deleteProductFromCart } from '@/api/cart'
+import { getSingleCheckoutItem } from '@/lib/checkout'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
@@ -15,13 +20,37 @@ import { cn } from '@/lib/utils'
 
 type CheckoutStep = 'information' | 'shipping' | 'payment' | 'confirmation'
 
-export default function CheckoutPage() {
+function CheckoutContent() {
+  const router = useRouter()
+  const searchParams = useSearchParams()
   const dispatch = useAppDispatch()
-  const items = useAppSelector(selectCartItems)
-  const subtotal = useAppSelector(selectCartTotal)
+  const authStatus = useAppSelector((state) => state.auth.status)
+  const cartItems = useAppSelector(selectCartItems)
+  const productId = searchParams.get('productId')
+  const selectedItem = getSingleCheckoutItem(
+    cartItems,
+    productId,
+    searchParams.get('size'),
+    searchParams.get('color')
+  )
+  const items = productId ? (selectedItem ? [selectedItem] : []) : cartItems
+  const subtotal = items.reduce(
+    (total, item) => total + item.product.price * item.quantity,
+    0
+  )
   const [step, setStep] = useState<CheckoutStep>('information')
   const [shippingMethod, setShippingMethod] = useState('standard')
   const [sameAsBilling, setSameAsBilling] = useState(true)
+  const [isPlacingOrder, setIsPlacingOrder] = useState(false)
+
+  useEffect(() => {
+    if (authStatus === 'unauthenticated') {
+      const checkoutPath = searchParams.size
+        ? `/checkout?${searchParams.toString()}`
+        : '/checkout'
+      router.replace(`/sign-in?next=${encodeURIComponent(checkoutPath)}`)
+    }
+  }, [authStatus, router, searchParams])
 
   const formatPrice = (price: number) => {
     return new Intl.NumberFormat('en-US', {
@@ -42,15 +71,53 @@ export default function CheckoutPage() {
 
   const currentStepIndex = steps.findIndex((s) => s.key === step)
 
-  const handleSubmit = (e: React.FormEvent) => {
+  if (authStatus !== 'authenticated') {
+    return (
+      <main className="flex min-h-[60vh] items-center justify-center px-4">
+        <p className="text-sm text-muted-foreground">Checking your sign-in…</p>
+      </main>
+    )
+  }
+
+  if (productId && !selectedItem) {
+    return (
+      <main className="flex min-h-[60vh] flex-col items-center justify-center gap-4 px-4 text-center">
+        <h1 className="text-xl font-semibold">This item is no longer in your cart</h1>
+        <p className="text-sm text-muted-foreground">
+          Return to your shopping bag to choose an item to checkout.
+        </p>
+        <Button asChild>
+          <Link href="/cart">Return to bag</Link>
+        </Button>
+      </main>
+    )
+  }
+
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
     if (step === 'information') {
       setStep('shipping')
     } else if (step === 'shipping') {
       setStep('payment')
     } else if (step === 'payment') {
-      setStep('confirmation')
-      dispatch(clearCart())
+      setIsPlacingOrder(true)
+      try {
+        if (productId && selectedItem) {
+          await deleteProductFromCart(selectedItem.product.id)
+          dispatch(removeFromCart({
+            productId: selectedItem.product.id,
+            selectedSize: selectedItem.selectedSize,
+            selectedColor: selectedItem.selectedColor,
+          }))
+        } else {
+          dispatch(clearCart())
+        }
+        setStep('confirmation')
+      } catch (error: unknown) {
+        toast.error(error instanceof Error ? error.message : 'Unable to place your order.')
+      } finally {
+        setIsPlacingOrder(false)
+      }
     }
   }
 
@@ -316,11 +383,11 @@ export default function CheckoutPage() {
                   Return to cart
                 </Link>
               )}
-              <Button type="submit" size="lg" className="gap-2 sm:ml-auto">
+              <Button type="submit" size="lg" className="gap-2 sm:ml-auto" disabled={isPlacingOrder}>
                 {step === 'payment' && <Lock className="h-4 w-4" />}
                 {step === 'information' && 'Continue to Shipping'}
                 {step === 'shipping' && 'Continue to Payment'}
-                {step === 'payment' && 'Place Order'}
+                {step === 'payment' && (isPlacingOrder ? 'Placing Order…' : 'Place Order')}
               </Button>
             </div>
           </form>
@@ -389,5 +456,19 @@ export default function CheckoutPage() {
         </div>
       </div>
     </div>
+  )
+}
+
+export default function CheckoutPage() {
+  return (
+    <Suspense
+      fallback={
+        <main className="flex min-h-[60vh] items-center justify-center px-4">
+          <p className="text-sm text-muted-foreground">Loading checkout…</p>
+        </main>
+      }
+    >
+      <CheckoutContent />
+    </Suspense>
   )
 }

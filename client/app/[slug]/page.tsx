@@ -17,7 +17,7 @@ import {
     PackageX,
 } from 'lucide-react';
 
-import { useParams } from 'next/navigation';
+import { useParams, useRouter } from 'next/navigation';
 import useProducts from '@/hooks/useProducts';
 import { useAddToCart } from '@/hooks/useAddToCart';
 import { useAppDispatch, useAppSelector } from '@/store/hooks';
@@ -353,6 +353,7 @@ const ProductDetailPage: React.FC = () => {
     const { getProductDetails, productsLoading } = useProducts();
     const { addItem, isAdding } = useAddToCart();
     const dispatch = useAppDispatch();
+    const router = useRouter();
     const params = useParams();
     const slug = params.slug as string;
 
@@ -440,16 +441,28 @@ const ProductDetailPage: React.FC = () => {
     const totalPrice = price * quantity;
     const inStock = Boolean(selectedSize && (availableStock ?? 0) > 0);
 
-    const addCurrentProduct = async () => {
+    const addCurrentProduct = async (checkoutImmediately = false) => {
         if (!selectedSize || !inStock) return;
 
+        const cartProduct = toWishlistProduct(product);
         const added = await addItem({
-            product: toWishlistProduct(product),
+            product: cartProduct,
             quantity,
             selectedSize,
             selectedColor: 'Black',
         });
-        if (added) dispatch(setCartOpen(true));
+        if (added) {
+            if (checkoutImmediately) {
+                const checkoutParams = new URLSearchParams({
+                    productId: cartProduct.id,
+                    size: selectedSize.toLowerCase(),
+                    color: 'Black',
+                });
+                router.push(`/checkout?${checkoutParams.toString()}`);
+            } else {
+                dispatch(setCartOpen(true));
+            }
+        }
     };
 
     const handleSizeSelect = (size: string, stock: number) => {
@@ -593,7 +606,7 @@ const ProductDetailPage: React.FC = () => {
                         <div className="flex gap-3">
                             <button
                                 type="button"
-                                onClick={addCurrentProduct}
+                                onClick={() => addCurrentProduct()}
                                 disabled={!inStock || isAdding}
                                 className="group relative flex h-14 flex-1 items-center justify-center gap-2 overflow-hidden rounded-xl bg-primary text-sm font-semibold text-primary-foreground shadow-lg transition-all duration-300 hover:shadow-xl hover:brightness-110 disabled:cursor-not-allowed disabled:opacity-50"
                             >
@@ -602,7 +615,7 @@ const ProductDetailPage: React.FC = () => {
                             </button>
                             <button
                                 type="button"
-                                onClick={addCurrentProduct}
+                                onClick={() => addCurrentProduct(true)}
                                 disabled={!inStock || isAdding}
                                 className="flex h-14 flex-1 items-center justify-center gap-2 rounded-xl border-2 border-primary bg-transparent text-sm font-semibold text-primary transition-all duration-300 hover:bg-primary hover:text-primary-foreground disabled:cursor-not-allowed disabled:opacity-50"
                             >

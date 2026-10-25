@@ -10,9 +10,11 @@ import {
   X,
   Sun,
   Moon,
-  User
+  User,
+  LogOut
 } from 'lucide-react'
 import { useTheme } from 'next-themes'
+import { toast } from 'sonner'
 import { useAppDispatch, useAppSelector } from '@/store/hooks'
 import {
   toggleCart,
@@ -22,6 +24,8 @@ import {
 } from '@/store/slices/uiSlice'
 import { selectCartCount } from '@/store/slices/cartSlice'
 import { selectWishlistCount } from '@/store/slices/wishlistSlice'
+import { setUnauthenticated } from '@/store/slices/authSlice'
+import { signOut } from '@/api/auth'
 import { cn } from '@/lib/utils'
 import { Button } from '@/components/ui/button'
 
@@ -39,8 +43,19 @@ export function Header() {
   const dispatch = useAppDispatch()
   const cartCount = useAppSelector(selectCartCount)
   const wishlistCount = useAppSelector(selectWishlistCount)
+  const authUser = useAppSelector((state) => state.auth.user)
   const isMobileMenuOpen = useAppSelector((state) => state.ui.isMobileMenuOpen)
   const { theme, setTheme } = useTheme()
+
+  const handleSignOut = async () => {
+    try {
+      await signOut()
+      dispatch(setUnauthenticated())
+      dispatch(setMobileMenuOpen(false))
+    } catch (error: unknown) {
+      toast.error(error instanceof Error ? error.message : 'Unable to sign out.')
+    }
+  }
 
   return (
     <header className="sticky top-0 z-50 w-full border-b border-border bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60">
@@ -92,11 +107,28 @@ export function Header() {
             <Moon className="absolute h-5 w-5 rotate-90 scale-0 transition-transform dark:rotate-0 dark:scale-100" />
           </Button>
 
-          <Link href="/account" className="hidden sm:block">
-            <Button variant="ghost" size="icon" className="h-9 w-9" aria-label="Account">
-              <User className="h-5 w-5" />
+          {authUser ? (
+            <span className="hidden max-w-28 truncate text-sm text-muted-foreground sm:block">
+              {authUser.firstName}
+            </span>
+          ) : (
+            <Link href="/sign-in" className="hidden sm:block">
+              <Button variant="ghost" size="icon" className="h-9 w-9" aria-label="Sign in">
+                <User className="h-5 w-5" />
+              </Button>
+            </Link>
+          )}
+          {authUser && (
+            <Button
+              variant="ghost"
+              size="icon"
+              className="h-9 w-9"
+              aria-label="Sign out"
+              onClick={handleSignOut}
+            >
+              <LogOut className="h-4 w-4" />
             </Button>
-          </Link>
+          )}
 
           <Link href="/wishlist" className="relative">
             <Button variant="ghost" size="icon" className="h-9 w-9" aria-label="Wishlist">
@@ -151,14 +183,25 @@ export function Header() {
           ))}
 
           <div className="mt-6 flex items-center gap-4">
-            <Link
-              href="/account"
-              onClick={() => dispatch(setMobileMenuOpen(false))}
-              className="flex items-center gap-2 text-sm font-medium"
-            >
-              <User className="h-5 w-5" />
-              Account
-            </Link>
+            {authUser ? (
+              <button
+                type="button"
+                onClick={handleSignOut}
+                className="flex items-center gap-2 text-sm font-medium"
+              >
+                <LogOut className="h-5 w-5" />
+                Sign out
+              </button>
+            ) : (
+              <Link
+                href="/sign-in"
+                onClick={() => dispatch(setMobileMenuOpen(false))}
+                className="flex items-center gap-2 text-sm font-medium"
+              >
+                <User className="h-5 w-5" />
+                Sign in
+              </Link>
+            )}
             <button
               onClick={() => setTheme(theme === 'dark' ? 'light' : 'dark')}
               className="flex items-center gap-2 text-sm font-medium"

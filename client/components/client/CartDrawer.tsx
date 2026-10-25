@@ -2,7 +2,7 @@
 
 import Link from 'next/link'
 import Image from 'next/image'
-import { X, Plus, Minus, ShoppingBag } from 'lucide-react'
+import { X, Plus, Minus, ShoppingBag, CreditCard } from 'lucide-react'
 import { useAppDispatch, useAppSelector } from '@/store/hooks'
 import { setCartOpen } from '@/store/slices/uiSlice'
 import { useRemoveFromCart } from '@/hooks/useRemoveFromCart'
@@ -13,6 +13,7 @@ import {
 } from '@/store/slices/cartSlice'
 import { Button } from '@/components/ui/button'
 import { cn } from '@/lib/utils'
+import { getSingleItemCheckoutHref } from '@/lib/checkout'
 
 export function CartDrawer() {
   const dispatch = useAppDispatch()
@@ -91,7 +92,7 @@ export function CartDrawer() {
                         sizes="80px"
                       />
                     </div>
-                    <div className="flex flex-1 flex-col">
+                    <div className="flex min-w-0 flex-1 flex-col">
                       <div className="flex justify-between">
                         <div>
                           <h4 className="text-sm font-medium line-clamp-1">
@@ -153,6 +154,15 @@ export function CartDrawer() {
                           {formatPrice(item.product.price * item.quantity)}
                         </p>
                       </div>
+                      <Button asChild size="sm" variant="outline" className="mt-2 self-end">
+                        <Link
+                          href={getSingleItemCheckoutHref(item)}
+                          onClick={() => dispatch(setCartOpen(false))}
+                        >
+                          <CreditCard className="mr-2 h-4 w-4" />
+                          Checkout item
+                        </Link>
+                      </Button>
                     </div>
                   </li>
                 ))}

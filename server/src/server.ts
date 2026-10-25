@@ -7,6 +7,7 @@ import { connectDB } from "./config/db.js";
 import ProductCategoryRouter from "./routes/productcategory.route.js"
 import ProductRouter from "./routes/product.route.js"
 import CartRouter from "./routes/cart.route.js"
+import AuthRouter from "./routes/auth.route.js"
 
 import fs from "node:fs";
 
@@ -49,6 +50,7 @@ const PORT = env.PORT || 5000;
 app.use(`${env.API_VERSION}/product-category`, ProductCategoryRouter)
 app.use(`${env.API_VERSION}/product`, ProductRouter)
 app.use(`${env.API_VERSION}/cart`, CartRouter)
+app.use(`${env.API_VERSION}/auth`, AuthRouter)
 
 
 app.use(globalErrorHandler)

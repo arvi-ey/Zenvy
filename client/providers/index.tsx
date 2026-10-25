@@ -1,9 +1,9 @@
 'use client'
 
 import { useEffect } from 'react'
+import axios from 'axios'
 import { Provider } from 'react-redux'
 import { ThemeProvider } from 'next-themes'
-import axios from 'axios'
 import { toast } from 'sonner'
 import { store } from '@/store'
 import { Footer } from '@/components/server/Footer'
@@ -16,6 +16,9 @@ import { hydrateCart } from '@/store/slices/cartSlice'
 import { hydrateWishlist } from '@/store/slices/wishlistSlice'
 import { useAppSelector } from '@/store/hooks'
 import type { WishlistItem } from '@/types'
+import api from '@/api/api'
+import { getCurrentUser } from '@/api/auth'
+import { setAuthenticated, setUnauthenticated } from '@/store/slices/authSlice'
 
 const WISHLIST_STORAGE_KEY = 'zenvy-wishlist'
 
@@ -102,6 +105,70 @@ function CartHydrator() {
   return null
 }
 
+function AuthHydrator() {
+  useEffect(() => {
+    let cancelled = false
+    getCurrentUser()
+      .then((user) => {
+        if (!cancelled) store.dispatch(setAuthenticated(user))
+      })
+      .catch((error: unknown) => {
+        if (cancelled) return
+        store.dispatch(setUnauthenticated())
+        if (axios.isAxiosError(error) && error.response?.status !== 401) {
+          toast.error(error.response?.data?.message ?? 'Unable to restore your session.')
+        } else if (!axios.isAxiosError(error)) {
+          toast.error(error instanceof Error ? error.message : 'Unable to restore your session.')
+        }
+      })
+
+    return () => { cancelled = true }
+  }, [])
+
+  useEffect(() => {
+    let refreshPromise: Promise<void> | null = null
+    const interceptorId = api.interceptors.response.use(
+      (response) => response,
+      async (error: unknown) => {
+        if (!axios.isAxiosError(error) || error.response?.status !== 401) {
+          return Promise.reject(error)
+        }
+
+        const request = error.config
+        const url = request?.url ?? ''
+        if (
+          !request ||
+          url.includes('/auth/sign-in') ||
+          url.includes('/auth/sign-up') ||
+          url.includes('/auth/refresh') ||
+          url.includes('/auth/sign-out')
+        ) {
+          return Promise.reject(error)
+        }
+        if (request.headers['x-auth-retry']) {
+          store.dispatch(setUnauthenticated())
+          return Promise.reject(error)
+        }
+
+        request.headers['x-auth-retry'] = 'true'
+        try {
+          refreshPromise ??= api.post('/auth/refresh').then(() => undefined).finally(() => {
+            refreshPromise = null
+          })
+          await refreshPromise
+          return api(request)
+        } catch (refreshError) {
+          store.dispatch(setUnauthenticated())
+          return Promise.reject(refreshError)
+        }
+      }
+    )
+    return () => api.interceptors.response.eject(interceptorId)
+  }, [])
+
+  return null
+}
+
 interface ProvidersProps {
   children: React.ReactNode
 }
@@ -115,6 +182,7 @@ export function Providers({ children }: ProvidersProps) {
         enableSystem
         disableTransitionOnChange
       >
+        <AuthHydrator />
         <CartHydrator />
         <WishlistHydrator />
         <Header />
