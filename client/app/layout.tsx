@@ -1,5 +1,6 @@
 import type { Metadata, Viewport } from 'next'
 import { Inter, Playfair_Display } from 'next/font/google'
+import Script from 'next/script'
 import { Analytics } from '@vercel/analytics/next'
 import { Providers } from '@/providers'
 import './globals.css'
@@ -39,6 +40,15 @@ export default function RootLayout({
 }>) {
   return (
     <html lang="en" className={`${inter.variable} ${playfair.variable}`} suppressHydrationWarning>
+      <head>
+        <Script
+          id="theme-init"
+          strategy="beforeInteractive"
+          dangerouslySetInnerHTML={{
+            __html: `try{const t=localStorage.getItem("theme")||"system";const r=t==="system"?(matchMedia("(prefers-color-scheme: dark)").matches?"dark":"light"):t;document.documentElement.classList.toggle("dark",r==="dark");document.documentElement.style.colorScheme=r}catch{}`,
+          }}
+        />
+      </head>
       <body className="font-sans antialiased bg-background text-foreground" suppressHydrationWarning>
         <Providers>
           {children}

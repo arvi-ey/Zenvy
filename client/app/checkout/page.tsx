@@ -8,6 +8,8 @@ import { useSearchParams } from 'next/navigation'
 import { toast } from 'sonner'
 import { ChevronLeft, Lock, Check } from 'lucide-react'
 import { useAppSelector, useAppDispatch } from '@/store/hooks'
+import { AddressManager } from '@/components/client/AddressManager'
+import type { Address } from '@/api/address'
 import { selectCartItems, clearCart, removeFromCart } from '@/store/slices/cartSlice'
 import { deleteProductFromCart } from '@/api/cart'
 import { getSingleCheckoutItem } from '@/lib/checkout'
@@ -16,6 +18,7 @@ import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
 import { RadioGroup, RadioGroupItem } from '@/components/ui/radio-group'
 import { Checkbox } from '@/components/ui/checkbox'
+import { Skeleton } from '@/components/ui/skeleton'
 import { cn } from '@/lib/utils'
 
 type CheckoutStep = 'information' | 'shipping' | 'payment' | 'confirmation'
@@ -25,6 +28,7 @@ function CheckoutContent() {
   const searchParams = useSearchParams()
   const dispatch = useAppDispatch()
   const authStatus = useAppSelector((state) => state.auth.status)
+  const authUser = useAppSelector((state) => state.auth.user)
   const cartItems = useAppSelector(selectCartItems)
   const productId = searchParams.get('productId')
   const selectedItem = getSingleCheckoutItem(
@@ -42,6 +46,8 @@ function CheckoutContent() {
   const [shippingMethod, setShippingMethod] = useState('standard')
   const [sameAsBilling, setSameAsBilling] = useState(true)
   const [isPlacingOrder, setIsPlacingOrder] = useState(false)
+  const [isAddressPickerOpen, setIsAddressPickerOpen] = useState(false)
+  const [selectedAddress, setSelectedAddress] = useState<Address | null>(null)
 
   useEffect(() => {
     if (authStatus === 'unauthenticated') {
@@ -74,7 +80,11 @@ function CheckoutContent() {
   if (authStatus !== 'authenticated') {
     return (
       <main className="flex min-h-[60vh] items-center justify-center px-4">
-        <p className="text-sm text-muted-foreground">Checking your sign-in…</p>
+        <div className="w-full max-w-md space-y-4">
+          <Skeleton className="h-8 w-48" />
+          <Skeleton className="h-4 w-full" />
+          <Skeleton className="h-12 w-full" />
+        </div>
       </main>
     )
   }
@@ -96,6 +106,11 @@ function CheckoutContent() {
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
     if (step === 'information') {
+      if (!selectedAddress) {
+        toast.error('Choose a delivery address before continuing.')
+        setIsAddressPickerOpen(true)
+        return
+      }
       setStep('shipping')
     } else if (step === 'shipping') {
       setStep('payment')
@@ -195,6 +210,7 @@ function CheckoutContent() {
                       type="email"
                       placeholder="your@email.com"
                       className="mt-1.5"
+                      defaultValue={authUser?.email}
                       required
                     />
                   </div>
@@ -206,38 +222,45 @@ function CheckoutContent() {
                     <div className="grid grid-cols-2 gap-4">
                       <div>
                         <Label htmlFor="firstName">First Name</Label>
-                        <Input id="firstName" className="mt-1.5" required />
+                        <Input id="firstName" className="mt-1.5" defaultValue={authUser?.firstName} required />
                       </div>
                       <div>
                         <Label htmlFor="lastName">Last Name</Label>
-                        <Input id="lastName" className="mt-1.5" required />
+                        <Input id="lastName" className="mt-1.5" defaultValue={authUser?.lastName} required />
                       </div>
                     </div>
-                    <div>
-                      <Label htmlFor="address">Address</Label>
-                      <Input id="address" className="mt-1.5" required />
-                    </div>
-                    <div>
-                      <Label htmlFor="apartment">Apartment, suite, etc. (optional)</Label>
-                      <Input id="apartment" className="mt-1.5" />
-                    </div>
-                    <div className="grid grid-cols-3 gap-4">
-                      <div>
-                        <Label htmlFor="city">City</Label>
-                        <Input id="city" className="mt-1.5" required />
+                    {selectedAddress ? (
+                      <div className="rounded-lg border border-border p-4">
+                        <div className="flex items-start justify-between gap-4">
+                          <div>
+                            <p className="text-sm font-medium">
+                              {selectedAddress.type === 'others'
+                                ? 'Other'
+                                : selectedAddress.type === 'home' ? 'Home' : 'Office'} address
+                            </p>
+                            <p className="mt-2 text-sm leading-6 text-muted-foreground">
+                              {selectedAddress.street}
+                              {selectedAddress.landmark && <> · {selectedAddress.landmark}</>}
+                              <br />
+                              {selectedAddress.district}, {selectedAddress.state} {selectedAddress.pincode}
+                            </p>
+                          </div>
+                          <Button type="button" variant="outline" size="sm" onClick={() => setIsAddressPickerOpen(true)}>
+                            Change
+                          </Button>
+                        </div>
                       </div>
-                      <div>
-                        <Label htmlFor="state">State</Label>
-                        <Input id="state" className="mt-1.5" required />
+                    ) : (
+                      <div className="rounded-lg border border-dashed border-border p-4">
+                        <p className="text-sm text-muted-foreground">Choose a saved address or add a new delivery address.</p>
+                        <Button type="button" variant="outline" className="mt-3" onClick={() => setIsAddressPickerOpen(true)}>
+                          Choose delivery address
+                        </Button>
                       </div>
-                      <div>
-                        <Label htmlFor="zip">ZIP Code</Label>
-                        <Input id="zip" className="mt-1.5" required />
-                      </div>
-                    </div>
+                    )}
                     <div>
                       <Label htmlFor="phone">Phone</Label>
-                      <Input id="phone" type="tel" className="mt-1.5" required />
+                      <Input id="phone" type="tel" className="mt-1.5" defaultValue={authUser?.phone} required />
                     </div>
                   </div>
                 </div>
@@ -391,6 +414,13 @@ function CheckoutContent() {
               </Button>
             </div>
           </form>
+          <AddressManager
+            mode="picker"
+            open={isAddressPickerOpen}
+            onOpenChange={setIsAddressPickerOpen}
+            selectedAddressId={selectedAddress?.id}
+            onSelect={setSelectedAddress}
+          />
         </div>
 
         {/* Order Summary Sidebar */}
@@ -463,8 +493,14 @@ export default function CheckoutPage() {
   return (
     <Suspense
       fallback={
-        <main className="flex min-h-[60vh] items-center justify-center px-4">
-          <p className="text-sm text-muted-foreground">Loading checkout…</p>
+        <main className="mx-auto grid min-h-[60vh] max-w-7xl gap-8 px-4 py-10 lg:grid-cols-2">
+          <div className="space-y-6">
+            <Skeleton className="h-8 w-32" />
+            <Skeleton className="h-5 w-64" />
+            <Skeleton className="h-24 w-full" />
+            <Skeleton className="h-48 w-full" />
+          </div>
+          <Skeleton className="h-80 w-full rounded-xl" />
         </main>
       }
     >

@@ -13,7 +13,7 @@ import {
   User,
   LogOut
 } from 'lucide-react'
-import { useTheme } from 'next-themes'
+import { useTheme } from '@/components/theme-provider'
 import { toast } from 'sonner'
 import { useAppDispatch, useAppSelector } from '@/store/hooks'
 import {
@@ -108,9 +108,9 @@ export function Header() {
           </Button>
 
           {authUser ? (
-            <span className="hidden max-w-28 truncate text-sm text-muted-foreground sm:block">
+            <Link href="/account" className="hidden max-w-28 truncate text-sm text-muted-foreground hover:text-foreground sm:block">
               {authUser.firstName}
-            </span>
+            </Link>
           ) : (
             <Link href="/sign-in" className="hidden sm:block">
               <Button variant="ghost" size="icon" className="h-9 w-9" aria-label="Sign in">
@@ -184,14 +184,24 @@ export function Header() {
 
           <div className="mt-6 flex items-center gap-4">
             {authUser ? (
-              <button
-                type="button"
-                onClick={handleSignOut}
-                className="flex items-center gap-2 text-sm font-medium"
-              >
-                <LogOut className="h-5 w-5" />
-                Sign out
-              </button>
+              <>
+                <Link
+                  href="/account"
+                  onClick={() => dispatch(setMobileMenuOpen(false))}
+                  className="flex items-center gap-2 text-sm font-medium"
+                >
+                  <User className="h-5 w-5" />
+                  My account
+                </Link>
+                <button
+                  type="button"
+                  onClick={handleSignOut}
+                  className="flex items-center gap-2 text-sm font-medium"
+                >
+                  <LogOut className="h-5 w-5" />
+                  Sign out
+                </button>
+              </>
             ) : (
               <Link
                 href="/sign-in"

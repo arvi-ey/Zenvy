@@ -3,7 +3,7 @@
 import { useEffect } from 'react'
 import axios from 'axios'
 import { Provider } from 'react-redux'
-import { ThemeProvider } from 'next-themes'
+import { ThemeProvider } from '@/components/theme-provider'
 import { toast } from 'sonner'
 import { store } from '@/store'
 import { Footer } from '@/components/server/Footer'

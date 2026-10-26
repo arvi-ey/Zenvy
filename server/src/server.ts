@@ -8,6 +8,7 @@ import ProductCategoryRouter from "./routes/productcategory.route.js"
 import ProductRouter from "./routes/product.route.js"
 import CartRouter from "./routes/cart.route.js"
 import AuthRouter from "./routes/auth.route.js"
+import AddressRouter from "./routes/address.route.js"
 
 import fs from "node:fs";
 
@@ -51,6 +52,7 @@ app.use(`${env.API_VERSION}/product-category`, ProductCategoryRouter)
 app.use(`${env.API_VERSION}/product`, ProductRouter)
 app.use(`${env.API_VERSION}/cart`, CartRouter)
 app.use(`${env.API_VERSION}/auth`, AuthRouter)
+app.use(`${env.API_VERSION}/address`, AddressRouter)
 
 
 app.use(globalErrorHandler)
