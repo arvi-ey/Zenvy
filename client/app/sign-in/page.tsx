@@ -37,8 +37,8 @@ export default function SignInPage() {
     setErrorMessage('')
     setIsSubmitting(true)
     try {
-      const user = await signIn({ email, password })
-      dispatch(setAuthenticated(user))
+      const session = await signIn({ email, password })
+      dispatch(setAuthenticated(session))
       router.replace(getReturnPath())
     } catch (error: unknown) {
       const message = axios.isAxiosError<{ message?: string }>(error)

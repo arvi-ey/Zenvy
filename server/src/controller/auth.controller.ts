@@ -82,6 +82,13 @@ function setAuthCookies(res: Response, user: AuthUser, refreshToken: string) {
     });
 }
 
+function authResponse(user: AuthUser, refreshToken: string) {
+    return {
+        user,
+        accessToken: createAccessToken(user),
+    };
+}
+
 function clearAuthCookies(res: Response) {
     const options = cookieOptions();
     res.clearCookie(ACCESS_COOKIE, options);
@@ -154,7 +161,7 @@ export const signUp = catchAsync(async (req: Request, res: Response) => {
     const user = toUser(created.rows[0]);
     const refreshToken = await createSession(user);
     setAuthCookies(res, user, refreshToken);
-    sendResponse(res, 201, "Account created successfully", { user });
+    sendResponse(res, 201, "Account created successfully", authResponse(user, refreshToken));
 });
 
 export const signIn = catchAsync(async (req: Request, res: Response) => {
@@ -179,7 +186,7 @@ export const signIn = catchAsync(async (req: Request, res: Response) => {
     const user = toUser(row);
     const refreshToken = await createSession(user);
     setAuthCookies(res, user, refreshToken);
-    sendResponse(res, 200, "Signed in successfully", { user });
+    sendResponse(res, 200, "Signed in successfully", authResponse(user, refreshToken));
 });
 
 export const getCurrentUser = catchAsync(async (req: Request, res: Response) => {
@@ -194,7 +201,11 @@ export const getCurrentUser = catchAsync(async (req: Request, res: Response) => 
         [userId]
     );
     if (!result.rowCount) throw new AppError("Account is unavailable.", 401);
-    sendResponse(res, 200, "Session restored", { user: toUser(result.rows[0]) });
+    const user = toUser(result.rows[0]);
+    sendResponse(res, 200, "Session restored", {
+        user,
+        accessToken: createAccessToken(user),
+    });
 });
 
 export const refreshSession = catchAsync(async (req: Request, res: Response) => {
@@ -270,7 +281,7 @@ export const refreshSession = catchAsync(async (req: Request, res: Response) => 
         }
         await client.query("COMMIT");
         setAuthCookies(res, user, nextRefreshToken);
-        sendResponse(res, 200, "Session refreshed", { user });
+        sendResponse(res, 200, "Session refreshed", authResponse(user, nextRefreshToken));
     } catch (error) {
         if (!(error instanceof AppError)) await client.query("ROLLBACK");
         throw error;

@@ -4,7 +4,7 @@ import type { AuthUser } from '@/store/slices/authSlice'
 interface AuthResponse {
   success: boolean
   message: string
-  data: { user: AuthUser }
+  data: { user: AuthUser; accessToken?: string }
 }
 
 export interface SignUpCredentials {
@@ -22,17 +22,17 @@ export interface SignInCredentials {
 
 export async function signUp(credentials: SignUpCredentials) {
   const response = await api.post<AuthResponse>('/auth/sign-up', credentials)
-  return response.data.data.user
+  return response.data.data
 }
 
 export async function signIn(credentials: SignInCredentials) {
   const response = await api.post<AuthResponse>('/auth/sign-in', credentials)
-  return response.data.data.user
+  return response.data.data
 }
 
 export async function getCurrentUser() {
   const response = await api.get<AuthResponse>('/auth/me')
-  return response.data.data.user
+  return response.data.data
 }
 
 export async function signOut() {

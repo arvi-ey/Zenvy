@@ -18,9 +18,10 @@ import { useAppSelector } from '@/store/hooks'
 import type { WishlistItem } from '@/types'
 import api from '@/api/api'
 import { getCurrentUser } from '@/api/auth'
-import { setAuthenticated, setUnauthenticated } from '@/store/slices/authSlice'
+import { setAccessToken, setAuthenticated, setUnauthenticated } from '@/store/slices/authSlice'
 
 const WISHLIST_STORAGE_KEY = 'zenvy-wishlist'
+const ACCESS_TOKEN_STORAGE_KEY = 'zenvy-access-token'
 
 function isWishlistItem(value: unknown): value is WishlistItem {
   if (typeof value !== 'object' || value === null) return false
@@ -91,6 +92,7 @@ function CartHydrator() {
       })
       .catch((error: unknown) => {
         if (cancelled) return
+        if (axios.isAxiosError(error) && error.response?.status === 401) return
         const message = axios.isAxiosError<{ message?: string }>(error)
           ? error.response?.data?.message ?? 'Unable to restore your cart.'
           : error instanceof Error
@@ -107,26 +109,28 @@ function CartHydrator() {
 
 function AuthHydrator() {
   useEffect(() => {
-    let cancelled = false
-    getCurrentUser()
-      .then((user) => {
-        if (!cancelled) store.dispatch(setAuthenticated(user))
-      })
-      .catch((error: unknown) => {
-        if (cancelled) return
-        store.dispatch(setUnauthenticated())
-        if (axios.isAxiosError(error) && error.response?.status !== 401) {
-          toast.error(error.response?.data?.message ?? 'Unable to restore your session.')
-        } else if (!axios.isAxiosError(error)) {
-          toast.error(error instanceof Error ? error.message : 'Unable to restore your session.')
-        }
-      })
-
-    return () => { cancelled = true }
-  }, [])
-
-  useEffect(() => {
     let refreshPromise: Promise<void> | null = null
+    const storedAccessToken = localStorage.getItem(ACCESS_TOKEN_STORAGE_KEY)
+    if (storedAccessToken) {
+      store.dispatch(setAccessToken(storedAccessToken))
+    }
+
+    const unsubscribe = store.subscribe(() => {
+      const accessToken = store.getState().auth.accessToken
+      if (accessToken) {
+        localStorage.setItem(ACCESS_TOKEN_STORAGE_KEY, accessToken)
+      } else {
+        localStorage.removeItem(ACCESS_TOKEN_STORAGE_KEY)
+      }
+    })
+
+    const requestInterceptorId = api.interceptors.request.use((config) => {
+      const accessToken = store.getState().auth.accessToken
+      if (accessToken) {
+        config.headers.Authorization = `Bearer ${accessToken}`
+      }
+      return config
+    })
     const interceptorId = api.interceptors.response.use(
       (response) => response,
       async (error: unknown) => {
@@ -152,9 +156,15 @@ function AuthHydrator() {
 
         request.headers['x-auth-retry'] = 'true'
         try {
-          refreshPromise ??= api.post('/auth/refresh').then(() => undefined).finally(() => {
-            refreshPromise = null
-          })
+          refreshPromise ??= api.post<{ data?: { accessToken?: string } }>('/auth/refresh')
+            .then((response) => {
+              const accessToken = response.data.data?.accessToken
+              if (!accessToken) throw new Error('Session refresh did not return an access token.')
+              store.dispatch(setAccessToken(accessToken))
+            })
+            .finally(() => {
+              refreshPromise = null
+            })
           await refreshPromise
           return api(request)
         } catch (refreshError) {
@@ -163,7 +173,27 @@ function AuthHydrator() {
         }
       }
     )
-    return () => api.interceptors.response.eject(interceptorId)
+    let cancelled = false
+    getCurrentUser()
+      .then((session) => {
+        if (!cancelled) store.dispatch(setAuthenticated(session))
+      })
+      .catch((error: unknown) => {
+        if (cancelled || store.getState().auth.status === 'authenticated') return
+        store.dispatch(setUnauthenticated())
+        if (axios.isAxiosError(error) && error.response?.status !== 401) {
+          toast.error(error.response?.data?.message ?? 'Unable to restore your session.')
+        } else if (!axios.isAxiosError(error)) {
+          toast.error(error instanceof Error ? error.message : 'Unable to restore your session.')
+        }
+      })
+
+    return () => {
+      cancelled = true
+      unsubscribe()
+      api.interceptors.request.eject(requestInterceptorId)
+      api.interceptors.response.eject(interceptorId)
+    }
   }, [])
 
   return null

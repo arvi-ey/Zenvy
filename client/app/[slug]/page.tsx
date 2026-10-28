@@ -19,11 +19,14 @@ import {
 
 import { useParams, useRouter } from 'next/navigation';
 import useProducts from '@/hooks/useProducts';
+import { ProductCard } from '@/components/client/ProductCard';
+import { Button } from '@/components/ui/button';
 import { useAddToCart } from '@/hooks/useAddToCart';
 import { useAppDispatch, useAppSelector } from '@/store/hooks';
 import { setCartOpen } from '@/store/slices/uiSlice';
 import { selectIsInWishlist, toggleWishlist } from '@/store/slices/wishlistSlice';
 import type { Product as CartProduct, ProductCategory } from '@/types';
+import type { Product as ListingProduct } from '@/store/slices/productSlicer';
 
 // ─── Types ────────────────────────────────────────────────────────────────────
 interface ProductImage {
@@ -52,6 +55,7 @@ interface Product {
     images: ProductImage[];
     stocks: ProductVariant[];
     category_name: string,
+    category_slug: string,
 }
 
 function toWishlistProduct(product: Product): CartProduct {
@@ -84,6 +88,23 @@ function toWishlistProduct(product: Product): CartProduct {
         reviewCount: 0,
         inStock: Number(product.stock) > 0,
         featured: product.is_featured,
+    };
+}
+
+function toRelatedProduct(product: ListingProduct, category: ProductCategory): CartProduct {
+    return {
+        id: String(product.id),
+        name: product.name,
+        slug: product.slug,
+        description: product.description,
+        price: Number(product.price) || 0,
+        images: product.images.map((image) => image.url),
+        category,
+        sizes: [],
+        colors: [{ name: 'Black', value: '#000000' }],
+        rating: 0,
+        reviewCount: 0,
+        inStock: Number(product.stock) > 0,
     };
 }
 
@@ -350,7 +371,7 @@ const SizeSelector: React.FC<{
 
 // ─── Main Component ───────────────────────────────────────────────────────────
 const ProductDetailPage: React.FC = () => {
-    const { getProductDetails, productsLoading } = useProducts();
+    const { getProductDetails, getProducts, productsLoading } = useProducts();
     const { addItem, isAdding } = useAddToCart();
     const dispatch = useAppDispatch();
     const router = useRouter();
@@ -363,6 +384,10 @@ const ProductDetailPage: React.FC = () => {
     const [selectedSize, setSelectedSize] = useState<string | null>(null);
     const [availableStock, setavailableStock] = useState<number>()
     const [quantity, setQuantity] = useState(1);
+    const [relatedProducts, setRelatedProducts] = useState<CartProduct[]>([]);
+    const [relatedPage, setRelatedPage] = useState(1);
+    const [hasMoreRelated, setHasMoreRelated] = useState(false);
+    const [relatedLoading, setRelatedLoading] = useState(false);
     const isWishlisted = useAppSelector(
         selectIsInWishlist(product ? String(product.id) : '')
     );
@@ -405,6 +430,33 @@ const ProductDetailPage: React.FC = () => {
         setavailableStock(firstInStock?.stock ?? product.stocks[0].stock)
 
     }, [product]);
+
+    useEffect(() => {
+        if (!product) return;
+        const categorySlug = product.category_slug;
+        if (!categorySlug) return;
+        const category = categorySlug.replace(/-/g, '') as ProductCategory;
+        let cancelled = false;
+        setRelatedLoading(true);
+        getProducts({ category: categorySlug, page: relatedPage, limit: 7, orderBy: 'ASC' })
+            .then((data) => {
+                if (cancelled) return;
+                const nextProducts = (data ?? [])
+                    .filter((item) => item.id !== product.id)
+                    .slice(0, 6)
+                    .map((item) => toRelatedProduct(item, category));
+                setRelatedProducts(nextProducts);
+                setHasMoreRelated((data?.length ?? 0) === 7);
+            })
+            .finally(() => {
+                if (!cancelled) setRelatedLoading(false);
+            });
+        return () => { cancelled = true; };
+    }, [getProducts, product, relatedPage]);
+
+    useEffect(() => {
+        setRelatedPage(1);
+    }, [product?.id]);
 
     const goToPrev = useCallback(() => {
         if (!product) return;
@@ -676,6 +728,42 @@ const ProductDetailPage: React.FC = () => {
                         </div>
                     </div>
                 </div>
+                <section className="mt-20 border-t border-border pt-12">
+                    <div className="flex flex-col justify-between gap-4 sm:flex-row sm:items-end">
+                        <div>
+                            <p className="text-xs font-semibold uppercase tracking-[0.2em] text-muted-foreground">You may also like</p>
+                            <h2 className="mt-2 text-2xl font-semibold">More from {product.category_name}</h2>
+                        </div>
+                        <Link
+                            href={`/collections/${product.category_slug}`}
+                            className="text-sm font-medium underline underline-offset-4 hover:text-muted-foreground"
+                        >
+                            View all
+                        </Link>
+                    </div>
+                    {relatedLoading ? (
+                        <div className="mt-8 grid grid-cols-2 gap-4 sm:grid-cols-3 lg:grid-cols-6">
+                            {Array.from({ length: 6 }).map((_, index) => <SkeletonBlock key={index} className="aspect-[3/4] rounded-lg" />)}
+                        </div>
+                    ) : relatedProducts.length > 0 ? (
+                        <>
+                            <div className="mt-8 grid grid-cols-2 gap-4 sm:grid-cols-3 lg:grid-cols-6">
+                                {relatedProducts.map((relatedProduct) => <ProductCard key={relatedProduct.id} product={relatedProduct} />)}
+                            </div>
+                            <div className="mt-8 flex justify-center gap-3">
+                                <Button variant="outline" disabled={relatedPage === 1 || relatedLoading} onClick={() => setRelatedPage((page) => Math.max(1, page - 1))}>
+                                    <ChevronLeft className="h-4 w-4" /> Previous
+                                </Button>
+                                <span className="flex items-center px-3 text-sm text-muted-foreground">Page {relatedPage}</span>
+                                <Button variant="outline" disabled={!hasMoreRelated || relatedLoading} onClick={() => setRelatedPage((page) => page + 1)}>
+                                    Next <ChevronRight className="h-4 w-4" />
+                                </Button>
+                            </div>
+                        </>
+                    ) : (
+                        <p className="mt-8 text-sm text-muted-foreground">No other products are available in this category.</p>
+                    )}
+                </section>
             </div>
         </div>
     );

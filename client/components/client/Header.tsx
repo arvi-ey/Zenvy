@@ -58,15 +58,12 @@ export function Header() {
   }
 
   return (
-    <header className="sticky top-0 z-50 w-full border-b border-border bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60">
-
-
-      {/* Main Header */}
-      <div className="mx-auto flex h-14 max-w-7xl items-center justify-between px-4 sm:h-16 lg:px-6">
+    <header className="sticky top-0 z-50 w-full border-b border-border/80 bg-background/90 backdrop-blur-xl supports-[backdrop-filter]:bg-background/75">
+      <div className="mx-auto flex h-16 max-w-7xl items-center justify-between px-4 lg:px-6">
         {/* Mobile Menu Button */}
         <button
           onClick={() => dispatch(toggleMobileMenu())}
-          className="flex items-center justify-center p-2 lg:hidden"
+          className="inline-flex h-10 w-10 items-center justify-center rounded-full text-muted-foreground transition-colors hover:bg-secondary hover:text-foreground lg:hidden"
           aria-label="Toggle menu"
         >
           {isMobileMenuOpen ? (
@@ -79,62 +76,70 @@ export function Header() {
         {/* Logo */}
         <Link
           href="/"
-          className="flex items-center text-xl font-bold tracking-wider sm:text-2xl logo-txt"
+          className="logo-txt flex items-center text-lg tracking-[0.16em] transition-opacity hover:opacity-75 sm:text-xl"
         >
           Zenvy
         </Link>
 
         {/* Actions */}
-        <div className="flex items-center gap-1 sm:gap-2">
+        <div className="flex items-center gap-0.5 sm:gap-1">
           <Button
             variant="ghost"
             size="icon"
             onClick={() => dispatch(toggleSearch())}
-            className="h-9 w-9"
+            className="h-10 w-10 rounded-full text-muted-foreground hover:text-foreground"
             aria-label="Search"
           >
-            <Search className="h-5 w-5" />
+            <Search className="h-[18px] w-[18px]" />
           </Button>
 
           <Button
             variant="ghost"
             size="icon"
             onClick={() => setTheme(theme === 'dark' ? 'light' : 'dark')}
-            className="hidden h-9 w-9 sm:flex"
+            className="hidden h-10 w-10 rounded-full text-muted-foreground hover:text-foreground sm:flex"
             aria-label="Toggle theme"
           >
-            <Sun className="h-5 w-5 rotate-0 scale-100 transition-transform dark:-rotate-90 dark:scale-0" />
-            <Moon className="absolute h-5 w-5 rotate-90 scale-0 transition-transform dark:rotate-0 dark:scale-100" />
+            <Sun className="h-[18px] w-[18px] rotate-0 scale-100 transition-transform dark:-rotate-90 dark:scale-0" />
+            <Moon className="absolute h-[18px] w-[18px] rotate-90 scale-0 transition-transform dark:rotate-0 dark:scale-100" />
           </Button>
 
           {authUser ? (
-            <Link href="/account" className="hidden max-w-28 truncate text-sm text-muted-foreground hover:text-foreground sm:block">
-              {authUser.firstName}
+            <Link
+              href="/account"
+              className="hidden items-center gap-2 rounded-full border border-border/80 py-1.5 pl-1.5 pr-3 text-sm font-medium transition-colors hover:bg-secondary sm:flex"
+            >
+              <span className="flex h-7 w-7 items-center justify-center rounded-full bg-primary text-xs font-semibold text-primary-foreground">
+                {authUser.firstName.charAt(0).toUpperCase()}
+              </span>
+              <span className="max-w-20 truncate">{authUser.firstName}</span>
             </Link>
           ) : (
-            <Link href="/sign-in" className="hidden sm:block">
-              <Button variant="ghost" size="icon" className="h-9 w-9" aria-label="Sign in">
-                <User className="h-5 w-5" />
-              </Button>
+            <Link
+              href="/sign-in"
+              className="hidden items-center gap-2 rounded-full border border-border/80 px-3 py-2 text-sm font-medium transition-colors hover:bg-secondary sm:flex"
+            >
+              <User className="h-4 w-4" />
+              Sign in
             </Link>
           )}
           {authUser && (
             <Button
               variant="ghost"
               size="icon"
-              className="h-9 w-9"
+              className="hidden h-10 w-10 rounded-full text-muted-foreground hover:text-foreground sm:flex"
               aria-label="Sign out"
               onClick={handleSignOut}
             >
-              <LogOut className="h-4 w-4" />
+              <LogOut className="h-[18px] w-[18px]" />
             </Button>
           )}
 
-          <Link href="/wishlist" className="relative">
-            <Button variant="ghost" size="icon" className="h-9 w-9" aria-label="Wishlist">
-              <Heart className="h-5 w-5" />
+          <Link href="/wishlist" className="relative rounded-full">
+            <Button variant="ghost" size="icon" className="h-10 w-10 rounded-full text-muted-foreground hover:text-foreground" aria-label="Wishlist">
+              <Heart className="h-[18px] w-[18px]" />
               {wishlistCount > 0 && (
-                <span className="absolute -right-0.5 -top-0.5 flex h-4 w-4 items-center justify-center rounded-full bg-primary text-[10px] font-medium text-primary-foreground">
+                <span className="absolute right-0 top-0 flex h-4 min-w-4 items-center justify-center rounded-full bg-primary px-1 text-[10px] font-semibold text-primary-foreground ring-2 ring-background">
                   {wishlistCount}
                 </span>
               )}
@@ -145,12 +150,12 @@ export function Header() {
             variant="ghost"
             size="icon"
             onClick={() => dispatch(toggleCart())}
-            className="relative h-9 w-9"
+            className="relative h-10 w-10 rounded-full text-muted-foreground hover:text-foreground"
             aria-label="Cart"
           >
-            <ShoppingBag className="h-5 w-5" />
+            <ShoppingBag className="h-[18px] w-[18px]" />
             {cartCount > 0 && (
-              <span className="absolute -right-0.5 -top-0.5 flex h-4 w-4 items-center justify-center rounded-full bg-primary text-[10px] font-medium text-primary-foreground">
+              <span className="absolute right-0 top-0 flex h-4 min-w-4 items-center justify-center rounded-full bg-primary px-1 text-[10px] font-semibold text-primary-foreground ring-2 ring-background">
                 {cartCount}
               </span>
             )}
@@ -158,47 +163,68 @@ export function Header() {
         </div>
       </div>
 
+      <nav className="hidden border-t border-border/60 lg:block" aria-label="Main navigation">
+        <div className="mx-auto flex h-11 max-w-7xl items-center justify-center gap-8 px-6">
+          {navLinks.map((link) => {
+            const isActive = pathname === link.href || pathname.startsWith(`${link.href}/`)
+            return (
+              <Link
+                key={link.href}
+                href={link.href}
+                className={cn(
+                  'relative flex h-full items-center text-[11px] font-semibold uppercase tracking-[0.16em] transition-colors',
+                  isActive ? 'text-foreground' : 'text-muted-foreground hover:text-foreground',
+                  isActive && 'after:absolute after:inset-x-0 after:bottom-0 after:h-0.5 after:bg-foreground'
+                )}
+              >
+                {link.label}
+              </Link>
+            )
+          })}
+        </div>
+      </nav>
+
       {/* Mobile Menu */}
       <div
         className={cn(
-          'fixed inset-x-0 top-[calc(3.5rem+2.5rem)] bottom-0 z-40 bg-background transition-transform duration-300 ease-in-out lg:hidden sm:top-[calc(4rem+2.5rem)]',
+          'fixed inset-x-0 top-16 bottom-0 z-40 overflow-y-auto border-t border-border bg-background transition-transform duration-300 ease-in-out lg:hidden',
           isMobileMenuOpen ? 'translate-x-0' : '-translate-x-full'
         )}
       >
-        <nav className="flex flex-col p-4">
+        <nav className="flex flex-col p-5">
+          <p className="mb-2 text-[10px] font-semibold uppercase tracking-[0.2em] text-muted-foreground">Shop</p>
           {navLinks.map((link) => (
             <Link
               key={link.href}
               href={link.href}
               onClick={() => dispatch(setMobileMenuOpen(false))}
               className={cn(
-                'border-b border-border py-4 text-base font-medium transition-colors',
-                pathname === link.href
-                  ? 'text-primary'
-                  : 'text-muted-foreground'
+                'flex items-center justify-between border-b border-border/70 py-4 text-sm font-semibold transition-colors',
+                pathname === link.href ? 'text-foreground' : 'text-muted-foreground hover:text-foreground',
               )}
             >
               {link.label}
+              <span className="text-muted-foreground">↗</span>
             </Link>
           ))}
 
-          <div className="mt-6 flex items-center gap-4">
+          <div className="mt-8 grid gap-2 border-t border-border pt-6">
             {authUser ? (
               <>
                 <Link
                   href="/account"
                   onClick={() => dispatch(setMobileMenuOpen(false))}
-                  className="flex items-center gap-2 text-sm font-medium"
+                  className="flex items-center gap-3 rounded-lg px-3 py-3 text-sm font-medium transition-colors hover:bg-secondary"
                 >
-                  <User className="h-5 w-5" />
+                  <User className="h-4 w-4 text-muted-foreground" />
                   My account
                 </Link>
                 <button
                   type="button"
                   onClick={handleSignOut}
-                  className="flex items-center gap-2 text-sm font-medium"
+                  className="flex items-center gap-3 rounded-lg px-3 py-3 text-left text-sm font-medium transition-colors hover:bg-secondary"
                 >
-                  <LogOut className="h-5 w-5" />
+                  <LogOut className="h-4 w-4 text-muted-foreground" />
                   Sign out
                 </button>
               </>
@@ -206,15 +232,15 @@ export function Header() {
               <Link
                 href="/sign-in"
                 onClick={() => dispatch(setMobileMenuOpen(false))}
-                className="flex items-center gap-2 text-sm font-medium"
+                className="flex items-center gap-3 rounded-lg px-3 py-3 text-sm font-medium transition-colors hover:bg-secondary"
               >
-                <User className="h-5 w-5" />
+                <User className="h-4 w-4 text-muted-foreground" />
                 Sign in
               </Link>
             )}
             <button
               onClick={() => setTheme(theme === 'dark' ? 'light' : 'dark')}
-              className="flex items-center gap-2 text-sm font-medium"
+              className="flex items-center gap-3 rounded-lg px-3 py-3 text-left text-sm font-medium transition-colors hover:bg-secondary"
             >
               {theme === 'dark' ? (
                 <>

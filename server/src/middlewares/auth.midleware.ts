@@ -23,7 +23,8 @@ declare global {
 const ACCESS_COOKIE = "access_token";
 
 function authenticate(req: Request): boolean {
-    const token = req.cookies?.[ACCESS_COOKIE];
+    const bearerToken = req.get("authorization")?.match(/^Bearer\s+(.+)$/i)?.[1];
+    const token = bearerToken ?? req.cookies?.[ACCESS_COOKIE];
 
     if (!token) {
         return false;

@@ -9,8 +9,13 @@ import { toast } from 'sonner'
 import { ChevronLeft, Check, Banknote } from 'lucide-react'
 import { useAppSelector, useAppDispatch } from '@/store/hooks'
 import { AddressManager } from '@/components/client/AddressManager'
-import type { Address } from '@/api/address'
 import { selectCartItems, clearCart, removeFromCart } from '@/store/slices/cartSlice'
+import {
+  selectAddressPickerOpen,
+  selectShippingAddress,
+  setAddressPickerOpen,
+  setShippingAddress,
+} from '@/store/slices/checkoutSlice'
 import { createCashOnDeliveryOrder } from '@/api/orders'
 import { getSingleCheckoutItem } from '@/lib/checkout'
 import { Button } from '@/components/ui/button'
@@ -42,9 +47,9 @@ function CheckoutContent() {
   )
   const [step, setStep] = useState<CheckoutStep>('information')
   const [isPlacingOrder, setIsPlacingOrder] = useState(false)
-  const [isAddressPickerOpen, setIsAddressPickerOpen] = useState(false)
-  const [selectedAddress, setSelectedAddress] = useState<Address | null>(null)
   const [orderId, setOrderId] = useState<number | null>(null)
+  const selectedAddress = useAppSelector(selectShippingAddress)
+  const isAddressPickerOpen = useAppSelector(selectAddressPickerOpen)
 
   useEffect(() => {
     if (authStatus === 'unauthenticated') {
@@ -105,7 +110,7 @@ function CheckoutContent() {
     if (step === 'information') {
       if (!selectedAddress) {
         toast.error('Choose a delivery address before continuing.')
-        setIsAddressPickerOpen(true)
+        dispatch(setAddressPickerOpen(true))
         return
       }
       setStep('shipping')
@@ -243,7 +248,7 @@ function CheckoutContent() {
                               {selectedAddress.district}, {selectedAddress.state} {selectedAddress.pincode}
                             </p>
                           </div>
-                          <Button type="button" variant="outline" size="sm" onClick={() => setIsAddressPickerOpen(true)}>
+                          <Button type="button" variant="outline" size="sm" onClick={() => dispatch(setAddressPickerOpen(true))}>
                             Change
                           </Button>
                         </div>
@@ -251,7 +256,7 @@ function CheckoutContent() {
                     ) : (
                       <div className="rounded-lg border border-dashed border-border p-4">
                         <p className="text-sm text-muted-foreground">Choose a saved address or add a new delivery address.</p>
-                        <Button type="button" variant="outline" className="mt-3" onClick={() => setIsAddressPickerOpen(true)}>
+                        <Button type="button" variant="outline" className="mt-3" onClick={() => dispatch(setAddressPickerOpen(true))}>
                           Choose delivery address
                         </Button>
                       </div>
@@ -340,9 +345,9 @@ function CheckoutContent() {
           <AddressManager
             mode="picker"
             open={isAddressPickerOpen}
-            onOpenChange={setIsAddressPickerOpen}
+          onOpenChange={(open) => dispatch(setAddressPickerOpen(open))}
             selectedAddressId={selectedAddress?.id}
-            onSelect={setSelectedAddress}
+          onSelect={(address) => dispatch(setShippingAddress(address))}
           />
         </div>
 

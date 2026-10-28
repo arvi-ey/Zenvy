@@ -39,11 +39,10 @@ export const deleteFromCart = catchAsync(
 export const addToCart = catchAsync(
     async (req: Request, res: Response, _next: NextFunction) => {
         const user_id = req.user?.id;
-        const guest_token = req.guest_token;
         const { product_id, product_count } = req.body;
 
-        if (!user_id && !guest_token) {
-            throw new AppError("Either user or guest session is required", 400);
+        if (!user_id) {
+            throw new AppError("Authentication is required to add items to your cart", 401);
         }
 
         const productId = Number(product_id);
@@ -60,7 +59,6 @@ export const addToCart = catchAsync(
             product_id: productId,
             product_count: productCount,
             user_id,
-            guest_token,
         });
 
         sendResponse(res, 200, "Item added to cart", response);

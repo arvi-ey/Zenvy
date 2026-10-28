@@ -42,8 +42,8 @@ export default function SignUpPage() {
     setErrorMessage('')
     setIsSubmitting(true)
     try {
-      const user = await signUp(form)
-      dispatch(setAuthenticated(user))
+      const session = await signUp(form)
+      dispatch(setAuthenticated(session))
       router.replace(getReturnPath())
     } catch (error: unknown) {
       const message = axios.isAxiosError<{ message?: string }>(error)

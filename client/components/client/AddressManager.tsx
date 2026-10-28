@@ -4,6 +4,7 @@ import { useCallback, useEffect, useState, type FormEvent } from 'react'
 import axios from 'axios'
 import { MapPin, Plus, Trash2 } from 'lucide-react'
 import { toast } from 'sonner'
+import { useAppSelector } from '@/store/hooks'
 import { createAddress, deleteAddress, getAddresses, type Address, type AddressType } from '@/api/address'
 import { Button } from '@/components/ui/button'
 import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle } from '@/components/ui/dialog'
@@ -69,21 +70,26 @@ export function AddressManager({
   const [deletingId, setDeletingId] = useState<number | null>(null)
   const [isFormOpen, setIsFormOpen] = useState(false)
   const [form, setForm] = useState(emptyForm)
+  const authStatus = useAppSelector((state) => state.auth.status)
 
   const loadAddresses = useCallback(async () => {
     setIsLoading(true)
     try {
       setAddresses(await getAddresses())
     } catch (error: unknown) {
-      toast.error(getErrorMessage(error, 'Unable to load your addresses.'))
+      if (!axios.isAxiosError(error) || error.response?.status !== 401) {
+        toast.error(getErrorMessage(error, 'Unable to load your addresses.'))
+      }
     } finally {
       setIsLoading(false)
     }
   }, [])
 
   useEffect(() => {
-    if (mode === 'page' || open) void loadAddresses()
-  }, [loadAddresses, mode, open])
+    if (authStatus === 'authenticated' && (mode === 'page' || open)) {
+      void loadAddresses()
+    }
+  }, [authStatus, loadAddresses, mode, open])
 
   const handleSave = async (event: FormEvent<HTMLFormElement>) => {
     event.preventDefault()

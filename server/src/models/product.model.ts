@@ -95,7 +95,7 @@ export class ProductModel {
     static async getproductdetails({ id, slug }: getProductdetailsOption = {}) {
 
         let query = `
-        SELECT p.*,pc.name AS category_name, JSON_AGG(
+        SELECT p.*,pc.name AS category_name, pc.slug AS category_slug, JSON_AGG(
         DISTINCT JSONB_BUILD_OBJECT(
         'url',pi.url,
         'is_main',pi.is_main
@@ -127,7 +127,7 @@ export class ProductModel {
             query += ` AND p.id =$${num}`
             values.push(id)
         }
-        query += ` GROUP BY p.id, pc.name;`
+        query += ` GROUP BY p.id, pc.name, pc.slug;`
         const { rows } = await pool.query(query, values)
         console.log(rows)
 
@@ -136,6 +136,4 @@ export class ProductModel {
     }
 
 }
-
-
 

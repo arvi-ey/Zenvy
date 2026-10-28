@@ -2,9 +2,10 @@
 
 import { useState } from "react";
 import axios from "axios";
+import { useRouter } from "next/navigation";
 import { toast } from "sonner";
 import { addProductToCart } from "@/api/cart";
-import { useAppDispatch } from "@/store/hooks";
+import { useAppDispatch, useAppSelector } from "@/store/hooks";
 import { addToCart as addToCartAction } from "@/store/slices/cartSlice";
 import type { Product } from "@/types";
 
@@ -16,7 +17,9 @@ interface AddToCartOptions {
 }
 
 export function useAddToCart() {
+  const router = useRouter();
   const dispatch = useAppDispatch();
+  const authStatus = useAppSelector((state) => state.auth.status);
   const [isAdding, setIsAdding] = useState(false);
 
   const addItem = async ({
@@ -25,6 +28,13 @@ export function useAddToCart() {
     selectedSize,
     selectedColor,
   }: AddToCartOptions) => {
+    if (authStatus !== "authenticated") {
+      toast.info("Please sign in to add products to your cart.");
+      const next = `${window.location.pathname}${window.location.search}`;
+      router.push(`/sign-in?next=${encodeURIComponent(next)}`);
+      return false;
+    }
+
     setIsAdding(true);
     try {
       const productId = Number(product.id);

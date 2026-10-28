@@ -2,7 +2,7 @@ import { Router } from "express";
 import { z } from "zod";
 import { addToCart, deleteFromCart, getCart } from "../controller/cart.controller.js";
 import { ensureGuestToken } from "../middlewares/cart.middleware.js";
-import { optionalAuth } from "../middlewares/auth.midleware.js";
+import { optionalAuth, requireAuth } from "../middlewares/auth.midleware.js";
 import { validate } from "../middlewares/routeValidator.js";
 
 const router = Router();
@@ -28,9 +28,8 @@ const addToCartSchema = z
 
 router.post(
     "/add-to-cart",
-    optionalAuth,
+    requireAuth,
     validate(addToCartSchema, "body"),
-    ensureGuestToken,
     addToCart
 );
 

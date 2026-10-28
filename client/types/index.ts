@@ -68,9 +68,10 @@ export type SortOption =
 // Checkout Types
 export interface CheckoutState {
   step: 'cart' | 'address' | 'payment' | 'confirmation'
-  shippingAddress: Address | null
+  shippingAddress: import('@/api/address').Address | null
   billingAddress: Address | null
   paymentMethod: PaymentMethod | null
+  addressPickerOpen: boolean
 }
 
 export interface Address {
