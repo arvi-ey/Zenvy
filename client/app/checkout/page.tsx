@@ -6,18 +6,16 @@ import Image from 'next/image'
 import { useRouter } from 'next/navigation'
 import { useSearchParams } from 'next/navigation'
 import { toast } from 'sonner'
-import { ChevronLeft, Lock, Check } from 'lucide-react'
+import { ChevronLeft, Check, Banknote } from 'lucide-react'
 import { useAppSelector, useAppDispatch } from '@/store/hooks'
 import { AddressManager } from '@/components/client/AddressManager'
 import type { Address } from '@/api/address'
 import { selectCartItems, clearCart, removeFromCart } from '@/store/slices/cartSlice'
-import { deleteProductFromCart } from '@/api/cart'
+import { createCashOnDeliveryOrder } from '@/api/orders'
 import { getSingleCheckoutItem } from '@/lib/checkout'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
-import { RadioGroup, RadioGroupItem } from '@/components/ui/radio-group'
-import { Checkbox } from '@/components/ui/checkbox'
 import { Skeleton } from '@/components/ui/skeleton'
 import { cn } from '@/lib/utils'
 
@@ -43,11 +41,10 @@ function CheckoutContent() {
     0
   )
   const [step, setStep] = useState<CheckoutStep>('information')
-  const [shippingMethod, setShippingMethod] = useState('standard')
-  const [sameAsBilling, setSameAsBilling] = useState(true)
   const [isPlacingOrder, setIsPlacingOrder] = useState(false)
   const [isAddressPickerOpen, setIsAddressPickerOpen] = useState(false)
   const [selectedAddress, setSelectedAddress] = useState<Address | null>(null)
+  const [orderId, setOrderId] = useState<number | null>(null)
 
   useEffect(() => {
     if (authStatus === 'unauthenticated') {
@@ -59,14 +56,14 @@ function CheckoutContent() {
   }, [authStatus, router, searchParams])
 
   const formatPrice = (price: number) => {
-    return new Intl.NumberFormat('en-US', {
+    return new Intl.NumberFormat('en-IN', {
       style: 'currency',
-      currency: 'USD',
+      currency: 'INR',
       minimumFractionDigits: 0,
     }).format(price)
   }
 
-  const shippingCost = shippingMethod === 'express' ? 25 : subtotal > 150 ? 0 : 15
+  const shippingCost = 40
   const total = subtotal + shippingCost
 
   const steps: { key: CheckoutStep; label: string }[] = [
@@ -117,8 +114,9 @@ function CheckoutContent() {
     } else if (step === 'payment') {
       setIsPlacingOrder(true)
       try {
+        const order = await createCashOnDeliveryOrder(selectedAddress!.id, items)
+        setOrderId(order.id)
         if (productId && selectedItem) {
-          await deleteProductFromCart(selectedItem.product.id)
           dispatch(removeFromCart({
             productId: selectedItem.product.id,
             selectedSize: selectedItem.selectedSize,
@@ -145,17 +143,17 @@ function CheckoutContent() {
           </div>
           <h1 className="mt-6 text-2xl font-semibold">Order Confirmed!</h1>
           <p className="mt-2 text-muted-foreground">
-            Thank you for your purchase. Your order #12345 has been placed successfully.
+            Thank you for your purchase. Your order #{orderId} has been placed successfully.
           </p>
           <p className="mt-4 text-sm text-muted-foreground">
-            You will receive an email confirmation shortly with tracking information.
+            Payment is due at delivery. You can follow this order from your Orders section.
           </p>
           <div className="mt-8 flex flex-col gap-3 sm:flex-row sm:justify-center">
             <Button asChild>
               <Link href="/collections/all">Continue Shopping</Link>
             </Button>
             <Button variant="outline" asChild>
-              <Link href="/">Back to Home</Link>
+              <Link href="/account/orders">View my orders</Link>
             </Button>
           </div>
         </div>
@@ -271,115 +269,41 @@ function CheckoutContent() {
             {step === 'shipping' && (
               <div>
                 <h2 className="text-lg font-semibold">Shipping Method</h2>
-                <RadioGroup
-                  value={shippingMethod}
-                  onValueChange={setShippingMethod}
-                  className="mt-4 space-y-3"
-                >
-                  <label
-                    className={cn(
-                      'flex cursor-pointer items-center justify-between rounded-lg border p-4 transition-colors',
-                      shippingMethod === 'standard'
-                        ? 'border-primary bg-primary/5'
-                        : 'border-border hover:border-primary/50'
-                    )}
-                  >
+                <div className="mt-4 space-y-3">
+                  <div className="flex items-center justify-between rounded-lg border border-primary bg-primary/5 p-4">
                     <div className="flex items-center gap-3">
-                      <RadioGroupItem value="standard" />
                       <div>
-                        <p className="font-medium">Standard Shipping</p>
+                        <p className="font-medium">Standard delivery</p>
                         <p className="text-sm text-muted-foreground">
-                          5-7 business days
+                          Delivery charge
                         </p>
                       </div>
                     </div>
                     <p className="font-medium">
-                      {subtotal > 150 ? 'Free' : formatPrice(15)}
+                      {formatPrice(40)}
                     </p>
-                  </label>
-                  <label
-                    className={cn(
-                      'flex cursor-pointer items-center justify-between rounded-lg border p-4 transition-colors',
-                      shippingMethod === 'express'
-                        ? 'border-primary bg-primary/5'
-                        : 'border-border hover:border-primary/50'
-                    )}
-                  >
-                    <div className="flex items-center gap-3">
-                      <RadioGroupItem value="express" />
-                      <div>
-                        <p className="font-medium">Express Shipping</p>
-                        <p className="text-sm text-muted-foreground">
-                          2-3 business days
-                        </p>
-                      </div>
-                    </div>
-                    <p className="font-medium">{formatPrice(25)}</p>
-                  </label>
-                </RadioGroup>
+                  </div>
+                </div>
               </div>
             )}
 
             {/* Payment Step */}
             {step === 'payment' && (
-              <>
-                <div>
-                  <h2 className="text-lg font-semibold">Payment</h2>
-                  <p className="mt-1 text-sm text-muted-foreground">
-                    All transactions are secure and encrypted.
-                  </p>
-                  <div className="mt-4 rounded-lg border border-border p-4">
-                    <div className="grid gap-4">
-                      <div>
-                        <Label htmlFor="cardNumber">Card Number</Label>
-                        <Input
-                          id="cardNumber"
-                          placeholder="1234 5678 9012 3456"
-                          className="mt-1.5"
-                          required
-                        />
-                      </div>
-                      <div className="grid grid-cols-2 gap-4">
-                        <div>
-                          <Label htmlFor="expiry">Expiry Date</Label>
-                          <Input
-                            id="expiry"
-                            placeholder="MM / YY"
-                            className="mt-1.5"
-                            required
-                          />
-                        </div>
-                        <div>
-                          <Label htmlFor="cvc">CVC</Label>
-                          <Input
-                            id="cvc"
-                            placeholder="123"
-                            className="mt-1.5"
-                            required
-                          />
-                        </div>
-                      </div>
-                      <div>
-                        <Label htmlFor="cardName">Name on Card</Label>
-                        <Input id="cardName" className="mt-1.5" required />
-                      </div>
-                    </div>
+              <div>
+                <h2 className="text-lg font-semibold">Payment</h2>
+                <div className="mt-4 flex items-start gap-3 rounded-lg border border-primary bg-primary/5 p-4">
+                  <Banknote className="mt-0.5 h-5 w-5 shrink-0 text-primary" />
+                  <div>
+                    <p className="font-medium">Cash on Delivery</p>
+                    <p className="mt-1 text-sm text-muted-foreground">
+                      Pay in cash when your order arrives.
+                    </p>
                   </div>
                 </div>
-
-                <div>
-                  <h2 className="text-lg font-semibold">Billing Address</h2>
-                  <label className="mt-4 flex items-center gap-2">
-                    <Checkbox
-                      checked={sameAsBilling}
-                      onCheckedChange={(checked) =>
-                        setSameAsBilling(checked as boolean)
-                      }
-                    />
-                    <span className="text-sm">Same as shipping address</span>
-                  </label>
-                </div>
-              </>
+                <p className="mt-4 text-sm text-muted-foreground">
+                  We are working on our payment gateway. UPI and Card payment options will be available soon.
+                </p>
+              </div>
             )}
 
             {/* Actions */}
@@ -407,7 +331,6 @@ function CheckoutContent() {
                 </Link>
               )}
               <Button type="submit" size="lg" className="gap-2 sm:ml-auto" disabled={isPlacingOrder}>
-                {step === 'payment' && <Lock className="h-4 w-4" />}
                 {step === 'information' && 'Continue to Shipping'}
                 {step === 'shipping' && 'Continue to Payment'}
                 {step === 'payment' && (isPlacingOrder ? 'Placing Order…' : 'Place Order')}
@@ -469,13 +392,7 @@ function CheckoutContent() {
             </div>
             <div className="flex justify-between text-sm">
               <span className="text-muted-foreground">Shipping</span>
-              <span>
-                {shippingCost === 0 ? (
-                  <span className="text-green-600">Free</span>
-                ) : (
-                  formatPrice(shippingCost)
-                )}
-              </span>
+              <span>{formatPrice(shippingCost)}</span>
             </div>
           </div>
 

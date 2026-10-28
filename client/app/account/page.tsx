@@ -3,7 +3,7 @@
 import { useEffect } from 'react'
 import Link from 'next/link'
 import { useRouter } from 'next/navigation'
-import { ArrowRight, MapPin, UserRound } from 'lucide-react'
+import { ArrowRight, MapPin, Package, UserRound } from 'lucide-react'
 import { useAppSelector } from '@/store/hooks'
 import { Button } from '@/components/ui/button'
 import { Skeleton } from '@/components/ui/skeleton'
@@ -38,6 +38,20 @@ export default function AccountPage() {
           <p className="mt-1 text-sm text-muted-foreground">Welcome, {user.firstName}.</p>
         </div>
       </div>
+      <section className="mt-8 rounded-xl border border-border bg-card p-6">
+        <div className="flex flex-col justify-between gap-5 sm:flex-row sm:items-center">
+          <div className="flex items-start gap-4">
+            <Package className="mt-1 h-5 w-5 text-muted-foreground" />
+            <div>
+              <h2 className="font-medium">My orders</h2>
+              <p className="mt-1 text-sm text-muted-foreground">View your products and track delivery status.</p>
+            </div>
+          </div>
+          <Button asChild variant="outline">
+            <Link href="/account/orders">View orders <ArrowRight className="ml-2 h-4 w-4" /></Link>
+          </Button>
+        </div>
+      </section>
       <section className="mt-8 rounded-xl border border-border bg-card p-6">
         <div className="flex flex-col justify-between gap-5 sm:flex-row sm:items-center">
           <div className="flex items-start gap-4">
