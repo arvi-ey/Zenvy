@@ -14,7 +14,18 @@ const orderSchema = z.object({
         selected_size: z.string().trim().min(1).max(20),
         selected_color: z.string().trim().min(1).max(50),
     }).strict()).min(1),
-}).strict();
+}).strict().superRefine((value, context) => {
+    const itemKeys = value.items.map((item) =>
+        `${item.product_id}:${item.selected_size.toLowerCase()}:${item.selected_color.toLowerCase()}`
+    );
+    if (new Set(itemKeys).size !== itemKeys.length) {
+        context.addIssue({
+            code: "custom",
+            path: ["items"],
+            message: "Duplicate order items are not allowed.",
+        });
+    }
+});
 
 router.use(requireAuth);
 router.get("/", getOrders);

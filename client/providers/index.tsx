@@ -149,11 +149,12 @@ function AuthHydrator() {
         ) {
           return Promise.reject(error)
         }
-        if (request.headers['x-auth-retry']) {
+        if (request.headers?.['x-auth-retry']) {
           store.dispatch(setUnauthenticated())
           return Promise.reject(error)
         }
 
+        request.headers = request.headers ?? {}
         request.headers['x-auth-retry'] = 'true'
         try {
           refreshPromise ??= api.post<{ data?: { accessToken?: string } }>('/auth/refresh')

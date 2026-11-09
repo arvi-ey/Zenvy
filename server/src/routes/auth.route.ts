@@ -2,6 +2,8 @@ import { Router } from "express";
 import { z } from "zod";
 import {
     getCurrentUser,
+    adminSignIn,
+    adminSignUp,
     refreshSession,
     signIn,
     signOut,
@@ -32,7 +34,20 @@ const signInSchema = z.object({
         "Password must be at most 72 bytes."
     ),
 }).strict();
-
+router.post(
+    "/admin/sign-up",
+    validateAuthOrigin,
+    routeLimiter(5, 10, "Too many admin registration attempts. Please try again later."),
+    validate(signUpSchema, "body"),
+    adminSignUp
+);
+router.post(
+    "/admin/sign-in",
+    validateAuthOrigin,
+    routeLimiter(15, 10, "Too many sign-in attempts. Please try again later."),
+    validate(signInSchema, "body"),
+    adminSignIn
+);
 router.post(
     "/sign-up",
     validateAuthOrigin,

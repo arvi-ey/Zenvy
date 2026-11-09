@@ -16,4 +16,5 @@ export const env = {
     ACCESS_TOKEN_EXPIRES_IN: process.env.ACCESS_TOKEN_EXPIRES_IN!,
     REFRESH_TOKEN_EXPIRES_IN: process.env.REFRESH_TOKEN_EXPIRES_IN!,
     ACCESS_TOKEN_MAX_AGE: process.env.ACCESS_TOKEN_MAX_AGE!,
+    ADMIN_BASE_URL: process.env.ADMIN_BASE_URL,
 };

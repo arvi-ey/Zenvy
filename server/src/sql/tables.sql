@@ -19,10 +19,15 @@ CREATE TABLE product (
     slug TEXT UNIQUE NOT NULL,
     description TEXT NOT NULL,
     is_featured boolean default false,
+    sku TEXT,
     category_id INT NOT NULL,
     stock NUMERIC NOT NULL DEFAULT(0),
     price NUMERIC(10, 2) NOT NULL
         CHECK (price >= 0),
+    compare_at_price NUMERIC(10, 2),
+    cost_price NUMERIC(10, 2),
+    low_stock_threshold INTEGER NOT NULL DEFAULT 5,
+    tags TEXT[] NOT NULL DEFAULT '{}',
     status VARCHAR(20) NOT NULL
         DEFAULT 'active'
         CHECK (status IN ('active', 'inactive', 'draft')),
@@ -36,7 +41,13 @@ CREATE TABLE product (
     CONSTRAINT fk_product_category
         FOREIGN KEY (category_id)
         REFERENCES product_category(id)
-        ON DELETE RESTRICT
+        ON DELETE RESTRICT,
+    CONSTRAINT product_compare_at_price_nonnegative
+        CHECK (compare_at_price IS NULL OR compare_at_price >= 0),
+    CONSTRAINT product_cost_price_nonnegative
+        CHECK (cost_price IS NULL OR cost_price >= 0),
+    CONSTRAINT product_low_stock_threshold_nonnegative
+        CHECK (low_stock_threshold >= 0)
 );
 
 
@@ -56,6 +67,9 @@ CREATE TABLE product_images (
         ON DELETE CASCADE
 );
 
+CREATE UNIQUE INDEX product_sku_unique_idx
+    ON product (sku)
+    WHERE sku IS NOT NULL;
 
 --Product reviews table
 CREATE TABLE product_reviews (
@@ -99,6 +113,7 @@ CREATE TABLE users (
    email VARCHAR(100) UNIQUE NOT NULL,
    phone VARCHAR(15) UNIQUE NOT NULL,
    avatar TEXT,
+   user_type CHECK(user_type in ('admin','user'));
    status VARCHAR(20) NOT NULL DEFAULT 'active' CHECK (status IN ('active', 'not_active', 'suspended')), 
    verified BOOLEAN NOT NULL DEFAULT FALSE,
    created_at TIMESTAMPTZ NOT NULL DEFAULT CURRENT_TIMESTAMP,

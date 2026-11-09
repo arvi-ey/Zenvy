@@ -24,6 +24,10 @@ export class ProductCategoryModel {
         return rows[0];
     }
 
+    static async getAdminList(): Promise<ProductCategory[]> {
+        return this.findAll("all");
+    }
+
     // Get All
     static async findAll(status: 'active' | 'inactive' | 'all' | null = 'active'): Promise<ProductCategory[]> {
 
@@ -62,32 +66,45 @@ export class ProductCategoryModel {
     // Update
     static async update(
         id: number,
-        name: string
+        name: string,
+        image: string
     ): Promise<ProductCategory | null> {
         const query = `
       UPDATE product_category
       SET
         name = $1,
-        slug = generate_slug($1)
-      WHERE id = $2 AND  deleted_at IS NULL
+      image = $2
+      WHERE id = $3 AND deleted_at IS NULL
       RETURNING *;
     `;
 
-        const { rows } = await pool.query<ProductCategory>(query, [name, id]);
+      const { rows } = await pool.query<ProductCategory>(query, [name, image, id]);
 
         return rows[0] ?? null;
     }
 
     // Delete
-    static async delete(id: number): Promise<boolean> {
+    static async delete(id: number): Promise<"deleted" | "in_use" | "not_found"> {
         const query = `
       update product_category
       set deleted_at= now()
-      WHERE id = $1 AND deleted_at IS NULL;
+      WHERE id = $1
+        AND deleted_at IS NULL
+        AND NOT EXISTS (
+            SELECT 1 FROM product
+            WHERE product.category_id = product_category.id
+              AND product.deleted_at IS NULL
+        );
     `;
 
         const result = await pool.query(query, [id]);
-
-        return result.rowCount === 1;
+        if (result.rowCount === 1) {
+            return "deleted";
+        }
+        const existing = await pool.query(
+            "SELECT EXISTS(SELECT 1 FROM product_category WHERE id = $1 AND deleted_at IS NULL) AS exists",
+            [id]
+        );
+        return existing.rows[0]?.exists ? "in_use" : "not_found";
     }
 }

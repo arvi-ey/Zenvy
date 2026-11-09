@@ -1,5 +1,10 @@
+-- Run after the base schema in tables.sql to enable password-based sessions and RBAC.
 ALTER TABLE users
 ADD COLUMN IF NOT EXISTS password_hash TEXT;
+
+ALTER TABLE users
+ADD COLUMN IF NOT EXISTS role TEXT NOT NULL DEFAULT 'customer'
+CHECK (role IN ('customer', 'admin'));
 
 CREATE TABLE IF NOT EXISTS auth_sessions (
     id BIGSERIAL PRIMARY KEY,

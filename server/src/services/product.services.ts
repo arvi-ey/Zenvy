@@ -1,4 +1,5 @@
 import { pool } from "../config/db.js";
+import { randomBytes } from "node:crypto";
 
 interface ProductImage {
     url: string;
@@ -9,9 +10,14 @@ interface ProductImage {
 interface ProductData {
     name: string;
     description: string;
+    sku: string;
     category_id: number;
     stock: number;
     price: number;
+    compare_at_price?: number | null;
+    cost_price?: number | null;
+    low_stock_threshold: number;
+    tags: string[];
     status: 'active' | 'inactive' | 'draft';
     images: ProductImage[];
 }
@@ -22,12 +28,21 @@ export const AddProduct = async (data: ProductData) => {
 
     try {
         const { images, ...productData } = data;
+        const normalizedSlug = productData.name
+            .toLowerCase()
+            .trim()
+            .replace(/[^a-z0-9]+/g, "-")
+            .replace(/^-|-$/g, "") || "product";
+        const productDataWithSlug = {
+            ...productData,
+            slug: `${normalizedSlug}-${randomBytes(4).toString("hex")}`,
+        };
 
         await client.query("BEGIN");
 
-        const columns = Object.keys(productData);
+        const columns = Object.keys(productDataWithSlug);
 
-        const values = Object.values(productData);
+        const values = Object.values(productDataWithSlug);
 
         const placeholders = values
             .map((_, index) => `$${index + 1}`)

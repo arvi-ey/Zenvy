@@ -18,6 +18,7 @@ interface AuthUser {
     lastName: string;
     email: string;
     phone: string;
+    role: string;
 }
 
 interface RefreshPayload extends jwt.JwtPayload {
@@ -57,7 +58,7 @@ function createAccessToken(user: AuthUser) {
         {
             id: user.id,
             email: user.email,
-            role: "customer",
+            role: user.role,
             firstName: user.firstName,
             lastName: user.lastName,
         },
@@ -131,6 +132,7 @@ function toUser(row: Record<string, unknown>): AuthUser {
         lastName: String(row.last_name),
         email: String(row.email),
         phone: String(row.phone),
+        role: String(row.role ?? "customer"),
     };
 }
 
@@ -155,7 +157,7 @@ export const signUp = catchAsync(async (req: Request, res: Response) => {
     const created = await pool.query(
         `INSERT INTO users (first_name, last_name, email, phone, password_hash, status, verified)
          VALUES ($1, $2, $3, $4, $5, 'active', TRUE)
-         RETURNING id, first_name, last_name, email, phone`,
+         RETURNING id, first_name, last_name, email, phone, role`,
         [firstName.trim(), lastName.trim(), normalizedEmail, phone.trim(), passwordHash]
     );
     const user = toUser(created.rows[0]);
@@ -164,10 +166,58 @@ export const signUp = catchAsync(async (req: Request, res: Response) => {
     sendResponse(res, 201, "Account created successfully", authResponse(user, refreshToken));
 });
 
-export const signIn = catchAsync(async (req: Request, res: Response) => {
+export const adminSignUp = catchAsync(async (req: Request, res: Response) => {
+    const { firstName, lastName, email, phone, password } = req.body as {
+        firstName: string;
+        lastName: string;
+        email: string;
+        phone: string;
+        password: string;
+    };
+
+    const client = await pool.connect();
+    let user: AuthUser;
+    try {
+        await client.query("BEGIN");
+        await client.query("SELECT pg_advisory_xact_lock($1)", [947201]);
+        const existingAdmin = await client.query(
+            "SELECT id FROM users WHERE role = 'admin' AND deleted_at IS NULL LIMIT 1"
+        );
+        if (existingAdmin.rowCount) {
+            throw new AppError("Admin registration is closed. Ask an existing administrator to provision your account.", 403);
+        }
+
+        const passwordHash = await bcrypt.hash(password, 12);
+        const created = await client.query(
+            `INSERT INTO users (first_name, last_name, email, phone, password_hash, status, verified, role)
+             VALUES ($1, $2, $3, $4, $5, 'active', TRUE, 'admin')
+             RETURNING id, first_name, last_name, email, phone, role`,
+            [
+                firstName.trim(),
+                lastName.trim(),
+                email.trim().toLowerCase(),
+                phone.trim(),
+                passwordHash,
+            ]
+        );
+        user = toUser(created.rows[0]);
+        await client.query("COMMIT");
+    } catch (error) {
+        await client.query("ROLLBACK");
+        throw error;
+    } finally {
+        client.release();
+    }
+
+    const refreshToken = await createSession(user);
+    setAuthCookies(res, user, refreshToken);
+    sendResponse(res, 201, "Admin account created successfully", authResponse(user, refreshToken));
+});
+
+async function signInWithRole(req: Request, res: Response, requiredRole?: string) {
     const { email, password } = req.body as { email: string; password: string };
     const result = await pool.query(
-        `SELECT id, first_name, last_name, email, phone, password_hash, status
+        `SELECT id, first_name, last_name, email, phone, password_hash, status, role
          FROM users
          WHERE lower(email) = $1 AND deleted_at IS NULL
          LIMIT 1`,
@@ -179,7 +229,7 @@ export const signIn = catchAsync(async (req: Request, res: Response) => {
     const validPassword = row?.password_hash
         ? await bcrypt.compare(password, row.password_hash)
         : false;
-    if (!row || !validPassword || row.status !== "active") {
+    if (!row || !validPassword || row.status !== "active" || (requiredRole && row.role !== requiredRole)) {
         throw new AppError("Invalid email or password.", 401);
     }
 
@@ -187,6 +237,14 @@ export const signIn = catchAsync(async (req: Request, res: Response) => {
     const refreshToken = await createSession(user);
     setAuthCookies(res, user, refreshToken);
     sendResponse(res, 200, "Signed in successfully", authResponse(user, refreshToken));
+}
+
+export const signIn = catchAsync(async (req: Request, res: Response) => {
+    await signInWithRole(req, res);
+});
+
+export const adminSignIn = catchAsync(async (req: Request, res: Response) => {
+    await signInWithRole(req, res, "admin");
 });
 
 export const getCurrentUser = catchAsync(async (req: Request, res: Response) => {
@@ -194,7 +252,7 @@ export const getCurrentUser = catchAsync(async (req: Request, res: Response) => 
     if (!userId) throw new AppError("Authentication is required.", 401);
 
     const result = await pool.query(
-        `SELECT id, first_name, last_name, email, phone
+        `SELECT id, first_name, last_name, email, phone, role
          FROM users
          WHERE id = $1 AND status = 'active' AND deleted_at IS NULL
          LIMIT 1`,
@@ -233,7 +291,7 @@ export const refreshSession = catchAsync(async (req: Request, res: Response) => 
     try {
         await client.query("BEGIN");
         const session = await client.query(
-            `SELECT s.id, u.id AS user_id, u.first_name, u.last_name, u.email, u.phone
+            `SELECT s.id, u.id AS user_id, u.first_name, u.last_name, u.email, u.phone, u.role
              FROM auth_sessions s
              INNER JOIN users u ON u.id = s.user_id
              WHERE s.id = $1
@@ -259,6 +317,7 @@ export const refreshSession = catchAsync(async (req: Request, res: Response) => 
             last_name: row.last_name,
             email: row.email,
             phone: row.phone,
+            role: row.role,
         });
         const nextRefreshToken = createRefreshToken(user, Number(row.id));
         const updated = await client.query(

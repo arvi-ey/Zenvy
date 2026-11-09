@@ -24,6 +24,11 @@ const allowedOrigins = new Set([new URL(frontendOrigin).origin]);
 if (env.NODE_ENV !== "production") {
     allowedOrigins.add("http://localhost:3000");
     allowedOrigins.add("http://127.0.0.1:3000");
+    allowedOrigins.add("http://localhost:3001");
+    allowedOrigins.add("http://127.0.0.1:3001");
+}
+if (env.ADMIN_BASE_URL) {
+    allowedOrigins.add(new URL(env.ADMIN_BASE_URL).origin);
 }
 
 app.use(cors({

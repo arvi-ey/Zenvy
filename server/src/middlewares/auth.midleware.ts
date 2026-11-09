@@ -2,6 +2,7 @@
 import { Request, Response, NextFunction } from "express";
 import jwt from "jsonwebtoken";
 import AppError from "../utils/AppError.js";
+import { pool } from "../config/db.js";
 
 export interface AuthPayload {
     id: number;
@@ -65,4 +66,29 @@ export function requireAuth(req: Request, _res: Response, next: NextFunction) {
     } catch (error) {
         return next(error);
     }
+}
+
+export function requireRole(...roles: string[]) {
+    return async (req: Request, _res: Response, next: NextFunction) => {
+        if (!req.user) {
+            return next(new AppError("Authentication is required", 401));
+        }
+        try {
+            const result = await pool.query<{ role: string; status: string }>(
+                "SELECT role, status FROM users WHERE id = $1 AND deleted_at IS NULL LIMIT 1",
+                [req.user.id]
+            );
+            const currentUser = result.rows[0];
+            if (!currentUser || currentUser.status !== "active") {
+                return next(new AppError("Account is unavailable.", 401));
+            }
+            req.user.role = currentUser.role;
+            if (!roles.includes(currentUser.role)) {
+                return next(new AppError("You do not have permission to perform this action.", 403));
+            }
+            return next();
+        } catch (error) {
+            return next(error);
+        }
+    };
 }
