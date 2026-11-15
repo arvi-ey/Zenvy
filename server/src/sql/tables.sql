@@ -116,12 +116,28 @@ CREATE TABLE users (
    user_type CHECK(user_type in ('admin','user'));
    status VARCHAR(20) NOT NULL DEFAULT 'active' CHECK (status IN ('active', 'not_active', 'suspended')), 
    verified BOOLEAN NOT NULL DEFAULT FALSE,
+   verification_token VARCHAR(255) DEFAULT NULL,
+   verification_token_expires_at TIMESTAMPTZ DEFAULT NULL;
    created_at TIMESTAMPTZ NOT NULL DEFAULT CURRENT_TIMESTAMP,
    updated_at TIMESTAMPTZ NOT NULL DEFAULT CURRENT_TIMESTAMP,
    deleted_at TIMESTAMPTZ DEFAULT NULL
 );
 
+-- session Table
 
+CREATE TABLE session (
+   id SERIAL PRIMARY KEY,
+   user_id INTEGER NOT NULL REFERENCES users(id) ON DELETE CASCADE,
+   token_hash VARCHAR(255) UNIQUE NOT NULL, 
+   expires_at TIMESTAMPTZ NOT NULL,
+   max_expiry_date TIMESTAMPTZ NOT NULL, 
+   created_at TIMESTAMPTZ NOT NULL DEFAULT CURRENT_TIMESTAMP,
+   revoked BOOLEAN NOT NULL DEFAULT FALSE,
+   updated_at TIMESTAMPTZ NOT NULL DEFAULT CURRENT_TIMESTAMP,
+   deleted_at TIMESTAMPTZ DEFAULT NULL
+);
+
+CREATE INDEX idx_session_user_id ON session(user_id);
 
 --Address table
 CREATE TABLE address (

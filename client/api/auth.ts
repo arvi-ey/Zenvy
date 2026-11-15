@@ -30,6 +30,10 @@ export async function signIn(credentials: SignInCredentials) {
   return response.data.data
 }
 
+export async function verifyEmail(token: string) {
+  const response = await api.post<AuthResponse>('/auth/verify-email', { token })
+  return response.data.data
+}
 export async function getCurrentUser() {
   const response = await api.get<AuthResponse>('/auth/me')
   return response.data.data
