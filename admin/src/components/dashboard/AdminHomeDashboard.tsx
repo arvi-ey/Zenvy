@@ -37,17 +37,17 @@ export const AdminHomeDashboard: React.FC = () => {
           </button>
         ))}
       </div>
-      <div className="rounded-xl bg-slate-950 p-6 text-white">
+      <div className="rounded-xl bg-slate-950 p-6 text-white dark:bg-[#323842]">
         <div className="flex flex-col justify-between gap-5 sm:flex-row sm:items-center">
           <div>
             <h2 className="text-lg font-semibold">Catalog actions</h2>
             <p className="mt-1 text-sm text-slate-400">Create products and categories stored in the Zenvy backend.</p>
           </div>
           <div className="flex flex-wrap gap-3">
-            <button onClick={() => dispatch(setActiveTab('products'))} className="flex items-center gap-2 rounded-lg bg-white px-4 py-2.5 text-sm font-semibold text-slate-950 hover:bg-slate-200">
+            <button onClick={() => dispatch(setActiveTab('products'))} className="flex items-center gap-2 rounded-lg bg-white px-4 py-2.5 text-sm font-semibold text-slate-950 hover:bg-slate-200 dark:bg-slate-100 dark:text-slate-900 dark:hover:bg-white">
               <Plus className="h-4 w-4" /> Add product
             </button>
-            <button onClick={() => dispatch(setActiveTab('categories'))} className="flex items-center gap-2 rounded-lg border border-slate-700 px-4 py-2.5 text-sm font-semibold text-white hover:bg-slate-800">
+            <button onClick={() => dispatch(setActiveTab('categories'))} className="flex items-center gap-2 rounded-lg border border-slate-700 px-4 py-2.5 text-sm font-semibold text-white hover:bg-slate-800 dark:border-slate-600 dark:hover:bg-slate-700">
               Categories <ArrowRight className="h-4 w-4" />
             </button>
           </div>

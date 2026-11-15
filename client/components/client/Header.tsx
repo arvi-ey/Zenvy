@@ -45,7 +45,7 @@ export function Header() {
   const wishlistCount = useAppSelector(selectWishlistCount)
   const authUser = useAppSelector((state) => state.auth.user)
   const isMobileMenuOpen = useAppSelector((state) => state.ui.isMobileMenuOpen)
-  const { theme, setTheme } = useTheme()
+  const { resolvedTheme, setTheme } = useTheme()
 
   const handleSignOut = async () => {
     try {
@@ -96,7 +96,7 @@ export function Header() {
           <Button
             variant="ghost"
             size="icon"
-            onClick={() => setTheme(theme === 'dark' ? 'light' : 'dark')}
+            onClick={() => setTheme(resolvedTheme === 'dark' ? 'light' : 'dark')}
             className="hidden h-10 w-10 rounded-full text-muted-foreground hover:text-foreground sm:flex"
             aria-label="Toggle theme"
           >
@@ -239,10 +239,10 @@ export function Header() {
               </Link>
             )}
             <button
-              onClick={() => setTheme(theme === 'dark' ? 'light' : 'dark')}
+              onClick={() => setTheme(resolvedTheme === 'dark' ? 'light' : 'dark')}
               className="flex items-center gap-3 rounded-lg px-3 py-3 text-left text-sm font-medium transition-colors hover:bg-secondary"
             >
-              {theme === 'dark' ? (
+              {resolvedTheme === 'dark' ? (
                 <>
                   <Sun className="h-5 w-5" />
                   Light Mode

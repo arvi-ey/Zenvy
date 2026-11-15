@@ -41,7 +41,7 @@ export const Header: React.FC<HeaderProps> = ({ onOpenAddProductModal, user, onS
   };
 
   return (
-    <header className="sticky top-0 z-30 flex items-center justify-between h-16 px-4 md:px-6 bg-white/95 dark:bg-slate-900/95 backdrop-blur-md border-b border-slate-200 dark:border-slate-800 transition-colors">
+    <header className="sticky top-0 z-30 flex items-center justify-between h-16 px-4 md:px-6 bg-white/95 dark:bg-[#323842]/95 backdrop-blur-md border-b border-slate-200 dark:border-slate-700 transition-colors">
       {/* Left: Mobile Toggle & Breadcrumbs */}
       <div className="flex items-center gap-3">
         <button

@@ -81,30 +81,30 @@ export default function CollectionPage() {
 
 
   return (
-    <main className="min-h-screen bg-gray-50 px-4 py-8 dark:bg-gray-950 sm:px-6 lg:px-8">
+    <main className="min-h-screen bg-background px-4 py-8 sm:px-6 lg:px-8">
       <div className="mx-auto max-w-7xl">
 
 
         <div className="mb-8 flex flex-col gap-4 sm:flex-row sm:items-end sm:justify-between">
           <div>
 
-            <div className="mb-3 flex items-center gap-2 text-sm text-gray-500 dark:text-gray-400">
+            <div className="mb-3 flex items-center gap-2 text-sm text-muted-foreground">
               <Link
                 href="/"
-                className="transition hover:text-gray-900 dark:hover:text-white"
+                className="transition hover:text-foreground"
               >
                 Home
               </Link>
 
               <span>/</span>
 
-              <span className="capitalize text-gray-900 dark:text-white">
+              <span className="capitalize text-foreground">
                 {category}
               </span>
             </div>
 
             {!productsLoading && (
-              <p className="mt-2 text-sm text-gray-500 dark:text-gray-400">
+              <p className="mt-2 text-sm text-muted-foreground">
                 {products.length} products
               </p>
             )}
@@ -121,7 +121,7 @@ export default function CollectionPage() {
             Array.from({ length: 10 }).map((_, index) => (
               <div
                 key={index}
-                className="overflow-hidden rounded-2xl border border-gray-200 bg-white dark:border-gray-800 dark:bg-gray-900"
+                className="overflow-hidden rounded-2xl border border-border bg-card"
               >
 
                 <div className="aspect-[4/5] animate-pulse bg-gray-200 dark:bg-gray-800" />
@@ -170,10 +170,10 @@ export default function CollectionPage() {
                   }
                   }
                   onMouseLeave={() => setMouseEntered({ entered: false, item: null })}
-                  className="group cursor-pointer overflow-hidden rounded-2xl border border-gray-200 bg-white transition duration-300 hover:-translate-y-1 hover:shadow-xl dark:border-gray-800 dark:bg-gray-900"
+                  className="group cursor-pointer overflow-hidden rounded-2xl border border-border bg-card transition duration-300 hover:-translate-y-1 hover:shadow-xl"
                 >
 
-                  <div className="aspect-[4/5] overflow-hidden bg-gray-100 dark:bg-gray-800">
+                  <div className="aspect-[4/5] overflow-hidden bg-muted">
                     {mainImage ? (
                       <Image
                         src={mouseentered?.entered && mouseentered.item == product.id ? product.images[1].url : product.images[0].url}
@@ -183,7 +183,7 @@ export default function CollectionPage() {
                         className="h-full w-full object-cover transition duration-500 group-hover:scale-105"
                       />
                     ) : (
-                      <div className="flex h-full items-center justify-center text-sm text-gray-400">
+                      <div className="flex h-full items-center justify-center text-sm text-muted-foreground">
                         No image
                       </div>
                     )}
@@ -209,17 +209,17 @@ export default function CollectionPage() {
                     </div>
 
 
-                    <h2 className="line-clamp-1 text-base font-semibold text-gray-900 dark:text-white">
+                    <h2 className="line-clamp-1 text-base font-semibold text-foreground">
                       {product.name}
                     </h2>
 
 
                     <div className="mt-4 flex items-center justify-between">
-                      <span className="text-lg font-bold text-gray-900 dark:text-white">
+                      <span className="text-lg font-bold text-foreground">
                         ₹{product.price}
                       </span>
 
-                      <span className="text-sm text-gray-500 dark:text-gray-400">
+                      <span className="text-sm text-muted-foreground">
                         Stock: {product.stock}
                       </span>
                     </div>
@@ -230,7 +230,7 @@ export default function CollectionPage() {
         </div>
         {
           noproduct ?
-            <div className="flex font-bold mt-6 w-full justify-center items-center text-gray-800 dark:text-gray-300">
+            <div className="flex font-bold mt-6 w-full justify-center items-center text-foreground">
               <span>No more products</span>
             </div>
             :
@@ -242,7 +242,7 @@ export default function CollectionPage() {
               <button
                 type="button"
                 onClick={HandleClick}
-                className="group cursor-pointer relative inline-flex items-center justify-center gap-2 overflow-hidden rounded-full border border-gray-200 bg-white px-8 py-3.5 text-sm font-medium text-gray-800 shadow-sm transition-all duration-300 hover:border-gray-300 hover:bg-gray-50 hover:shadow-md active:scale-[0.98] dark:border-gray-700 dark:bg-gray-900 dark:text-gray-100 dark:hover:border-gray-600 dark:hover:bg-gray-800"
+                className="group cursor-pointer relative inline-flex items-center justify-center gap-2 overflow-hidden rounded-full border border-border bg-card px-8 py-3.5 text-sm font-medium text-foreground shadow-sm transition-all duration-300 hover:bg-secondary hover:shadow-md active:scale-[0.98]"
               >
                 <span>Load more</span>
 
@@ -264,15 +264,15 @@ export default function CollectionPage() {
         {!productsLoading && products.length === 0 && (
           <div className="flex min-h-[400px] items-center justify-center">
             <div className="text-center">
-              <div className="mx-auto mb-4 flex h-16 w-16 items-center justify-center rounded-full bg-gray-100 dark:bg-gray-900">
+              <div className="mx-auto mb-4 flex h-16 w-16 items-center justify-center rounded-full bg-muted">
                 <span className="text-2xl">📦</span>
               </div>
 
-              <h2 className="text-xl font-semibold text-gray-900 dark:text-white">
+              <h2 className="text-xl font-semibold text-foreground">
                 No products found
               </h2>
 
-              <p className="mt-2 text-sm text-gray-500 dark:text-gray-400">
+              <p className="mt-2 text-sm text-muted-foreground">
                 There are no products available in this collection.
               </p>
             </div>

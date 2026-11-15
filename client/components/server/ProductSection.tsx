@@ -80,7 +80,7 @@ export default function ProductSection() {
             Array.from({ length: 10 }).map((_, index) => (
               <div
                 key={index}
-                className="overflow-hidden rounded-2xl border border-gray-200 bg-white dark:border-gray-800 dark:bg-gray-900"
+                className="overflow-hidden rounded-2xl border border-border bg-card"
               >
 
                 <div className="aspect-[4/5] animate-pulse bg-gray-200 dark:bg-gray-800" />
@@ -121,10 +121,10 @@ export default function ProductSection() {
                   key={product.id}
                   onMouseEnter={() => setMouseEntered({ entered: true, item: product.id })}
                   onMouseLeave={() => setMouseEntered({ entered: false, item: null })}
-                  className="group cursor-pointer overflow-hidden rounded-2xl border border-gray-200 bg-white transition duration-300 hover:-translate-y-1 hover:shadow-xl dark:border-gray-800 dark:bg-gray-900"
+                  className="group cursor-pointer overflow-hidden rounded-2xl border border-border bg-card transition duration-300 hover:-translate-y-1 hover:shadow-xl"
                 >
 
-                  <div className="aspect-[4/5] overflow-hidden bg-gray-100 dark:bg-gray-800">
+                  <div className="aspect-[4/5] overflow-hidden bg-muted">
                     {mainImage ? (
                       <Image
                         src={mouseentered?.entered && mouseentered.item == product.id
@@ -136,7 +136,7 @@ export default function ProductSection() {
                         className="h-full w-full object-cover transition duration-500 group-hover:scale-105"
                       />
                     ) : (
-                      <div className="flex h-full items-center justify-center text-sm text-gray-400">
+                      <div className="flex h-full items-center justify-center text-sm text-muted-foreground">
                         No image
                       </div>
                     )}
@@ -162,17 +162,17 @@ export default function ProductSection() {
                     </div>
 
 
-                    <h2 className="line-clamp-1 text-base font-semibold text-gray-900 dark:text-white">
+                    <h2 className="line-clamp-1 text-base font-semibold text-foreground">
                       {product.name}
                     </h2>
 
 
                     <div className="mt-4 flex items-center justify-between">
-                      <span className="text-lg font-bold text-gray-900 dark:text-white">
+                      <span className="text-lg font-bold text-foreground">
                         ₹{product.price}
                       </span>
 
-                      <span className="text-sm text-gray-500 dark:text-gray-400">
+                      <span className="text-sm text-muted-foreground">
                         Stock: {product.stock}
                       </span>
                     </div>

@@ -48,7 +48,7 @@ const globalErrorHandler = (
         // Undefined column
         case "42703":
             statusCode = 500;
-            message = "Database column not found.";
+            message = "The database schema is missing a required column. Apply server/src/sql/auth.sql to the configured database, then retry.";
             break;
     }
 

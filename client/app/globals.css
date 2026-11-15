@@ -3,70 +3,9 @@
 
 @import 'tailwindcss';
 @import 'tw-animate-css';
+@import '../../style.css';
 
 @custom-variant dark (&:is(.dark *));
-
-:root {
-  /* Premium Fashion E-commerce Light Theme */
-  --background: oklch(0.995 0 0);
-  --foreground: oklch(0.13 0 0);
-  --card: oklch(1 0 0);
-  --card-foreground: oklch(0.13 0 0);
-  --popover: oklch(1 0 0);
-  --popover-foreground: oklch(0.13 0 0);
-  --primary: oklch(0.18 0 0);
-  --primary-foreground: oklch(0.99 0 0);
-  --secondary: oklch(0.965 0.002 75);
-  --secondary-foreground: oklch(0.18 0 0);
-  --muted: oklch(0.965 0.002 75);
-  --muted-foreground: oklch(0.45 0 0);
-  --accent: oklch(0.13 0 0);
-  ;
-  --accent-foreground: oklch(0.99 0 0);
-  --destructive: oklch(0.55 0.2 25);
-  --destructive-foreground: oklch(0.99 0 0);
-  --border: oklch(0.92 0.002 75);
-  --input: oklch(0.92 0.002 75);
-  --ring: oklch(0.18 0 0);
-  --radius: 0.5rem;
-
-  /* Custom tokens */
-  --success: oklch(0.6 0.15 145);
-  --warning: oklch(0.75 0.15 85);
-  --sale: oklch(0.55 0.2 25);
-  --new-badge: oklch(0.18 0 0);
-  --bestseller-badge: oklch(0.55 0.12 45);
-}
-
-.dark {
-  /* Premium Fashion E-commerce Dark Theme */
-  --background: oklch(0.12 0 0);
-  --foreground: oklch(0.96 0 0);
-  --card: oklch(0.16 0 0);
-  --card-foreground: oklch(0.96 0 0);
-  --popover: oklch(0.16 0 0);
-  --popover-foreground: oklch(0.96 0 0);
-  --primary: oklch(0.96 0 0);
-  --primary-foreground: oklch(0.12 0 0);
-  --secondary: oklch(0.22 0 0);
-  --secondary-foreground: oklch(0.96 0 0);
-  --muted: oklch(0.22 0 0);
-  --muted-foreground: oklch(0.65 0 0);
-  --accent: oklch(0.65 0.12 45);
-  --accent-foreground: oklch(0.12 0 0);
-  --destructive: oklch(0.55 0.2 25);
-  --destructive-foreground: oklch(0.96 0 0);
-  --border: oklch(0.26 0 0);
-  --input: oklch(0.26 0 0);
-  --ring: oklch(0.96 0 0);
-
-  /* Custom tokens */
-  --success: oklch(0.65 0.15 145);
-  --warning: oklch(0.75 0.15 85);
-  --sale: oklch(0.6 0.2 25);
-  --new-badge: oklch(0.96 0 0);
-  --bestseller-badge: oklch(0.65 0.12 45);
-}
 
 @theme inline {
   --font-sans: 'Geist', 'Geist Fallback';

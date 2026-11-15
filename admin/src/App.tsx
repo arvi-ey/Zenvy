@@ -83,7 +83,7 @@ function AdminContent({ user, onSignOut }: { user: AdminUser; onSignOut: () => v
   };
 
   return (
-    <div className="flex h-screen w-screen overflow-hidden bg-slate-50 dark:bg-slate-950 text-slate-900 dark:text-slate-100 transition-colors">
+    <div className="flex h-screen w-screen overflow-hidden bg-slate-50 dark:bg-[#282C34] text-slate-900 dark:text-slate-100 transition-colors">
       {/* Permanent / Responsive Navigation Sidebar */}
       <Sidebar />
 
@@ -136,6 +136,17 @@ function AdminRouter() {
   const [user, setUser] = useState<AdminUser | null>(null);
   const [isCheckingSession, setIsCheckingSession] = useState(true);
   const [sessionError, setSessionError] = useState('');
+  const darkMode = useAppSelector((state) => state.ui.darkMode);
+
+  useEffect(() => {
+    document.documentElement.classList.toggle('dark', darkMode);
+    document.documentElement.style.colorScheme = darkMode ? 'dark' : 'light';
+    try {
+      localStorage.setItem('zenvy-admin-theme', darkMode ? 'dark' : 'light');
+    } catch (error: unknown) {
+      console.error('Unable to save the selected theme.', error);
+    }
+  }, [darkMode]);
 
   const navigate = useCallback((nextPath: string) => {
     if (window.location.pathname !== nextPath) {

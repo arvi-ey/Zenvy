@@ -41,7 +41,7 @@ export function Footer() {
             <Input
               type="email"
               placeholder="Enter your email"
-              className="flex-1 bg-white text-black"
+              className="flex-1 bg-white text-black dark:bg-[#323842] dark:text-foreground"
               required
             />
             <Button type="submit" className="whitespace-nowrap cursor-pointer hover:bg-black">

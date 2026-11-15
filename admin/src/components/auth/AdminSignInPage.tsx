@@ -41,7 +41,7 @@ export const AdminSignInPage: React.FC<AdminSignInPageProps> = ({ onNavigate, on
   };
 
   return (
-    <div className="flex min-h-screen bg-slate-50 font-sans antialiased">
+    <div className="flex min-h-screen bg-slate-50 font-sans antialiased dark:bg-[#282C34]">
       {/* Left — editorial image panel */}
       <aside className="relative hidden w-[52%] overflow-hidden lg:block xl:w-[58%]">
         {/* Production image — replace with your own CDN asset */}
@@ -129,7 +129,7 @@ export const AdminSignInPage: React.FC<AdminSignInPageProps> = ({ onNavigate, on
               <span className="flex h-9 w-9 items-center justify-center rounded-lg bg-slate-900 text-white">
                 <ShieldCheck className="h-4 w-4" />
               </span>
-              <span className="text-lg font-semibold tracking-tight text-slate-900">Zenvy</span>
+              <span className="text-lg font-semibold tracking-tight text-slate-900 dark:text-slate-100">Zenvy</span>
             </button>
             <span className="text-[10px] font-semibold uppercase tracking-[0.2em] text-slate-400">
               Enterprise
@@ -138,10 +138,10 @@ export const AdminSignInPage: React.FC<AdminSignInPageProps> = ({ onNavigate, on
 
           {/* Header */}
           <div className="mb-9">
-            <h2 className="text-[28px] font-semibold tracking-tight text-slate-900">
+            <h2 className="text-[28px] font-semibold tracking-tight text-slate-900 dark:text-slate-100">
               Welcome back
             </h2>
-            <p className="mt-2 text-sm text-slate-500">
+            <p className="mt-2 text-sm text-slate-500 dark:text-slate-400">
               Sign in to access your administrator dashboard.
             </p>
           </div>
@@ -149,7 +149,7 @@ export const AdminSignInPage: React.FC<AdminSignInPageProps> = ({ onNavigate, on
           {error && (
             <div
               role="alert"
-              className="mb-5 flex items-start gap-2.5 rounded-xl border border-rose-200 bg-rose-50 px-4 py-3 text-sm text-rose-700"
+              className="mb-5 flex items-start gap-2.5 rounded-xl border border-rose-200 bg-rose-50 px-4 py-3 text-sm text-rose-700 dark:border-rose-900 dark:bg-rose-950/30 dark:text-rose-300"
             >
               <svg viewBox="0 0 16 16" fill="none" className="mt-0.5 h-4 w-4 shrink-0">
                 <circle cx="8" cy="8" r="6.5" stroke="currentColor" strokeWidth="1.25" />
@@ -163,7 +163,7 @@ export const AdminSignInPage: React.FC<AdminSignInPageProps> = ({ onNavigate, on
           <form onSubmit={handleSubmit} className="space-y-4">
             {/* Email */}
             <div>
-              <label htmlFor="email" className="mb-1.5 block text-[13px] font-medium text-slate-700">
+              <label htmlFor="email" className="mb-1.5 block text-[13px] font-medium text-slate-700 dark:text-slate-300">
                 Work email
               </label>
               <div className="group relative">
@@ -176,7 +176,7 @@ export const AdminSignInPage: React.FC<AdminSignInPageProps> = ({ onNavigate, on
                   maxLength={100}
                   autoComplete="email"
                   placeholder="admin@company.com"
-                  className="w-full rounded-xl border border-slate-200 bg-white py-2.5 pl-10 pr-3 text-sm text-slate-900 placeholder:text-slate-400 outline-none transition focus:border-indigo-500 focus:ring-4 focus:ring-indigo-500/10"
+                  className="w-full rounded-xl border border-slate-200 bg-white py-2.5 pl-10 pr-3 text-sm text-slate-900 placeholder:text-slate-400 outline-none transition focus:border-indigo-500 focus:ring-4 focus:ring-indigo-500/10 dark:border-slate-700 dark:bg-slate-800 dark:text-slate-100 dark:focus:ring-indigo-400/10"
                 />
               </div>
             </div>
@@ -184,13 +184,13 @@ export const AdminSignInPage: React.FC<AdminSignInPageProps> = ({ onNavigate, on
             {/* Password */}
             <div>
               <div className="mb-1.5 flex items-center justify-between">
-                <label htmlFor="password" className="block text-[13px] font-medium text-slate-700">
+                <label htmlFor="password" className="block text-[13px] font-medium text-slate-700 dark:text-slate-300">
                   Password
                 </label>
                 <button
                   type="button"
                   onClick={() => onNavigate('/forgot-password')}
-                  className="text-xs font-medium text-indigo-600 transition hover:text-indigo-500"
+                  className="text-xs font-medium text-indigo-600 transition hover:text-indigo-500 dark:text-indigo-300 dark:hover:text-indigo-200"
                 >
                   Forgot password?
                 </button>
@@ -206,7 +206,7 @@ export const AdminSignInPage: React.FC<AdminSignInPageProps> = ({ onNavigate, on
                   maxLength={72}
                   autoComplete="current-password"
                   placeholder="••••••••"
-                  className="w-full rounded-xl border border-slate-200 bg-white py-2.5 pl-10 pr-11 text-sm text-slate-900 placeholder:text-slate-400 outline-none transition focus:border-indigo-500 focus:ring-4 focus:ring-indigo-500/10"
+                  className="w-full rounded-xl border border-slate-200 bg-white py-2.5 pl-10 pr-11 text-sm text-slate-900 placeholder:text-slate-400 outline-none transition focus:border-indigo-500 focus:ring-4 focus:ring-indigo-500/10 dark:border-slate-700 dark:bg-slate-800 dark:text-slate-100 dark:focus:ring-indigo-400/10"
                 />
                 <button
                   type="button"
@@ -239,7 +239,7 @@ export const AdminSignInPage: React.FC<AdminSignInPageProps> = ({ onNavigate, on
                 type="checkbox"
                 className="h-4 w-4 rounded border-slate-300 text-indigo-600 focus:ring-indigo-500/30"
               />
-              <label htmlFor="remember" className="text-[13px] text-slate-600">
+              <label htmlFor="remember"               className="text-[13px] text-slate-600 dark:text-slate-400">
                 Keep me signed in on this device
               </label>
             </div>
@@ -248,7 +248,7 @@ export const AdminSignInPage: React.FC<AdminSignInPageProps> = ({ onNavigate, on
             <button
               type="submit"
               disabled={busy}
-              className="group mt-2 flex w-full items-center justify-center gap-2 rounded-xl bg-slate-900 px-4 py-2.5 text-sm font-semibold text-white shadow-sm transition hover:bg-slate-800 focus:outline-none focus:ring-2 focus:ring-slate-900/30 focus:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-60"
+              className="group mt-2 flex w-full items-center justify-center gap-2 rounded-xl bg-slate-900 px-4 py-2.5 text-sm font-semibold text-white shadow-sm transition hover:bg-slate-800 focus:outline-none focus:ring-2 focus:ring-slate-900/30 focus:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-60 dark:bg-slate-100 dark:text-slate-900 dark:hover:bg-white dark:focus:ring-slate-100/30 dark:focus:ring-offset-[#282C34]"
             >
               {busy ? (
                 <>
@@ -266,26 +266,26 @@ export const AdminSignInPage: React.FC<AdminSignInPageProps> = ({ onNavigate, on
 
           {/* Divider */}
           <div className="my-7 flex items-center gap-3">
-            <div className="h-px flex-1 bg-slate-200" />
+            <div className="h-px flex-1 bg-slate-200 dark:bg-slate-700" />
             <span className="text-xs font-medium text-slate-400">New to Zenvy?</span>
-            <div className="h-px flex-1 bg-slate-200" />
+            <div className="h-px flex-1 bg-slate-200 dark:bg-slate-700" />
           </div>
 
           <button
             type="button"
             onClick={() => onNavigate('/sign-up')}
-            className="flex w-full items-center justify-center gap-2 rounded-xl border border-slate-200 bg-white px-4 py-2.5 text-sm font-medium text-slate-700 transition hover:border-slate-300 hover:bg-slate-50"
+            className="flex w-full items-center justify-center gap-2 rounded-xl border border-slate-200 bg-white px-4 py-2.5 text-sm font-medium text-slate-700 transition hover:border-slate-300 hover:bg-slate-50 dark:border-slate-700 dark:bg-slate-800 dark:text-slate-200 dark:hover:border-slate-600 dark:hover:bg-slate-700"
           >
             Create the first admin
           </button>
 
           <p className="mt-8 text-center text-xs leading-relaxed text-slate-400">
             By signing in you agree to our{' '}
-            <button onClick={() => onNavigate('/terms')} className="font-medium text-slate-600 underline underline-offset-2 hover:text-slate-900">
+            <button onClick={() => onNavigate('/terms')} className="font-medium text-slate-600 underline underline-offset-2 hover:text-slate-900 dark:text-slate-300 dark:hover:text-white">
               Terms
             </button>{' '}
             and{' '}
-            <button onClick={() => onNavigate('/privacy')} className="font-medium text-slate-600 underline underline-offset-2 hover:text-slate-900">
+            <button onClick={() => onNavigate('/privacy')} className="font-medium text-slate-600 underline underline-offset-2 hover:text-slate-900 dark:text-slate-300 dark:hover:text-white">
               Privacy Policy
             </button>
             .

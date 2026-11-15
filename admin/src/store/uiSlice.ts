@@ -15,11 +15,26 @@ interface UiState {
   };
 }
 
+function getInitialDarkMode(): boolean {
+  if (typeof window === 'undefined') return false;
+
+  try {
+    const storedTheme = localStorage.getItem('zenvy-admin-theme');
+    if (storedTheme === 'dark' || storedTheme === 'light') {
+      return storedTheme === 'dark';
+    }
+    return window.matchMedia('(prefers-color-scheme: dark)').matches;
+  } catch (error: unknown) {
+    console.error('Unable to restore the selected theme.', error);
+    return false;
+  }
+}
+
 const initialState: UiState = {
   activeTab: 'overview',
   sidebarCollapsed: false,
   mobileSidebarOpen: false,
-  darkMode: false,
+  darkMode: getInitialDarkMode(),
   toasts: [],
   backendStatus: {
     tested: false,
@@ -44,19 +59,9 @@ export const uiSlice = createSlice({
     },
     toggleDarkMode: (state) => {
       state.darkMode = !state.darkMode;
-      if (state.darkMode) {
-        document.documentElement.classList.add('dark');
-      } else {
-        document.documentElement.classList.remove('dark');
-      }
     },
     setDarkMode: (state, action: PayloadAction<boolean>) => {
       state.darkMode = action.payload;
-      if (state.darkMode) {
-        document.documentElement.classList.add('dark');
-      } else {
-        document.documentElement.classList.remove('dark');
-      }
     },
     addToast: (state, action: PayloadAction<{ type: Toast['type']; title?: string; message: string }>) => {
       const id = `toast-${Date.now()}-${Math.random().toString(36).substring(2, 7)}`;
