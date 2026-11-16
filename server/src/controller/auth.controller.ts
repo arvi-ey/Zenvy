@@ -24,6 +24,16 @@ export const signup = catchAsync(async (req: Request, res: Response, next: NextF
             throw new AppError("Email is already registered. Please sign in.", 400);
         }
 
+        const verificationExpiresAt = existingUser.verification_token_expires_at;
+        if (verificationExpiresAt && new Date(verificationExpiresAt).getTime() > Date.now()) {
+            return sendResponse(
+                res,
+                200,
+                "A verification email has already been sent. Please check your inbox and use that email to verify your account. You can request a new email after it expires.",
+                { userId: existingUser.id }
+            );
+        }
+
         const verificationToken = crypto.randomBytes(32).toString("hex");
         const tokenExpiry = new Date();
         tokenExpiry.setHours(tokenExpiry.getHours() + 24);

@@ -5,6 +5,7 @@ import Link from 'next/link'
 import { useRouter } from 'next/navigation'
 import { toast } from 'sonner'
 import axios from 'axios'
+import { Eye, EyeOff } from 'lucide-react'
 import { signUp } from '@/api/auth'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
@@ -23,13 +24,17 @@ export default function SignUpPage() {
   const router = useRouter()
   const dispatch = useAppDispatch()
   const [form, setForm] = useState({
-    firstName: '',
-    lastName: '',
+    first_name: '',
+    last_name: '',
     email: '',
     phone: '',
     password: '',
   })
+  const [confirmPassword, setConfirmPassword] = useState('')
+  const [isPasswordVisible, setIsPasswordVisible] = useState(false)
+  const [isConfirmPasswordVisible, setIsConfirmPasswordVisible] = useState(false)
   const [errorMessage, setErrorMessage] = useState('')
+  const [successMessage, setSuccessMessage] = useState('')
   const [isSubmitting, setIsSubmitting] = useState(false)
   const [returnQuery, setReturnQuery] = useState('')
 
@@ -40,11 +45,20 @@ export default function SignUpPage() {
   const handleSubmit = async (event: FormEvent<HTMLFormElement>) => {
     event.preventDefault()
     setErrorMessage('')
+    setSuccessMessage('')
+    if (form.password !== confirmPassword) {
+      setErrorMessage('Passwords do not match.')
+      return
+    }
+
     setIsSubmitting(true)
     try {
-      const session = await signUp(form)
-      dispatch(setAuthenticated(session))
-      router.replace(getReturnPath())
+      const response = await signUp(form)
+      if (response.success) {
+        setSuccessMessage(response.message)
+      } else {
+        setErrorMessage(response.message)
+      }
     } catch (error: unknown) {
       const message = axios.isAxiosError<{ message?: string }>(error)
         ? error.response?.data?.message ?? 'Unable to create your account. Please try again.'
@@ -73,24 +87,24 @@ export default function SignUpPage() {
         <form onSubmit={handleSubmit} className="mt-6 space-y-4">
           <div className="grid grid-cols-2 gap-3">
             <div className="space-y-2">
-              <Label htmlFor="firstName">First name</Label>
+              <Label htmlFor="first_name">First name</Label>
               <Input
-                id="firstName"
+                id="first_name"
                 autoComplete="given-name"
-                value={form.firstName}
-                onChange={(event) => setForm({ ...form, firstName: event.target.value })}
+                value={form.first_name}
+                onChange={(event) => setForm({ ...form, first_name: event.target.value })}
                 minLength={2}
                 maxLength={50}
                 required
               />
             </div>
             <div className="space-y-2">
-              <Label htmlFor="lastName">Last name</Label>
+              <Label htmlFor="last_name">Last name</Label>
               <Input
-                id="lastName"
+                id="last_name"
                 autoComplete="family-name"
-                value={form.lastName}
-                onChange={(event) => setForm({ ...form, lastName: event.target.value })}
+                value={form.last_name}
+                onChange={(event) => setForm({ ...form, last_name: event.target.value })}
                 minLength={2}
                 maxLength={50}
                 required
@@ -124,20 +138,79 @@ export default function SignUpPage() {
           </div>
           <div className="space-y-2">
             <Label htmlFor="password">Password</Label>
-            <Input
-              id="password"
-              type="password"
-              autoComplete="new-password"
-              value={form.password}
-              onChange={(event) => setForm({ ...form, password: event.target.value })}
-              minLength={8}
-              maxLength={72}
-              required
-            />
+            <div className="relative">
+              <Input
+                id="password"
+                type={isPasswordVisible ? 'text' : 'password'}
+                autoComplete="new-password"
+                value={form.password}
+                onChange={(event) => {
+                  setForm({ ...form, password: event.target.value })
+                  setErrorMessage('')
+                }}
+                minLength={8}
+                maxLength={72}
+                className="pr-10"
+                required
+              />
+              <button
+                type="button"
+                className="absolute inset-y-0 right-0 flex items-center px-3 text-muted-foreground hover:text-foreground"
+                onClick={() => setIsPasswordVisible(!isPasswordVisible)}
+                aria-label={isPasswordVisible ? 'Hide password' : 'Show password'}
+                aria-pressed={isPasswordVisible}
+              >
+                {isPasswordVisible
+                  ? <EyeOff size={18} aria-hidden="true" />
+                  : <Eye size={18} aria-hidden="true" />}
+              </button>
+            </div>
             <p className="text-xs text-muted-foreground">
               At least 8 characters, including an uppercase letter and a number.
             </p>
           </div>
+          <div className="space-y-2">
+            <Label htmlFor="confirmPassword">Confirm password</Label>
+            <div className="relative">
+              <Input
+                id="confirmPassword"
+                type={isConfirmPasswordVisible ? 'text' : 'password'}
+                autoComplete="new-password"
+                value={confirmPassword}
+                onChange={(event) => {
+                  setConfirmPassword(event.target.value)
+                  setErrorMessage('')
+                }}
+                minLength={8}
+                maxLength={72}
+                className="pr-10"
+                aria-invalid={Boolean(confirmPassword && form.password !== confirmPassword)}
+                aria-describedby={confirmPassword && form.password !== confirmPassword ? 'confirmPasswordError' : undefined}
+                required
+              />
+              <button
+                type="button"
+                className="absolute inset-y-0 right-0 flex items-center px-3 text-muted-foreground hover:text-foreground"
+                onClick={() => setIsConfirmPasswordVisible(!isConfirmPasswordVisible)}
+                aria-label={isConfirmPasswordVisible ? 'Hide confirm password' : 'Show confirm password'}
+                aria-pressed={isConfirmPasswordVisible}
+              >
+                {isConfirmPasswordVisible
+                  ? <EyeOff size={18} aria-hidden="true" />
+                  : <Eye size={18} aria-hidden="true" />}
+              </button>
+            </div>
+            {confirmPassword && form.password !== confirmPassword && (
+              <p id="confirmPasswordError" className="text-sm text-destructive">
+                Passwords do not match.
+              </p>
+            )}
+          </div>
+          {successMessage && (
+            <p role="status" aria-live="polite" className="text-sm text-emerald-600 dark:text-emerald-400">
+              {successMessage}
+            </p>
+          )}
           {errorMessage && (
             <p role="alert" className="text-sm text-destructive">{errorMessage}</p>
           )}

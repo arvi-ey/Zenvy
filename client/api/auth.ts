@@ -7,9 +7,15 @@ interface AuthResponse {
   data: { user: AuthUser; accessToken?: string }
 }
 
+interface SignUpResponse {
+  success: boolean
+  message: string
+  data: { userId: number }
+}
+
 export interface SignUpCredentials {
-  firstName: string
-  lastName: string
+  first_name: string
+  last_name: string
   email: string
   phone: string
   password: string
@@ -21,8 +27,8 @@ export interface SignInCredentials {
 }
 
 export async function signUp(credentials: SignUpCredentials) {
-  const response = await api.post<AuthResponse>('/auth/sign-up', credentials)
-  return response.data.data
+  const response = await api.post<SignUpResponse>('/auth/sign-up', credentials)
+  return response.data
 }
 
 export async function signIn(credentials: SignInCredentials) {

@@ -8,10 +8,14 @@ export const sendEmail = async (
     subject: string,
     html: string
 ) => {
-    await resend.emails.send({
+    const { error } = await resend.emails.send({
         from: "onboarding@resend.dev",
         to,
         subject,
         html
     });
+
+    if (error) {
+        throw new Error(`Email delivery failed: ${error.message}`);
+    }
 };
