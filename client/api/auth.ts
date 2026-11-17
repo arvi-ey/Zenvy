@@ -13,6 +13,25 @@ interface SignUpResponse {
   data: { userId: number }
 }
 
+export interface VerificationResult {
+  accessToken: string
+  refreshToken: string
+  user: {
+    id: number
+    email: string
+    first_name: string
+    last_name: string
+    phone: string
+    user_type: 'admin' | 'user'
+  }
+}
+
+interface ApiResponse<T> {
+  success: boolean
+  message: string
+  data: T
+}
+
 export interface SignUpCredentials {
   first_name: string
   last_name: string
@@ -37,9 +56,15 @@ export async function signIn(credentials: SignInCredentials) {
 }
 
 export async function verifyEmail(token: string) {
-  const response = await api.post<AuthResponse>('/auth/verify-email', { token })
+  const response = await api.post<ApiResponse<VerificationResult>>('/auth/verify-email', { token })
   return response.data.data
 }
+
+export async function resendVerificationEmail(email: string) {
+  const response = await api.post<ApiResponse<undefined>>('/auth/resend-verification', { email })
+  return response.data.message
+}
+
 export async function getCurrentUser() {
   const response = await api.get<AuthResponse>('/auth/me')
   return response.data.data

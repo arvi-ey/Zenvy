@@ -6,7 +6,7 @@ import { routeLimiter } from "../middlewares/rateLimiter.js";
 import { validate } from "../middlewares/routeValidator.js";
 
 
-import { signup,login,logout,verifyEmail } from "../controller/auth.controller.js";
+import { signup,login,logout,verifyEmail,resendVerificationEmail } from "../controller/auth.controller.js";
 
 const router = Router();
 const email = z.email().trim().max(100);
@@ -28,14 +28,37 @@ const signInSchema = z.object({
         "Password must be at most 72 bytes."
     ),
 }).strict();
+const verifyEmailSchema = z.object({
+    token: z.string().trim().min(1),
+}).strict();
+const resendVerificationEmailSchema = z.object({
+    email,
+}).strict();
 
 
 
 // --Users Sign-up
 router.post(
     "/sign-up",
-    // routeLimiter(15, 10, "Too many sign-up attempts. Please try again later."),
+    routeLimiter(60, 12, `Too many sign-up attempts. Please try ${1} hour later.`),
+
     validate(signUpSchema, "body"),signup)
+
+
+
+router.post(
+    "/verify-email",
+    routeLimiter(15, 10, "Too many verification attempts. Please try again later."),
+    validate(verifyEmailSchema, "body"),
+    verifyEmail
+);
+
+router.post(
+    "/resend-verification",
+    routeLimiter(15, 5, "Too many resend requests. Please try again later."),
+    validate(resendVerificationEmailSchema, "body"),
+    resendVerificationEmail
+);
     
 router.post(
     "/login",

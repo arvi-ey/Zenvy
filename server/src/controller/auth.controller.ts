@@ -24,15 +24,15 @@ export const signup = catchAsync(async (req: Request, res: Response, next: NextF
             throw new AppError("Email is already registered. Please sign in.", 400);
         }
 
-        const verificationExpiresAt = existingUser.verification_token_expires_at;
-        if (verificationExpiresAt && new Date(verificationExpiresAt).getTime() > Date.now()) {
-            return sendResponse(
-                res,
-                200,
-                "A verification email has already been sent. Please check your inbox and use that email to verify your account. You can request a new email after it expires.",
-                { userId: existingUser.id }
-            );
-        }
+        // const verificationExpiresAt = existingUser.verification_token_expires_at;
+        // if (verificationExpiresAt && new Date(verificationExpiresAt).getTime() > Date.now()) {
+        //     return sendResponse(
+        //         res,
+        //         200,
+        //         "A verification email has already been sent. Please check your inbox and use that email to verify your account. You can request a new email after it expires.",
+        //         { userId: existingUser.id }
+        //     );
+        // }
 
         const verificationToken = crypto.randomBytes(32).toString("hex");
         const tokenExpiry = new Date();
@@ -67,7 +67,14 @@ export const verifyEmail = catchAsync(async (req: Request, res: Response, next: 
 
     const user = await AuthModel.findByVerificationToken(token);
     if (!user) {
-        throw new AppError("Invalid or expired verification token", 400);
+        throw new AppError("Invalid verification token.", 400);
+    }
+
+    if (
+        !user.verification_token_expires_at ||
+        new Date(user.verification_token_expires_at).getTime() <= Date.now()
+    ) {
+        throw new AppError("Verification link has expired. Request a new one.", 410);
     }
 
     if (user.verified) {
@@ -109,9 +116,30 @@ export const verifyEmail = catchAsync(async (req: Request, res: Response, next: 
             email: user.email,
             first_name: user.first_name,
             last_name: user.last_name,
+            phone: user.phone,
             user_type: user.user_type,
         },
     });
+});
+
+export const resendVerificationEmail = catchAsync(async (req: Request, res: Response) => {
+    const { email } = req.body;
+    const user = await AuthModel.findByEmail(email);
+
+    if (user && !user.verified && user.status !== "suspended") {
+        const verificationToken = crypto.randomBytes(32).toString("hex");
+        const tokenExpiry = new Date();
+        tokenExpiry.setHours(tokenExpiry.getHours() + 24);
+
+        await AuthModel.updateVerificationToken(user.id, verificationToken, tokenExpiry);
+        await Mailer.sendVerificationEmail(user.email, verificationToken, user.first_name);
+    }
+
+    sendResponse(
+        res,
+        200,
+        "If an unverified account exists for that email, a new verification link has been sent."
+    );
 });
 
 

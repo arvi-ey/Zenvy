@@ -41,6 +41,11 @@ export const authService = {
     return response.user;
   },
 
+  async VerifyEmail(token: string): Promise<AdminUser> {
+    const response = await apiClient.post<AuthResponse>('/auth/verify-email', { token });
+    return response.user;
+  },
+
   async signOut(): Promise<void> {
     await apiClient.post('/auth/sign-out');
   },

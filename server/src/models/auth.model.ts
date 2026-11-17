@@ -54,7 +54,6 @@ export class AuthModel {
         const { rows } = await pool.query(
             `SELECT * FROM ${userTable} 
              WHERE verification_token = $1 
-               AND verification_token_expires_at > CURRENT_TIMESTAMP 
                AND deleted_at IS NULL`,
             [token]
         );

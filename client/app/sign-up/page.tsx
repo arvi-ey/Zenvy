@@ -60,13 +60,24 @@ export default function SignUpPage() {
         setErrorMessage(response.message)
       }
     } catch (error: unknown) {
-      const message = axios.isAxiosError<{ message?: string }>(error)
-        ? error.response?.data?.message ?? 'Unable to create your account. Please try again.'
-        : error instanceof Error
-          ? error.message
-          : 'Unable to create your account. Please try again.'
-      setErrorMessage(message)
-    } finally {
+    if (axios.isAxiosError(error)) {
+        console.log("STATUS:", error.response?.status);
+        console.log("RESPONSE:", error.response?.data);
+
+        const message =
+            error.response?.data?.message ||
+            error.response?.data?.error ||
+            "Unable to create your account. Please try again.";
+
+        setErrorMessage(message);
+    } else {
+        setErrorMessage(
+            error instanceof Error
+                ? error.message
+                : "Something went wrong."
+        );
+    }
+}finally {
       setIsSubmitting(false)
     }
   }
