@@ -1,0 +1,53 @@
+import { env } from "./config/env.js";
+import express from "express";
+import cors from "cors";
+import globalErrorHandler from "./middlewares/error.middleware.js";
+import cookieParser from "cookie-parser";
+import { connectDB } from "./config/db.js";
+import ProductCategoryRouter from "./routes/productcategory.route.js";
+import ProductRouter from "./routes/product.route.js";
+import CartRouter from "./routes/cart.route.js";
+import AuthRouter from "./routes/auth.route.js";
+import AddressRouter from "./routes/address.route.js";
+import OrderRouter from "./routes/order.route.js";
+import { csrfProtection } from "./middlewares/csrf.middleware.js";
+const app = express();
+app.use(cookieParser());
+const frontendOrigin = env.NODE_ENV === "production"
+    ? env.FRONTEND_BASE_URL_PROD
+    : env.FRONTEND_BASE_URL_DEV;
+const allowedOrigins = new Set([new URL(frontendOrigin).origin]);
+if (env.NODE_ENV !== "production") {
+    allowedOrigins.add("http://localhost:3000");
+    allowedOrigins.add("http://127.0.0.1:3000");
+    allowedOrigins.add("http://localhost:3001");
+    allowedOrigins.add("http://127.0.0.1:3001");
+}
+if (env.ADMIN_BASE_URL) {
+    allowedOrigins.add(new URL(env.ADMIN_BASE_URL).origin);
+}
+app.use(cors({
+    origin: (origin, callback) => {
+        callback(null, !origin || allowedOrigins.has(origin));
+    },
+    credentials: true,
+}));
+app.use(express.json());
+app.use(express.urlencoded({ extended: true }));
+app.use(csrfProtection);
+//db connection
+connectDB();
+const PORT = env.PORT || 5000;
+app.set('trust proxy', 1);
+// converter()
+//Routes
+app.use(`${env.API_VERSION}/product-category`, ProductCategoryRouter);
+app.use(`${env.API_VERSION}/product`, ProductRouter);
+app.use(`${env.API_VERSION}/cart`, CartRouter);
+app.use(`${env.API_VERSION}/auth`, AuthRouter);
+app.use(`${env.API_VERSION}/address`, AddressRouter);
+app.use(`${env.API_VERSION}/orders`, OrderRouter);
+app.use(globalErrorHandler);
+app.listen(PORT, () => {
+    console.log(`Server running on port ${PORT}, mode: ${env.NODE_ENV}`);
+});

@@ -6,7 +6,18 @@ import { routeLimiter } from "../middlewares/rateLimiter.js";
 import { validate } from "../middlewares/routeValidator.js";
 
 
-import { signup,login,logout,verifyEmail,resendVerificationEmail } from "../controller/auth.controller.js";
+import {
+    signup,
+    login,
+    logout,
+    refreshToken,
+    verifyEmail,
+    resendVerificationEmail,
+    getCurrentUser,
+    issueCsrfToken,
+} from "../controller/auth.controller.js";
+import { requireAuth } from "../middlewares/auth.midleware.js";
+import { validateAuthOrigin } from "../middlewares/authOrigin.middleware.js";
 
 const router = Router();
 const email = z.email().trim().max(100);
@@ -41,14 +52,15 @@ const resendVerificationEmailSchema = z.object({
 router.post(
     "/sign-up",
     routeLimiter(60, 12, `Too many sign-up attempts. Please try ${1} hour later.`),
-
-    validate(signUpSchema, "body"),signup)
-
-
+    validateAuthOrigin,
+    validate(signUpSchema, "body"),
+    signup
+);
 
 router.post(
     "/verify-email",
     routeLimiter(15, 10, "Too many verification attempts. Please try again later."),
+    validateAuthOrigin,
     validate(verifyEmailSchema, "body"),
     verifyEmail
 );
@@ -56,6 +68,7 @@ router.post(
 router.post(
     "/resend-verification",
     routeLimiter(15, 5, "Too many resend requests. Please try again later."),
+    validateAuthOrigin,
     validate(resendVerificationEmailSchema, "body"),
     resendVerificationEmail
 );
@@ -63,7 +76,23 @@ router.post(
 router.post(
     "/login",
     routeLimiter(15, 10, "Too many login  attempts. Please try again later."),
-    validate(signInSchema, "body"),login)
+    validate(signInSchema, "body"),
+    validateAuthOrigin,
+    login
+);
+
+router.post(
+    "/sign-in",
+    routeLimiter(15, 10, "Too many login attempts. Please try again later."),
+    validate(signInSchema, "body"),
+    validateAuthOrigin,
+    login
+);
+
+router.get("/csrf", validateAuthOrigin, issueCsrfToken);
+router.post("/refresh", validateAuthOrigin, refreshToken);
+router.post("/sign-out", validateAuthOrigin, logout);
+router.get("/me", validateAuthOrigin, requireAuth, getCurrentUser);
 
 
 

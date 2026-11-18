@@ -4,7 +4,7 @@ import type { AuthUser } from '@/store/slices/authSlice'
 interface AuthResponse {
   success: boolean
   message: string
-  data: { user: AuthUser; accessToken?: string }
+  data: { user: AuthUser }
 }
 
 interface SignUpResponse {
@@ -14,13 +14,11 @@ interface SignUpResponse {
 }
 
 export interface VerificationResult {
-  accessToken: string
-  refreshToken: string
   user: {
     id: number
     email: string
-    first_name: string
-    last_name: string
+    firstName: string
+    lastName: string
     phone: string
     user_type: 'admin' | 'user'
   }
@@ -52,7 +50,7 @@ export async function signUp(credentials: SignUpCredentials) {
 
 export async function signIn(credentials: SignInCredentials) {
   const response = await api.post<AuthResponse>('/auth/sign-in', credentials)
-  return response.data.data
+  return response.data.data.user
 }
 
 export async function verifyEmail(token: string) {
@@ -66,7 +64,7 @@ export async function resendVerificationEmail(email: string) {
 }
 
 export async function getCurrentUser() {
-  const response = await api.get<AuthResponse>('/auth/me')
+  const response = await api.get<ApiResponse<AuthUser>>('/auth/me')
   return response.data.data
 }
 

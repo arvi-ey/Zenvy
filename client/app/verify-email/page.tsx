@@ -49,15 +49,13 @@ function VerifyEmailContent() {
 
     try {
       const result = await verifyEmail(token.trim());
+
       dispatch(setAuthenticated({
-        user: {
-          id: result.user.id,
-          email: result.user.email,
-          firstName: result.user.first_name,
-          lastName: result.user.last_name,
-          phone: result.user.phone,
-        },
-        accessToken: result.accessToken,
+        id: result.user.id,
+        email: result.user.email,
+        firstName: result.user.firstName,
+        lastName: result.user.lastName,
+        phone: result.user.phone,
       }));
       setStatus("success");
       setMessage("Email verified successfully! Welcome to Zenvy.");

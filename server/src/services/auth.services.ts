@@ -1,4 +1,5 @@
 import crypto from "crypto";
+import bcrypt from "bcrypt";
 import { AuthModel } from "../models/auth.model.js";
 import { Mailer } from "../utils/mailer.js";
 
@@ -9,11 +10,12 @@ export interface SignupInput {
     phone: string;
     avatar?: string;
     user_type?: 'admin' | 'user';
+    password: string;
 }
 
 
 export async function handleUserRegistration(data: SignupInput) {
-    const { first_name, last_name, email, phone, avatar, user_type } = data;
+    const { first_name, last_name, email, phone, avatar, user_type, password } = data;
 
     const existingUser = await AuthModel.findByEmail(email);
 
@@ -29,7 +31,15 @@ export async function handleUserRegistration(data: SignupInput) {
 
   
     const newUser = await AuthModel.createUser(
-        { first_name, last_name, email, phone, avatar, user_type },
+        {
+            first_name,
+            last_name,
+            email,
+            phone,
+            avatar,
+            user_type,
+            password_hash: await bcrypt.hash(password, 12),
+        },
         verificationToken,
         tokenExpiry
     );

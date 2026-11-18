@@ -10,6 +10,7 @@ export interface UserAttributes {
     phone: string;
     avatar?: string;
     user_type?: 'admin' | 'user';
+    password_hash?: string;
 }
 
 export interface SessionBody {
@@ -23,9 +24,9 @@ export class AuthModel {
     static async createUser(user: UserAttributes, verificationToken: string, tokenExpiry: Date) {
         const query = `
             INSERT INTO ${userTable} 
-                (first_name, last_name, email, phone, avatar, user_type, verification_token, verification_token_expires_at)
+                (first_name, last_name, email, phone, avatar, user_type, password_hash, verification_token, verification_token_expires_at)
             VALUES 
-                ($1, $2, $3, $4, $5, COALESCE($6, 'user'), $7, $8)
+                ($1, $2, $3, $4, $5, COALESCE($6, 'user'), $7, $8, $9)
             RETURNING id, first_name, last_name, email, user_type, status, verified, created_at;
         `;
         const values = [
@@ -35,6 +36,7 @@ export class AuthModel {
             user.phone,
             user.avatar || null,
             user.user_type || null,
+            user.password_hash || null,
             verificationToken,
             tokenExpiry,
         ];
@@ -46,6 +48,16 @@ export class AuthModel {
         const { rows } = await pool.query(
             `SELECT * FROM ${userTable} WHERE email = $1 AND deleted_at IS NULL`,
             [email]
+        );
+        return rows[0];
+    }
+
+    static async findById(userId: number) {
+        const { rows } = await pool.query(
+            `SELECT id, first_name, last_name, email, phone, user_type, status, verified
+             FROM ${userTable}
+             WHERE id = $1 AND deleted_at IS NULL`,
+            [userId]
         );
         return rows[0];
     }
@@ -122,7 +134,7 @@ export class AuthModel {
         const result = await pool.query(
             `UPDATE ${sessionTable} 
              SET revoked = TRUE 
-             WHERE token_hash = $1`,
+             WHERE token_hash = $1 AND revoked = FALSE`,
             [token_hash]
         );
         return result.rowCount ?? 0;

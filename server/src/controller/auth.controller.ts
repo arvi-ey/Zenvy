@@ -1,5 +1,6 @@
 import { Request, Response, NextFunction } from "express";
 import crypto from "crypto";
+import bcrypt from "bcrypt";
 import catchAsync from "../utils/catchAsync.js";
 import { sendResponse } from "../utils/response.js";
 import { AuthModel } from "../models/auth.model.js";
@@ -7,6 +8,39 @@ import { TokenUtils } from "../utils/token.js";
 import { Mailer } from "../utils/mailer.js";
 import AppError from "../utils/AppError.js";
 import { handleUserRegistration, SignupInput } from "../services/auth.services.js";
+
+const ACCESS_COOKIE = "access_token";
+const REFRESH_COOKIE = "refresh_token";
+const CSRF_COOKIE = "csrf_token";
+
+function cookieOptions(maxAge: number) {
+    return {
+        httpOnly: true,
+        secure: process.env.NODE_ENV === "production",
+        sameSite: (process.env.NODE_ENV === "production" ? "none" : "lax") as "none" | "lax",
+        maxAge,
+        path: "/",
+    };
+}
+
+function setAuthCookies(
+    res: Response,
+    accessToken: string,
+    refreshToken: string,
+    refreshExpiresAt: Date
+) {
+    res.cookie(ACCESS_COOKIE, accessToken, cookieOptions(15 * 60 * 1000));
+    res.cookie(
+        REFRESH_COOKIE,
+        refreshToken,
+        cookieOptions(Math.max(0, refreshExpiresAt.getTime() - Date.now()))
+    );
+}
+
+function clearAuthCookies(res: Response) {
+    res.clearCookie(ACCESS_COOKIE, cookieOptions(0));
+    res.clearCookie(REFRESH_COOKIE, cookieOptions(0));
+}
 
 export const signup = catchAsync(async (req: Request, res: Response, next: NextFunction) => {
     const body = req.body as SignupInput;
@@ -108,14 +142,14 @@ export const verifyEmail = catchAsync(async (req: Request, res: Response, next: 
     });
 
   
+    setAuthCookies(res, accessToken, rawRefreshToken, expiresAt);
+
     sendResponse(res, 200, "Email verified successfully! Welcome to the platform.", {
-        accessToken,
-        refreshToken: rawRefreshToken,
         user: {
             id: user.id,
             email: user.email,
-            first_name: user.first_name,
-            last_name: user.last_name,
+            firstName: user.first_name,
+            lastName: user.last_name,
             phone: user.phone,
             user_type: user.user_type,
         },
@@ -144,7 +178,7 @@ export const resendVerificationEmail = catchAsync(async (req: Request, res: Resp
 
 
 export const login = catchAsync(async (req: Request, res: Response, next: NextFunction) => {
-    const { email } = req.body; // Add password check here in production
+    const { email, password } = req.body as { email: string; password: string };
 
     const user = await AuthModel.findByEmail(email);
     if (!user) {
@@ -158,6 +192,10 @@ export const login = catchAsync(async (req: Request, res: Response, next: NextFu
 
     if (user.status !== "active") {
         throw new AppError(`Account is ${user.status}`, 403);
+    }
+
+    if (!user.password_hash || !(await bcrypt.compare(password, user.password_hash))) {
+        throw new AppError("Invalid email or password", 401);
     }
 
   
@@ -184,14 +222,15 @@ export const login = catchAsync(async (req: Request, res: Response, next: NextFu
         max_expiry_date: maxExpiryDate,
     });
 
+    setAuthCookies(res, accessToken, rawRefreshToken, expiresAt);
+
     sendResponse(res, 200, "Sign in successful", {
-        accessToken,
-        refreshToken: rawRefreshToken,
         user: {
             id: user.id,
             email: user.email,
-            first_name: user.first_name,
-            last_name: user.last_name,
+            firstName: user.first_name,
+            lastName: user.last_name,
+            phone: user.phone,
             user_type: user.user_type,
         },
     });
@@ -199,36 +238,85 @@ export const login = catchAsync(async (req: Request, res: Response, next: NextFu
 
 
 export const refreshToken = catchAsync(async (req: Request, res: Response, next: NextFunction) => {
-    const { refreshToken: incomingToken } = req.body;
+    const incomingToken = req.cookies?.[REFRESH_COOKIE] as string | undefined;
     if (!incomingToken) {
-        throw new AppError("Refresh token is required", 400);
+        throw new AppError("Refresh token is required", 401);
     }
 
     const tokenHash = TokenUtils.hashToken(incomingToken);
     const session = await AuthModel.findValidSession(tokenHash);
 
-    if (!session) {
+    if (!session || session.status !== "active" || !session.verified) {
         throw new AppError("Invalid or expired refresh token", 403);
     }
 
-    // Issue new Access Token
+    if (!(await AuthModel.revokeSession(tokenHash))) {
+        throw new AppError("Invalid or expired refresh token", 403);
+    }
+
+    const rawRefreshToken = TokenUtils.generateRefreshToken();
+    const newTokenHash = TokenUtils.hashToken(rawRefreshToken);
+    const maxExpiryDate = new Date(session.max_expiry_date);
+    const refreshExpiresAt = new Date(
+        Math.min(Date.now() + 7 * 24 * 60 * 60 * 1000, maxExpiryDate.getTime())
+    );
+
+    await AuthModel.createSession({
+        user_id: session.user_id,
+        token_hash: newTokenHash,
+        expires_at: refreshExpiresAt,
+        max_expiry_date: maxExpiryDate,
+    });
+
     const newAccessToken = TokenUtils.generateAccessToken({
         userId: session.user_id,
         role: session.user_type,
     });
 
-    sendResponse(res, 200, "Access token refreshed successfully", {
-        accessToken: newAccessToken,
-    });
+    setAuthCookies(res, newAccessToken, rawRefreshToken, refreshExpiresAt);
+    sendResponse(res, 200, "Access token refreshed successfully");
 });
 
 
 export const logout = catchAsync(async (req: Request, res: Response, next: NextFunction) => {
-    const { refreshToken: incomingToken } = req.body;
+    const incomingToken = req.cookies?.[REFRESH_COOKIE] as string | undefined;
     if (incomingToken) {
         const tokenHash = TokenUtils.hashToken(incomingToken);
         await AuthModel.revokeSession(tokenHash);
     }
 
+    clearAuthCookies(res);
     sendResponse(res, 200, "Logged out successfully");
 });
+
+export const getCurrentUser = catchAsync(async (req: Request, res: Response) => {
+    const userId = req.user?.id;
+    if (!userId) {
+        throw new AppError("Authentication is required", 401);
+    }
+
+    const user = await AuthModel.findById(userId);
+    if (!user || user.status !== "active") {
+        throw new AppError("Account is unavailable.", 401);
+    }
+
+    sendResponse(res, 200, "Authenticated user", {
+        id: user.id,
+        firstName: user.first_name,
+        lastName: user.last_name,
+        email: user.email,
+        phone: user.phone,
+    });
+});
+
+export const issueCsrfToken = (_req: Request, res: Response) => {
+    const csrfToken = crypto.randomBytes(32).toString("hex");
+    res.cookie(CSRF_COOKIE, csrfToken, {
+        httpOnly: false,
+        secure: process.env.NODE_ENV === "production",
+        sameSite: (process.env.NODE_ENV === "production" ? "none" : "lax") as "none" | "lax",
+        maxAge: 24 * 60 * 60 * 1000,
+        path: "/",
+    });
+    sendResponse(res, 200, "CSRF token issued", { csrfToken });
+};

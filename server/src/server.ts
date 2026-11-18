@@ -10,6 +10,7 @@ import CartRouter from "./routes/cart.route.js"
 import AuthRouter from "./routes/auth.route.js"
 import AddressRouter from "./routes/address.route.js"
 import OrderRouter from "./routes/order.route.js"
+import { csrfProtection } from "./middlewares/csrf.middleware.js";
 
 import fs from "node:fs";
 
@@ -39,6 +40,7 @@ app.use(cors({
 }));
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
+app.use(csrfProtection);
 
 //db connection
 connectDB()
@@ -67,24 +69,3 @@ app.use(globalErrorHandler)
 app.listen(PORT, () => {
     console.log(`Server running on port ${PORT}, mode: ${env.NODE_ENV}`);
 });
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-//Most used prisma comands
-
-// npx prisma format
-// npx prisma migrate dev --name product-category-image-table-added
-
-// npx prisma studio
-// npx prisma generate

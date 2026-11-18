@@ -1,8 +1,15 @@
 import crypto from "crypto";
 import jwt from "jsonwebtoken";
 
-const ACCESS_TOKEN_SECRET = process.env.ACCESS_TOKEN_SECRET || "your_access_secret_key";
 const ACCESS_TOKEN_EXPIRY = "15m"; // Short-lived access token
+
+function getAccessTokenSecret(): string {
+    const secret = process.env.JWT_ACCESS_SECRET || process.env.ACCESS_TOKEN_SECRET;
+    if (!secret) {
+        throw new Error("JWT_ACCESS_SECRET must be configured.");
+    }
+    return secret;
+}
 
 export interface TokenPayload {
     userId: number;
@@ -28,13 +35,13 @@ export class TokenUtils {
      * Generates a JSON Web Token (JWT) for access authentication containing userId and role.
      */
     static generateAccessToken(payload: TokenPayload): string {
-        return jwt.sign(payload, ACCESS_TOKEN_SECRET, { expiresIn: ACCESS_TOKEN_EXPIRY });
+        return jwt.sign(payload, getAccessTokenSecret(), { expiresIn: ACCESS_TOKEN_EXPIRY });
     }
 
     /**
      * Verifies and decodes an access token.
      */
     static verifyAccessToken(token: string): TokenPayload {
-        return jwt.verify(token, ACCESS_TOKEN_SECRET) as TokenPayload;
+        return jwt.verify(token, getAccessTokenSecret()) as TokenPayload;
     }
 }

@@ -16,12 +16,9 @@ import { hydrateCart } from '@/store/slices/cartSlice'
 import { hydrateWishlist } from '@/store/slices/wishlistSlice'
 import { useAppSelector } from '@/store/hooks'
 import type { WishlistItem } from '@/types'
-import api from '@/api/api'
-import { getCurrentUser } from '@/api/auth'
-import { setAccessToken, setAuthenticated, setUnauthenticated } from '@/store/slices/authSlice'
+import AuthHydrator from '@/components/client/AuthHydrator'
 
 const WISHLIST_STORAGE_KEY = 'zenvy-wishlist'
-const ACCESS_TOKEN_STORAGE_KEY = 'zenvy-access-token'
 
 function isWishlistItem(value: unknown): value is WishlistItem {
   if (typeof value !== 'object' || value === null) return false
@@ -107,98 +104,6 @@ function CartHydrator() {
   return null
 }
 
-function AuthHydrator() {
-  useEffect(() => {
-    let refreshPromise: Promise<void> | null = null
-    const storedAccessToken = localStorage.getItem(ACCESS_TOKEN_STORAGE_KEY)
-    if (storedAccessToken) {
-      store.dispatch(setAccessToken(storedAccessToken))
-    }
-
-    const unsubscribe = store.subscribe(() => {
-      const accessToken = store.getState().auth.accessToken
-      if (accessToken) {
-        localStorage.setItem(ACCESS_TOKEN_STORAGE_KEY, accessToken)
-      } else {
-        localStorage.removeItem(ACCESS_TOKEN_STORAGE_KEY)
-      }
-    })
-
-    const requestInterceptorId = api.interceptors.request.use((config) => {
-      const accessToken = store.getState().auth.accessToken
-      if (accessToken) {
-        config.headers.Authorization = `Bearer ${accessToken}`
-      }
-      return config
-    })
-    const interceptorId = api.interceptors.response.use(
-      (response) => response,
-      async (error: unknown) => {
-        if (!axios.isAxiosError(error) || error.response?.status !== 401) {
-          return Promise.reject(error)
-        }
-
-        const request = error.config
-        const url = request?.url ?? ''
-        if (
-          !request ||
-          url.includes('/auth/sign-in') ||
-          url.includes('/auth/sign-up') ||
-          url.includes('/auth/refresh') ||
-          url.includes('/auth/sign-out')
-        ) {
-          return Promise.reject(error)
-        }
-        if (request.headers?.['x-auth-retry']) {
-          store.dispatch(setUnauthenticated())
-          return Promise.reject(error)
-        }
-
-        request.headers = request.headers ?? {}
-        request.headers['x-auth-retry'] = 'true'
-        try {
-          refreshPromise ??= api.post<{ data?: { accessToken?: string } }>('/auth/refresh')
-            .then((response) => {
-              const accessToken = response.data.data?.accessToken
-              if (!accessToken) throw new Error('Session refresh did not return an access token.')
-              store.dispatch(setAccessToken(accessToken))
-            })
-            .finally(() => {
-              refreshPromise = null
-            })
-          await refreshPromise
-          return api(request)
-        } catch (refreshError) {
-          store.dispatch(setUnauthenticated())
-          return Promise.reject(refreshError)
-        }
-      }
-    )
-    let cancelled = false
-    getCurrentUser()
-      .then((session) => {
-        if (!cancelled) store.dispatch(setAuthenticated(session))
-      })
-      .catch((error: unknown) => {
-        if (cancelled || store.getState().auth.status === 'authenticated') return
-        store.dispatch(setUnauthenticated())
-        if (axios.isAxiosError(error) && error.response?.status !== 401) {
-          toast.error(error.response?.data?.message ?? 'Unable to restore your session.')
-        } else if (!axios.isAxiosError(error)) {
-          toast.error(error instanceof Error ? error.message : 'Unable to restore your session.')
-        }
-      })
-
-    return () => {
-      cancelled = true
-      unsubscribe()
-      api.interceptors.request.eject(requestInterceptorId)
-      api.interceptors.response.eject(interceptorId)
-    }
-  }, [])
-
-  return null
-}
 
 interface ProvidersProps {
   children: React.ReactNode

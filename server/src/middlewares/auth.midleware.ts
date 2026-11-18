@@ -1,8 +1,8 @@
 // middleware/auth.ts
 import { Request, Response, NextFunction } from "express";
-import jwt from "jsonwebtoken";
 import AppError from "../utils/AppError.js";
 import { pool } from "../config/db.js";
+import { TokenUtils, type TokenPayload } from "../utils/token.js";
 
 export interface AuthPayload {
     id: number;
@@ -24,26 +24,25 @@ declare global {
 const ACCESS_COOKIE = "access_token";
 
 function authenticate(req: Request): boolean {
-    const bearerToken = req.get("authorization")?.match(/^Bearer\s+(.+)$/i)?.[1];
-    const token = bearerToken ?? req.cookies?.[ACCESS_COOKIE];
+    const token = req.cookies?.[ACCESS_COOKIE];
 
     if (!token) {
         return false;
     }
 
-    let payload: AuthPayload;
+    let payload: TokenPayload;
     try {
-        payload = jwt.verify(token, process.env.JWT_ACCESS_SECRET!) as AuthPayload;
+        payload = TokenUtils.verifyAccessToken(token);
+        if (!Number.isSafeInteger(payload.userId) || typeof payload.role !== "string") {
+            throw new Error("Invalid access token payload");
+        }
     } catch {
         throw new AppError("Invalid or expired token", 401);
     }
 
     req.user = {
-        id: payload.id,
-        email: payload.email,
+        id: payload.userId,
         role: payload.role,
-        firstName: payload.firstName,
-        lastName: payload.lastName,
     };
     return true;
 }
@@ -75,7 +74,7 @@ export function requireRole(...roles: string[]) {
         }
         try {
             const result = await pool.query<{ role: string; status: string }>(
-                "SELECT role, status FROM users WHERE id = $1 AND deleted_at IS NULL LIMIT 1",
+                "SELECT user_type AS role, status FROM users WHERE id = $1 AND deleted_at IS NULL LIMIT 1",
                 [req.user.id]
             );
             const currentUser = result.rows[0];
