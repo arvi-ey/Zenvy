@@ -32,40 +32,40 @@ const resendVerificationEmailSchema = z.object({
 router.post("/sign-up", routeLimiter(60, 12, `Too many sign-up attempts. Please try ${1} hour later.`), validate(signUpSchema, "body"), signup);
 router.post("/verify-email", routeLimiter(15, 10, "Too many verification attempts. Please try again later."), validate(verifyEmailSchema, "body"), verifyEmail);
 router.post("/resend-verification", routeLimiter(15, 5, "Too many resend requests. Please try again later."), validate(resendVerificationEmailSchema, "body"), resendVerificationEmail);
-router.post("/login", routeLimiter(15, 10, "Too many login  attempts. Please try again later."), validate(signInSchema, "body"), validateAuthOrigin, login);
-router.post("/sign-in", routeLimiter(15, 10, "Too many login attempts. Please try again later."), validate(signInSchema, "body"), validateAuthOrigin, login);
-router.get("/csrf", validateAuthOrigin, issueCsrfToken);
-router.post("/refresh", validateAuthOrigin, refreshToken);
-router.post("/sign-out", validateAuthOrigin, logout);
-router.get("/me", validateAuthOrigin, requireAuth, getCurrentUser);
+router.post("/login", routeLimiter(15, 10, "Too many login  attempts. Please try again later."), validate(signInSchema, "body"),    login);
+router.post("/sign-in", routeLimiter(15, 10, "Too many login attempts. Please try again later."), validate(signInSchema, "body"),    login);
+router.get("/csrf",    issueCsrfToken);
+router.post("/refresh",    refreshToken);
+router.post("/sign-out",    logout);
+router.get("/me",    requireAuth, getCurrentUser);
 // router.post(
 //     "/admin/sign-up",
-//     validateAuthOrigin,
+//       
 //     routeLimiter(5, 10, "Too many admin registration attempts. Please try again later."),
 //     validate(signUpSchema, "body"),
 //     adminSignUp
 // );
 // router.post(
 //     "/admin/sign-in",
-//     validateAuthOrigin,
+//       
 //     routeLimiter(15, 10, "Too many sign-in attempts. Please try again later."),
 //     validate(signInSchema, "body"),
 //     adminSignIn
 // );
 // router.post(
 //     "/sign-up",
-//     validateAuthOrigin,
+//       
 //     routeLimiter(15, 10, "Too many sign-up attempts. Please try again later."),
 //     validate(signUpSchema, "body"),
 //     signUp
 // );
 // router.post(
 //     "/sign-in",
-//     validateAuthOrigin,
+//       
 //     routeLimiter(15, 10, "Too many sign-in attempts. Please try again later."),
 //     validate(signInSchema, "body"),
 //     signIn
 // );
-// router.post("/refresh", validateAuthOrigin, refreshSession);
-// router.post("/sign-out", validateAuthOrigin, signOut);
+// router.post("/refresh",    refreshSession);
+// router.post("/sign-out",    signOut);
 export default router;
