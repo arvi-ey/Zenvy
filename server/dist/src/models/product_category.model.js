@@ -15,7 +15,7 @@ export class ProductCategoryModel {
     }
     // Get All
     static async findAll(status = 'active') {
-        console.log(status);
+       
         let query = `
       SELECT *
       FROM product_category

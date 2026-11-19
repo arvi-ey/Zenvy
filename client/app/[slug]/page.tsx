@@ -394,10 +394,7 @@ const ProductDetailPage: React.FC = () => {
 
     // Fetch product when slug changes
 
-    useEffect(() => {
-        console.log(selectedSize)
-
-    }, [selectedSize])
+  
     useEffect(() => {
         if (!slug) return;
         let cancelled = false;

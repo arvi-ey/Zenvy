@@ -82,7 +82,6 @@ export const getProducts = catchAsync(async (req, res, next) => {
 });
 export const getProductDetails = catchAsync(async (req, res, next) => {
     const { id, slug } = req.query;
-    console.log(slug, "SLUG");
     const parsedId = id ? Number(id) : undefined;
     const parsedSlug = typeof slug === "string"
         ? slug

@@ -2,7 +2,6 @@
 
 import { useEffect, useState, type FormEvent } from 'react'
 import Link from 'next/link'
-import { useRouter } from 'next/navigation'
 import { toast } from 'sonner'
 import axios from 'axios'
 import { Eye, EyeOff } from 'lucide-react'
@@ -10,19 +9,16 @@ import { signUp } from '@/api/auth'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
-import { useAppDispatch } from '@/store/hooks'
-import { setAuthenticated } from '@/store/slices/authSlice'
 
 function getReturnPath() {
   const requestedPath = new URLSearchParams(window.location.search).get('next')
+  
   return requestedPath?.startsWith('/') && !requestedPath.startsWith('//')
     ? requestedPath
     : '/'
 }
 
 export default function SignUpPage() {
-  const router = useRouter()
-  const dispatch = useAppDispatch()
   const [form, setForm] = useState({
     first_name: '',
     last_name: '',
@@ -53,7 +49,7 @@ export default function SignUpPage() {
 
     setIsSubmitting(true)
     try {
-      const response = await signUp(form)
+      const response = await signUp({ ...form, next: getReturnPath() })
       if (response.success) {
         setSuccessMessage(response.message)
       } else {

@@ -14,6 +14,11 @@ function VerifyEmailContent() {
   const router = useRouter();
   const dispatch = useAppDispatch();
   const tokenFromQuery = searchParams.get("token") || "";
+  const requestedPath = searchParams.get("next");
+  const returnPath =
+    requestedPath?.startsWith("/") && !requestedPath.startsWith("//")
+      ? requestedPath
+      : "/";
 
   const [token, setToken] = useState(tokenFromQuery);
   const [email, setEmail] = useState("");
@@ -28,12 +33,14 @@ function VerifyEmailContent() {
     if (status !== "success") return;
 
     const timeout = window.setTimeout(() => {
-      router.replace("/");
+      router.replace(returnPath);
       router.refresh();
     }, 2000);
+   
 
     return () => window.clearTimeout(timeout);
-  }, [router, status]);
+  }, [returnPath, router, status]);
+
 
   const handleVerify = async (event?: FormEvent) => {
     event?.preventDefault();
@@ -77,7 +84,7 @@ function VerifyEmailContent() {
     setMessage("");
 
     try {
-      const responseMessage = await resendVerificationEmail(email.trim());
+      const responseMessage = await resendVerificationEmail(email.trim(), returnPath);
       setStatus("resent");
       setMessage(responseMessage);
     } catch (error: unknown) {

@@ -11,11 +11,12 @@ export interface SignupInput {
     avatar?: string;
     user_type?: 'admin' | 'user';
     password: string;
+    next?: string;
 }
 
 
 export async function handleUserRegistration(data: SignupInput) {
-    const { first_name, last_name, email, phone, avatar, user_type, password } = data;
+    const { first_name, last_name, email, phone, avatar, user_type, password, next } = data;
 
     const existingUser = await AuthModel.findByEmail(email);
 
@@ -45,7 +46,7 @@ export async function handleUserRegistration(data: SignupInput) {
     );
 
     
-    await Mailer.sendVerificationEmail(email, verificationToken, first_name);
+    await Mailer.sendVerificationEmail(email, verificationToken, first_name, next);
 
     return { user: newUser, isNew: true };
 }

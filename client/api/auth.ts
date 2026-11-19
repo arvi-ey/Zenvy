@@ -36,6 +36,7 @@ export interface SignUpCredentials {
   email: string
   phone: string
   password: string
+  next?: string
 }
 
 export interface SignInCredentials {
@@ -58,8 +59,8 @@ export async function verifyEmail(token: string) {
   return response.data.data
 }
 
-export async function resendVerificationEmail(email: string) {
-  const response = await api.post<ApiResponse<undefined>>('/auth/resend-verification', { email })
+export async function resendVerificationEmail(email: string, next?: string) {
+  const response = await api.post<ApiResponse<undefined>>('/auth/resend-verification', { email, next })
   return response.data.message
 }
 

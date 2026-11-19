@@ -31,7 +31,6 @@ export class ProductCategoryModel {
     // Get All
     static async findAll(status: 'active' | 'inactive' | 'all' | null = 'active'): Promise<ProductCategory[]> {
 
-        console.log(status)
         let query = `
       SELECT *
       FROM product_category

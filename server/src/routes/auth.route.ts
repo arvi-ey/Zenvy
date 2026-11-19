@@ -22,6 +22,10 @@ import { validateAuthOrigin } from "../middlewares/authOrigin.middleware.js";
 const router = Router();
 const email = z.email().trim().max(100);
 const password = z.string().min(8).max(72);
+const returnPath = z.string().max(2048).refine(
+    (value) => value.startsWith("/") && !value.startsWith("//"),
+    "Return path must be a local path."
+).optional();
 const signUpSchema = z.object({
     first_name: z.string().trim().min(2).max(50),
     last_name: z.string().trim().min(2).max(50),
@@ -31,6 +35,7 @@ const signUpSchema = z.object({
         .regex(/[A-Z]/, "Password must contain an uppercase letter.")
         .regex(/[0-9]/, "Password must contain a number.")
         .refine((value) => Buffer.byteLength(value, "utf8") <= 72, "Password must be at most 72 bytes."),
+    next: returnPath,
 }).strict();
 const signInSchema = z.object({
     email,
@@ -44,6 +49,7 @@ const verifyEmailSchema = z.object({
 }).strict();
 const resendVerificationEmailSchema = z.object({
     email,
+    next: returnPath,
 }).strict();
 
 

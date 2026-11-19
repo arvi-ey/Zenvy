@@ -233,7 +233,7 @@ export class ProductModel {
         query += ` AND p.status = 'active' AND pc.status = 'active'`;
         query += ` GROUP BY p.id, pc.name, pc.slug;`
         const { rows } = await pool.query(query, values)
-        console.log(rows)
+        
 
         return rows[0] ?? null;
 

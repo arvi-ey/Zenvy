@@ -73,7 +73,7 @@ export const signup = catchAsync(async (req: Request, res: Response, next: NextF
         tokenExpiry.setHours(tokenExpiry.getHours() + 24);
 
         await AuthModel.updateVerificationToken(existingUser.id, verificationToken, tokenExpiry);
-        await Mailer.sendVerificationEmail(body.email, verificationToken, existingUser.first_name);
+        await Mailer.sendVerificationEmail(body.email, verificationToken, existingUser.first_name, body.next);
 
         return sendResponse(
             res,
@@ -157,7 +157,7 @@ export const verifyEmail = catchAsync(async (req: Request, res: Response, next: 
 });
 
 export const resendVerificationEmail = catchAsync(async (req: Request, res: Response) => {
-    const { email } = req.body;
+    const { email, next } = req.body;
     const user = await AuthModel.findByEmail(email);
 
     if (user && !user.verified && user.status !== "suspended") {
@@ -166,7 +166,7 @@ export const resendVerificationEmail = catchAsync(async (req: Request, res: Resp
         tokenExpiry.setHours(tokenExpiry.getHours() + 24);
 
         await AuthModel.updateVerificationToken(user.id, verificationToken, tokenExpiry);
-        await Mailer.sendVerificationEmail(user.email, verificationToken, user.first_name);
+        await Mailer.sendVerificationEmail(user.email, verificationToken, user.first_name, next);
     }
 
     sendResponse(

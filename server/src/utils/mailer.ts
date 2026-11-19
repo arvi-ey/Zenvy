@@ -6,8 +6,12 @@ const FRONTEND_URL = env.NODE_ENV === "production"
     : env.FRONTEND_BASE_URL_DEV;
 
 export class Mailer {
-    static async sendVerificationEmail(email: string, token: string, firstName: string) {
-        const verificationLink = `${FRONTEND_URL}/verify-email?token=${token}`;
+    static async sendVerificationEmail(email: string, token: string, firstName: string, next?: string) {
+        const verificationUrl = new URL("/verify-email", FRONTEND_URL);
+        verificationUrl.searchParams.set("token", token);
+        if (next) verificationUrl.searchParams.set("next", next);
+        const verificationLink = verificationUrl.toString();
+        console.log("Verification Link:", verificationLink);
 
         
         const html = `
