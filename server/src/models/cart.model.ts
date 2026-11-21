@@ -158,7 +158,7 @@ export class CartModel {
             selectedVariantId = Number(inventory.rows[0].variant_id);
             const availableStock = Number(inventory.rows[0].available_stock);
             const existingCartItem = await client.query(
-                `SELECT product_count FROM ${tableName}
+                `SELECT id, product_count FROM ${tableName}
                  WHERE product_id = $1 AND variant_id = $2
                    AND ${user_id ? "user_id = $3" : "guest_token = $3"}
                    AND deleted_at IS NULL
@@ -179,18 +179,21 @@ export class CartModel {
             }
 
             if (user_id) {
-                const result = await client.query(
-                    `INSERT INTO ${tableName} AS c
-                        (product_id, variant_id, product_count, user_id)
-                     VALUES ($1, $2, $3, $4)
-                     ON CONFLICT (user_id, product_id, variant_id)
-                     WHERE user_id IS NOT NULL AND deleted_at IS NULL
-                     DO UPDATE SET
-                        product_count = LEAST(c.product_count + EXCLUDED.product_count, 10),
-                        updated_at = CURRENT_TIMESTAMP
-                     RETURNING *`,
-                    [product_id, selectedVariantId, product_count, user_id]
-                );
+                const result = existingCartItem.rowCount
+                    ? await client.query(
+                        `UPDATE ${tableName}
+                         SET product_count = LEAST(product_count + $1, 10),
+                             updated_at = CURRENT_TIMESTAMP
+                         WHERE id = $2
+                         RETURNING *`,
+                        [product_count, existingCartItem.rows[0].id]
+                    )
+                    : await client.query(
+                        `INSERT INTO ${tableName} (product_id, variant_id, product_count, user_id)
+                         VALUES ($1, $2, $3, $4)
+                         RETURNING *`,
+                        [product_id, selectedVariantId, product_count, user_id]
+                    );
                 await client.query("COMMIT");
                 return result.rows[0];
             }
@@ -199,28 +202,15 @@ export class CartModel {
                 [guest_token!, `${product_id}:${selectedVariantId}`]
             );
 
-            const existingGuestItem = await client.query(
-                `SELECT id
-                 FROM ${tableName}
-                 WHERE guest_token = $1
-                   AND product_id = $2
-                   AND variant_id = $3
-                   AND deleted_at IS NULL
-                 ORDER BY id
-                 LIMIT 1
-                 FOR UPDATE`,
-                [guest_token!, product_id, selectedVariantId]
-            );
-
             let result;
-            if (existingGuestItem.rowCount) {
+            if (existingCartItem.rowCount) {
                 result = await client.query(
                     `UPDATE ${tableName}
                      SET product_count = LEAST(product_count + $1, 10),
                          updated_at = CURRENT_TIMESTAMP
                      WHERE id = $2
                      RETURNING *`,
-                    [product_count, existingGuestItem.rows[0].id]
+                    [product_count, existingCartItem.rows[0].id]
                 );
             } else {
                 result = await client.query(

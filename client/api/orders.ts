@@ -1,8 +1,10 @@
+import axios from 'axios'
 import api from '@/api/api'
-import type { CartItem } from '@/types'
 
 export interface OrderItem {
+  id?: number
   productId: number
+  variantId: number
   name: string
   image: string | null
   quantity: number
@@ -19,30 +21,89 @@ export interface Order {
   deliveryCharge: number
   total: number
   createdAt: string
+  address?: {
+    street: string
+    landmark: string | null
+    district: string
+    state: string
+    pincode: string
+    type: 'home' | 'office' | 'others'
+  }
   items: OrderItem[]
 }
 
-export async function createCashOnDeliveryOrder(addressId: number, items: CartItem[]) {
-  const response = await api.post<{ success: boolean; message: string; data: Order }>('/orders', {
-    address_id: addressId,
-    payment_method: 'cod',
-    items: items.map((item) => ({
-      product_id: Number(item.product.id),
-      quantity: item.quantity,
-      selected_size: item.selectedSize,
-      selected_color: item.selectedColor,
-    })),
-  })
-  if (!response.data.success || !response.data.data) {
-    throw new Error(response.data.message || 'Unable to place your order.')
+interface OrderResponse {
+  success: boolean
+  message: string
+  data: Order
+}
+
+function getOrderRequestError(error: unknown, fallback: string): Error {
+  if (axios.isAxiosError<{ message?: string }>(error)) {
+    return new Error(error.response?.data?.message || fallback)
   }
-  return response.data.data
+  return error instanceof Error ? error : new Error(fallback)
+}
+
+export async function createCashOnDeliveryOrder(
+  addressId: number,
+  variantIds?: number[],
+  selectedColors?: { variant_id: number; selected_color: string }[]
+) {
+  try {
+    const response = await api.post<OrderResponse>('/orders', {
+      address_id: addressId,
+      payment_method: 'cod',
+      ...(variantIds ? { variant_ids: variantIds } : {}),
+      ...(selectedColors ? { selected_colors: selectedColors } : {}),
+    })
+    if (!response.data.success || !response.data.data) {
+      throw new Error(response.data.message || 'Unable to place your order.')
+    }
+    return response.data.data
+  } catch (error: unknown) {
+    throw getOrderRequestError(error, 'Unable to place your order.')
+  }
 }
 
 export async function getOrders() {
-  const response = await api.get<{ success: boolean; message: string; data: Order[] }>('/orders')
-  if (!response.data.success || !Array.isArray(response.data.data)) {
-    throw new Error(response.data.message || 'Unable to load your orders.')
+  try {
+    const response = await api.get<{ success: boolean; message: string; data: Order[] }>('/orders')
+    if (!response.data.success || !Array.isArray(response.data.data)) {
+      throw new Error(response.data.message || 'Unable to load your orders.')
+    }
+    return response.data.data
+  } catch (error: unknown) {
+    throw getOrderRequestError(error, 'Unable to load your orders.')
   }
-  return response.data.data
+}
+
+export async function getOrder(orderId: number): Promise<Order> {
+  if (!Number.isSafeInteger(orderId) || orderId <= 0) {
+    throw new Error('Invalid order')
+  }
+  try {
+    const response = await api.get<OrderResponse>(`/orders/${orderId}`)
+    if (!response.data.success || !response.data.data) {
+      throw new Error(response.data.message || 'Unable to load this order.')
+    }
+    return response.data.data
+  } catch (error: unknown) {
+    throw getOrderRequestError(error, 'Unable to load this order.')
+  }
+}
+
+export async function cancelOrder(orderId: number): Promise<Order> {
+  if (!Number.isSafeInteger(orderId) || orderId <= 0) {
+    throw new Error('Invalid order')
+  }
+  try {
+    const response = await api.post<OrderResponse>(`/orders/${orderId}/cancel`)
+    if (!response.data.success || !response.data.data) {
+      throw new Error(response.data.message || 'Unable to cancel this order.')
+    }
+    return response.data.data
+  } catch (error: unknown) {
+    throw getOrderRequestError(error, 'Unable to cancel this order.')
+  }
 }

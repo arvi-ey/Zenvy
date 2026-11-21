@@ -117,9 +117,30 @@ function CheckoutContent() {
     } else if (step === 'shipping') {
       setStep('payment')
     } else if (step === 'payment') {
+      if (!selectedAddress) {
+        toast.error('Choose a delivery address before placing your order.')
+        dispatch(setAddressPickerOpen(true))
+        return
+      }
+      const variantIds = items
+        .map((item) => item.variantId)
+        .filter((variantId): variantId is number =>
+          typeof variantId === 'number' && Number.isSafeInteger(variantId) && variantId > 0
+        )
+      if (items.length === 0 || variantIds.length !== items.length) {
+        toast.error('Your selected cart items are unavailable. Please return to your cart.')
+        return
+      }
       setIsPlacingOrder(true)
       try {
-        const order = await createCashOnDeliveryOrder(selectedAddress!.id, items)
+        const order = await createCashOnDeliveryOrder(
+          selectedAddress.id,
+          variantIds,
+          items.map((item, index) => ({
+            variant_id: variantIds[index],
+            selected_color: item.selectedColor,
+          }))
+        )
         setOrderId(order.id)
         if (productId && selectedItem) {
           dispatch(removeFromCart({

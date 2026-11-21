@@ -259,29 +259,63 @@ CREATE TABLE orders (
     id SERIAL PRIMARY KEY,
     user_id INT NOT NULL,
     address_id INT NOT NULL,
+
     payment_method VARCHAR(20) NOT NULL DEFAULT 'cod'
         CHECK (payment_method IN ('cod')),
+
     status VARCHAR(30) NOT NULL DEFAULT 'placed'
-        CHECK (status IN ('placed', 'confirmed', 'shipped', 'out_for_delivery', 'delivered', 'cancelled')),
+        CHECK (status IN (
+            'placed',
+            'confirmed',
+            'shipped',
+            'out_for_delivery',
+            'delivered',
+            'cancelled'
+        )),
+
     subtotal NUMERIC(10, 2) NOT NULL CHECK (subtotal >= 0),
-    delivery_charge NUMERIC(10, 2) NOT NULL DEFAULT 40 CHECK (delivery_charge >= 0),
+    delivery_charge NUMERIC(10, 2) NOT NULL DEFAULT 40
+        CHECK (delivery_charge >= 0),
     total NUMERIC(10, 2) NOT NULL CHECK (total >= 0),
+
     created_at TIMESTAMPTZ NOT NULL DEFAULT CURRENT_TIMESTAMP,
     updated_at TIMESTAMPTZ NOT NULL DEFAULT CURRENT_TIMESTAMP,
-    CONSTRAINT orders_user_fkey FOREIGN KEY (user_id) REFERENCES users(id) ON DELETE RESTRICT,
-    CONSTRAINT orders_address_fkey FOREIGN KEY (address_id) REFERENCES address(id) ON DELETE RESTRICT
+
+    CONSTRAINT orders_user_fkey
+        FOREIGN KEY (user_id) REFERENCES users(id)
+        ON DELETE RESTRICT,
+
+    CONSTRAINT orders_address_fkey
+        FOREIGN KEY (address_id) REFERENCES address(id)
+        ON DELETE RESTRICT
 );
+
 
 CREATE TABLE order_items (
     id SERIAL PRIMARY KEY,
+
     order_id INT NOT NULL,
     product_id INT NOT NULL,
+    variant_id INT NOT NULL,
+
     product_name VARCHAR(150) NOT NULL,
     product_image TEXT,
+
     quantity INT NOT NULL CHECK (quantity > 0),
     unit_price NUMERIC(10, 2) NOT NULL CHECK (unit_price >= 0),
+
     selected_size VARCHAR(20) NOT NULL,
     selected_color VARCHAR(50) NOT NULL,
-    CONSTRAINT order_items_order_fkey FOREIGN KEY (order_id) REFERENCES orders(id) ON DELETE CASCADE,
-    CONSTRAINT order_items_product_fkey FOREIGN KEY (product_id) REFERENCES product(id) ON DELETE RESTRICT
+
+    CONSTRAINT order_items_order_fkey
+        FOREIGN KEY (order_id) REFERENCES orders(id)
+        ON DELETE CASCADE,
+
+    CONSTRAINT order_items_product_fkey
+        FOREIGN KEY (product_id) REFERENCES product(id)
+        ON DELETE RESTRICT,
+
+    CONSTRAINT order_items_variant_fkey
+        FOREIGN KEY (variant_id) REFERENCES product_variants(id)
+        ON DELETE RESTRICT
 );

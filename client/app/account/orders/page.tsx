@@ -5,7 +5,7 @@ import Link from 'next/link'
 import { useRouter } from 'next/navigation'
 import { ArrowLeft, Package, Truck } from 'lucide-react'
 import { toast } from 'sonner'
-import { getOrders, type Order } from '@/api/orders'
+import { cancelOrder, getOrders, type Order } from '@/api/orders'
 import { useAppSelector } from '@/store/hooks'
 import { Button } from '@/components/ui/button'
 import { Skeleton } from '@/components/ui/skeleton'
@@ -30,6 +30,23 @@ export default function OrdersPage() {
   const authStatus = useAppSelector((state) => state.auth.status)
   const [orders, setOrders] = useState<Order[]>([])
   const [isLoading, setIsLoading] = useState(true)
+  const [cancellingOrderId, setCancellingOrderId] = useState<number | null>(null)
+
+  const handleCancelOrder = async (orderId: number) => {
+    if (!window.confirm('Are you sure you want to cancel this order?')) return
+    setCancellingOrderId(orderId)
+    try {
+      const cancelledOrder = await cancelOrder(orderId)
+      setOrders((currentOrders) =>
+        currentOrders.map((order) => order.id === orderId ? cancelledOrder : order)
+      )
+      toast.success('Your order has been cancelled.')
+    } catch (error: unknown) {
+      toast.error(error instanceof Error ? error.message : 'Unable to cancel this order.')
+    } finally {
+      setCancellingOrderId(null)
+    }
+  }
 
   useEffect(() => {
     if (authStatus === 'unauthenticated') {
@@ -91,6 +108,21 @@ export default function OrdersPage() {
               <div className="flex justify-between border-t border-border pt-4 text-sm">
                 <span className="text-muted-foreground">COD total (includes ₹40 delivery)</span>
                 <span className="font-semibold">{formatPrice(order.total)}</span>
+              </div>
+              <div className="mt-4 flex flex-wrap gap-3">
+                <Button asChild variant="outline" size="sm">
+                  <Link href={`/account/orders/${order.id}`}>View details</Link>
+                </Button>
+                {order.status === 'placed' && (
+                  <Button
+                    variant="outline"
+                    size="sm"
+                    disabled={cancellingOrderId === order.id}
+                    onClick={() => void handleCancelOrder(order.id)}
+                  >
+                    {cancellingOrderId === order.id ? 'Cancelling…' : 'Cancel order'}
+                  </Button>
+                )}
               </div>
             </section>
           ))}
