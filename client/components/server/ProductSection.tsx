@@ -173,7 +173,7 @@ export default function ProductSection() {
                       </span>
 
                       <span className="text-sm text-muted-foreground">
-                        Stock: {product.stock}
+                        Available: {product.stock}
                       </span>
                     </div>
                   </div>

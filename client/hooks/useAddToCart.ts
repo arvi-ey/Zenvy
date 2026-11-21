@@ -38,9 +38,17 @@ export function useAddToCart() {
     setIsAdding(true);
     try {
       const productId = Number(product.id);
+      const variantId = product.sizes.find(
+        (size) => size.value.toLowerCase() === selectedSize.toLowerCase()
+      )?.variantId;
+      if (!variantId) {
+        toast.error("This size is unavailable.");
+        return false;
+      }
       await addProductToCart({
         product_id: productId,
         product_count: quantity,
+        variant_id: variantId,
       });
       dispatch(
         addToCartAction({

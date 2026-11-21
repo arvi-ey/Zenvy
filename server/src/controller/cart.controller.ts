@@ -23,6 +23,9 @@ export const deleteFromCart = catchAsync(
         const user_id = req.user?.id;
         const guest_token = req.guest_token;
         const product_id = Number(req.params.productId);
+        const variant_id = req.params.variantId
+            ? Number(req.params.variantId)
+            : undefined;
 
         if (!user_id && !guest_token) {
             throw new AppError("Either user or guest session is required", 400);
@@ -30,8 +33,11 @@ export const deleteFromCart = catchAsync(
         if (!Number.isSafeInteger(product_id) || product_id <= 0) {
             throw new AppError("Invalid product", 400);
         }
+        if (variant_id !== undefined && (!Number.isSafeInteger(variant_id) || variant_id <= 0)) {
+            throw new AppError("Invalid product variant", 400);
+        }
 
-        await CartModel.deleteFromCart({ product_id, user_id, guest_token });
+        await CartModel.deleteFromCart({ product_id, variant_id, user_id, guest_token });
         sendResponse(res, 200, "Item removed from cart");
     }
 );
@@ -39,7 +45,7 @@ export const deleteFromCart = catchAsync(
 export const addToCart = catchAsync(
     async (req: Request, res: Response, _next: NextFunction) => {
         const user_id = req.user?.id;
-        const { product_id, product_count } = req.body;
+        const { product_id, product_count, variant_id } = req.body;
 
         if (!user_id) {
             throw new AppError("Authentication is required to add items to your cart", 401);
@@ -54,10 +60,15 @@ export const addToCart = catchAsync(
         if (!Number.isInteger(productCount) || productCount < 1 || productCount > 10) {
             throw new AppError("Invalid product count", 400);
         }
+        const variantId = variant_id === undefined ? undefined : Number(variant_id);
+        if (variantId !== undefined && (!Number.isSafeInteger(variantId) || variantId <= 0)) {
+            throw new AppError("Invalid product variant", 400);
+        }
 
         const response = await CartModel.addToCart({
             product_id: productId,
             product_count: productCount,
+            variant_id: variantId,
             user_id,
         });
 

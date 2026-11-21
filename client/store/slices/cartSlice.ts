@@ -41,6 +41,9 @@ const cartSlice = createSlice({
       }>
     ) => {
       const { product, quantity, selectedSize, selectedColor } = action.payload
+      const variantId = product.sizes.find(
+        (size) => size.value.toLowerCase() === selectedSize.toLowerCase()
+      )?.variantId
       const existingItem = state.items.find(
         (item) =>
           item.product.id === product.id &&
@@ -56,6 +59,7 @@ const cartSlice = createSlice({
           quantity: Math.min(quantity, 10),
           selectedSize,
           selectedColor,
+          variantId,
         })
       }
     },

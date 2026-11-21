@@ -12,7 +12,8 @@ interface ProductData {
     description: string;
     sku: string;
     category_id: number;
-    stock: number;
+    stock?: number;
+    variants?: { size: string; total_stock: number }[];
     price: number;
     compare_at_price?: number | null;
     cost_price?: number | null;
@@ -27,7 +28,7 @@ export const AddProduct = async (data: ProductData) => {
     const client = await pool.connect();
 
     try {
-        const { images, ...productData } = data;
+        const { images, variants, stock, ...productData } = data;
         const normalizedSlug = productData.name
             .toLowerCase()
             .trim()
@@ -62,6 +63,28 @@ export const AddProduct = async (data: ProductData) => {
         );
 
         const product = productResult.rows[0];
+
+        const inventoryVariants = variants ?? (stock === undefined
+            ? []
+            : [{ size: "FREE", total_stock: stock }]);
+        for (const variant of inventoryVariants) {
+            const variantResult = await client.query(
+                `INSERT INTO product_variants (product_id, size)
+                 VALUES ($1, $2)
+                 ON CONFLICT (product_id, size) DO UPDATE SET updated_at = CURRENT_TIMESTAMP
+                 RETURNING id`,
+                [product.id, variant.size]
+            );
+            await client.query(
+                `INSERT INTO inventory (variant_id, total_stock)
+                 VALUES ($1, $2)
+                 ON CONFLICT (variant_id) DO UPDATE
+                 SET total_stock = EXCLUDED.total_stock,
+                     updated_at = CURRENT_TIMESTAMP
+                 WHERE inventory.reserved_stock <= EXCLUDED.total_stock`,
+                [variantResult.rows[0].id, variant.total_stock]
+            );
+        }
 
         for (let i = 0; i < images.length; i++) {
 

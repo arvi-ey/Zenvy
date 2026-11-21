@@ -27,7 +27,7 @@ export function MobileAddToCart({ product }: MobileAddToCartProps) {
     const wasAdded = await addItem({
       product,
       quantity: 1,
-      selectedSize: product.sizes[0]?.value || 'm',
+      selectedSize: product.sizes.find((size) => size.inStock)?.value || '',
       selectedColor: product.colors[0]?.name || 'Black',
     })
     if (wasAdded) dispatch(setCartOpen(true))
@@ -42,7 +42,7 @@ export function MobileAddToCart({ product }: MobileAddToCartProps) {
           </p>
           <p className="text-lg font-semibold">{formatPrice(product.price)}</p>
         </div>
-        <Button onClick={handleAddToCart} disabled={isAdding} size="lg" className="gap-2">
+        <Button onClick={handleAddToCart} disabled={isAdding || !product.sizes.some((size) => size.inStock)} size="lg" className="gap-2">
           <ShoppingBag className="h-5 w-5" />
           Add to Cart
         </Button>

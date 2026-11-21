@@ -20,7 +20,6 @@ interface ApiResponse<T> {
 
 interface ProductDetail extends Product {
     is_featured: boolean
-    stocks: { size: string; stock: number }[]
     category_name: string
     category_slug: string
 }

@@ -5,15 +5,18 @@ import type { Product as ApiProduct } from "@/store/slices/productSlicer";
 interface AddToCartPayload {
   product_id: number;
   product_count: number;
+  variant_id: number;
 }
 
-interface ApiCartItem extends Omit<ApiProduct, "images"> {
+interface ApiCartItem extends Omit<ApiProduct, "images" | "stocks" | "total_stock" | "reserved_stock"> {
   cart_id: number;
+  variant_id: number;
+  selected_size: string;
   product_count: number;
   category: string;
   featured: boolean;
   images: { url: string; is_main: boolean }[];
-  sizes: { size: string; stock: number }[];
+  sizes: { variant_id: number; size: string; total_stock: number; reserved_stock: number; stock: number }[];
 }
 
 interface CartResponse {
@@ -55,6 +58,8 @@ export async function getCart(): Promise<CartItem[]> {
         value: size.size.toLowerCase(),
         label: size.size,
         inStock: size.stock > 0,
+        variantId: size.variant_id,
+        availableStock: size.stock,
       })),
       colors: [{ name: "Black", value: "#000000" }],
       rating: 0,
@@ -62,40 +67,46 @@ export async function getCart(): Promise<CartItem[]> {
       inStock: Number(item.stock) > 0,
       featured: item.featured,
     };
-    const selectedSize =
-      item.sizes.find((size) => size.stock > 0)?.size.toLowerCase() ?? "m";
+    const selectedSize = item.selected_size.toLowerCase();
 
     return {
       product,
       quantity: Number(item.product_count),
       selectedSize,
       selectedColor: "Black",
+      variantId: item.variant_id,
     };
   });
 }
 
-export async function addProductToCart({ product_id, product_count }: AddToCartPayload) {
+export async function addProductToCart({ product_id, product_count, variant_id }: AddToCartPayload) {
   if (!Number.isSafeInteger(product_id) || product_id <= 0) {
     throw new Error("Invalid product");
   }
   if (!Number.isInteger(product_count) || product_count < 1 || product_count > 10) {
     throw new Error("Quantity must be between 1 and 10");
   }
+  if (!Number.isSafeInteger(variant_id) || variant_id <= 0) {
+    throw new Error("Select an available size");
+  }
 
   await api.post(
     "cart/add-to-cart",
-    { product_id, product_count },
+    { product_id, product_count, variant_id },
     { withCredentials: true }
   );
 }
 
-export async function deleteProductFromCart(productId: string) {
+export async function deleteProductFromCart(productId: string, variantId: number) {
   const parsedId = Number(productId);
   if (!Number.isSafeInteger(parsedId) || parsedId <= 0) {
     throw new Error("Invalid product");
   }
+  if (!Number.isSafeInteger(variantId) || variantId <= 0) {
+    throw new Error("Invalid product variant");
+  }
 
-  await api.delete(`cart/delete-cart/${parsedId}`, {
+  await api.delete(`cart/delete-cart/${parsedId}/${variantId}`, {
     withCredentials: true,
   });
 }

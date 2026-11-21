@@ -20,7 +20,7 @@ export function CartDrawer() {
   const isOpen = useAppSelector((state) => state.ui.isCartOpen)
   const items = useAppSelector(selectCartItems)
   const total = useAppSelector(selectCartTotal)
-  const { removeItem, removingProductId } = useRemoveFromCart()
+  const { removeItem, removingItemKey } = useRemoveFromCart()
 
   const formatPrice = (price: number) => {
     return new Intl.NumberFormat('en-US', {
@@ -103,8 +103,13 @@ export function CartDrawer() {
                           </p>
                         </div>
                         <button
-                          onClick={() => removeItem(item.product.id)}
-                          disabled={removingProductId === item.product.id}
+                          onClick={() => item.variantId && removeItem(
+                            item.product.id,
+                            item.variantId,
+                            item.selectedSize,
+                            item.selectedColor
+                          )}
+                          disabled={!item.variantId || removingItemKey === `${item.product.id}:${item.variantId}`}
                           className="text-muted-foreground transition-colors hover:text-foreground"
                           aria-label="Remove item"
                         >

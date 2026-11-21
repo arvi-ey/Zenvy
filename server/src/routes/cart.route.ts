@@ -9,6 +9,19 @@ const router = Router();
 
 router.get("/get-cart", optionalAuth, ensureGuestToken, getCart);
 router.delete(
+    "/delete-cart/:productId/:variantId",
+    optionalAuth,
+    validate(
+        z.object({
+            productId: z.coerce.number().int().positive(),
+            variantId: z.coerce.number().int().positive(),
+        }).strict(),
+        "params"
+    ),
+    ensureGuestToken,
+    deleteFromCart
+);
+router.delete(
     "/delete-cart/:productId",
     optionalAuth,
     validate(
@@ -22,6 +35,7 @@ router.delete(
 const addToCartSchema = z
     .object({
         product_id: z.coerce.number().int().positive(),
+        variant_id: z.coerce.number().int().positive().optional(),
         product_count: z.coerce.number().int().min(1).max(10),
     })
     .strict();

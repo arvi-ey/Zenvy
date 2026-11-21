@@ -35,7 +35,7 @@ export function ProductCard({ product, priority = false }: ProductCardProps) {
     const wasAdded = await addItem({
       product,
       quantity: 1,
-      selectedSize: product.sizes[0]?.value || 'm',
+      selectedSize: product.sizes.find((size) => size.inStock)?.value || '',
       selectedColor: product.colors[0]?.name || 'Black',
     })
     if (wasAdded) dispatch(setCartOpen(true))
@@ -110,7 +110,7 @@ export function ProductCard({ product, priority = false }: ProductCardProps) {
           {/* Quick Add Button */}
           <button
             onClick={handleQuickAdd}
-            disabled={isAdding}
+            disabled={isAdding || !product.sizes.some((size) => size.inStock)}
             className={cn(
               'absolute bottom-3 left-3 right-3 flex items-center justify-center gap-2 rounded-lg bg-background/95 py-2.5 text-sm font-medium backdrop-blur-sm transition-all duration-200',
               'opacity-0 translate-y-2 group-hover:opacity-100 group-hover:translate-y-0',

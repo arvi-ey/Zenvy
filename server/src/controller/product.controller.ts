@@ -10,7 +10,8 @@ interface AdminProductInput {
     description: string;
     sku: string;
     category_id: number;
-    stock: number;
+    stock?: number;
+    variants?: { size: string; total_stock: number }[];
     price: number;
     compare_at_price?: number | null;
     cost_price?: number | null;
@@ -39,11 +40,15 @@ export const addProduct = catchAsync(async (req: Request, res: Response, next: N
     const body = req.body as AdminProductInput;
     const response = await AddProduct(normalizeProductInput(body));
     if (response !== null) {
+        const product = await ProductModel.getproductdetails({
+            id: response.id,
+            includeAllStatuses: true,
+        });
         sendResponse(
             res,
             200,
             "Product added successfully",
-            response
+            product
         )
     }
 
@@ -69,7 +74,11 @@ export const updateProduct = catchAsync(async (req: Request, res: Response) => {
     if (!response) {
         throw new AppError("Product not found.", 404);
     }
-    sendResponse(res, 200, "Product updated successfully", response);
+    const updatedProduct = await ProductModel.getproductdetails({
+        id,
+        includeAllStatuses: true,
+    });
+    sendResponse(res, 200, "Product updated successfully", updatedProduct);
 });
 
 export const deleteProduct = catchAsync(async (req: Request, res: Response) => {
@@ -155,31 +164,3 @@ export const getProductDetails = catchAsync(async (req: Request, res: Response, 
         response
     )
 })
-
-
-
-
-// {
-
-//     "name": "OFFICIAL LOONEY TUNES converterMERCHANDISE",
-//         "description": "Men's Gardenia Who Cares Graphic Printed Oversized T-shirt",
-//             "category_id": 21,
-//                 "stock": 110,
-//                     "price": 899,
-//                         "status": "active",
-
-//                             "images": [
-//                                 {
-//                                     "url": "https://images.bewakoof.com/t1080/men-s-gardenia-who-cares-graphic-printed-oversized-t-shirt-646664-1731329946-1.jpg",
-//                                     "is_main": true
-//                                 },
-//                                 {
-//                                     "url": "https://images.bewakoof.com/t1080/men-s-gardenia-who-cares-graphic-printed-oversized-t-shirt-646664-1731329951-2.jpg",
-//                                     "is_main": false
-//                                 },
-//                                 {
-//                                     "url": "https://images.bewakoof.com/t1080/men-s-gardenia-who-cares-graphic-printed-oversized-t-shirt-646664-1731329968-6.jpg",
-//                                     "is_main": false
-//                                 }
-//                             ]
-// }

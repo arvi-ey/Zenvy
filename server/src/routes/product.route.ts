@@ -34,7 +34,12 @@ export const createProductSchema = z.object({
     stock: z
         .number()
         .int("Stock must be an integer")
-        .min(0, "Stock cannot be negative"),
+        .min(0, "Stock cannot be negative")
+        .optional(),
+    variants: z.array(z.object({
+        size: z.enum(["XS", "S", "M", "L", "XL", "XXL", "FREE"]),
+        total_stock: z.number().int().min(0),
+    }).strict()).min(1).optional(),
 
     price: z
         .number()
@@ -54,7 +59,15 @@ export const createProductSchema = z.object({
             return protocol === "https:" || protocol === "http:";
         }, "Image URLs must use HTTP or HTTPS"))
         .min(1, "At least one image is required")
-}).strict();
+}).strict()
+    .refine((data) => data.stock !== undefined || data.variants !== undefined, {
+        message: "Stock or variant inventory is required",
+        path: ["variants"],
+    })
+    .refine(
+        (data) => !data.variants || new Set(data.variants.map((variant) => variant.size)).size === data.variants.length,
+        { message: "Variant sizes must be unique", path: ["variants"] }
+    );
 
 
 const getProductsQuerySchema = z.object({

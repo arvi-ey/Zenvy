@@ -22,7 +22,7 @@ export default function CartPage() {
   const dispatch = useAppDispatch()
   const items = useAppSelector(selectCartItems)
   const subtotal = useAppSelector(selectCartTotal)
-  const { removeItem, removingProductId } = useRemoveFromCart()
+  const { removeItem, removingItemKey } = useRemoveFromCart()
 
   const formatPrice = (price: number) => {
     return new Intl.NumberFormat('en-US', {
@@ -100,8 +100,13 @@ export default function CartPage() {
                             </p>
                           </div>
                           <button
-                            onClick={() => removeItem(item.product.id)}
-                            disabled={removingProductId === item.product.id}
+                            onClick={() => item.variantId && removeItem(
+                              item.product.id,
+                              item.variantId,
+                              item.selectedSize,
+                              item.selectedColor
+                            )}
+                            disabled={!item.variantId || removingItemKey === `${item.product.id}:${item.variantId}`}
                             className="text-muted-foreground transition-colors hover:text-destructive"
                             aria-label="Remove item"
                           >

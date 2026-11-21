@@ -9,6 +9,9 @@ export interface Product {
   compareAtPrice?: number;
   costPrice?: number;
   stock: number;
+  totalStock?: number;
+  reservedStock?: number;
+  variants?: ProductVariantInventory[];
   lowStockThreshold: number;
   status: ProductStatus;
   images: string[];
@@ -17,6 +20,14 @@ export interface Product {
   tags: string[];
   createdAt: string;
   updatedAt: string;
+}
+
+export interface ProductVariantInventory {
+  variantId: number;
+  size: string;
+  totalStock: number;
+  reservedStock: number;
+  availableStock: number;
 }
 
 export type PaymentStatus = 'paid' | 'pending' | 'refunded' | 'failed';

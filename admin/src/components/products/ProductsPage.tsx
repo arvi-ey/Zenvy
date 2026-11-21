@@ -125,6 +125,10 @@ export const ProductsPage: React.FC = () => {
         categoryName: category.name,
         sku: `ZNV-${p.id}-CP-${Date.now().toString(36)}`,
         stock: p.stock,
+        variants: p.variants?.map((variant) => ({
+          size: variant.size,
+          total_stock: variant.availableStock,
+        })),
         price: p.price,
         compareAtPrice: p.compareAtPrice ?? null,
         costPrice: p.costPrice ?? null,
@@ -478,16 +482,19 @@ export const ProductsPage: React.FC = () => {
                         {isOutOfStock ? (
                           <span className="inline-flex items-center gap-1 text-[11px] font-semibold text-rose-600 dark:text-rose-400">
                             <AlertCircle className="w-3 h-3" />
-                            0 units
+                            0 available
                           </span>
                         ) : isLowStock ? (
                           <span className="inline-flex items-center gap-1 text-[11px] font-semibold text-amber-600 dark:text-amber-400">
                             <AlertCircle className="w-3 h-3" />
-                            {p.stock} left
+                            {p.stock} available
                           </span>
                         ) : (
-                          <span className="text-slate-700 dark:text-slate-300 font-medium">{p.stock}</span>
+                          <span className="text-slate-700 dark:text-slate-300 font-medium">{p.stock} available</span>
                         )}
+                        <div className="mt-1 text-[10px] text-slate-500">
+                          Total {p.totalStock ?? p.stock} · Reserved {p.reservedStock ?? 0}
+                        </div>
                       </td>
 
                       {/* Status */}

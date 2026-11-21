@@ -16,8 +16,20 @@ export interface Product {
     created_at: string
     updated_at: string
     deleted_at: string | null
-    stock: string
+    stock: string | number
+    total_stock: number
+    reserved_stock: number
+    stocks: ProductVariant[]
     images: ProductImage[]
+}
+
+export interface ProductVariant {
+    variant_id: number
+    size: string
+    total_stock: number
+    reserved_stock: number
+    available_stock: number
+    stock: number
 }
 
 interface ProductState {

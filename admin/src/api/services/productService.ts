@@ -9,6 +9,15 @@ interface ApiProduct {
   category_id: number;
   category_name: string;
   stock: number | string;
+  total_stock?: number | string;
+  reserved_stock?: number | string;
+  stocks?: Array<{
+    variant_id: number;
+    size: string;
+    total_stock: number | string;
+    reserved_stock: number | string;
+    available_stock: number | string;
+  }>;
   price: number | string;
   compare_at_price: number | string | null;
   cost_price: number | string | null;
@@ -27,6 +36,7 @@ export interface ProductInput {
   categoryName: string;
   sku: string;
   stock: number;
+  variants?: Array<{ size: string; total_stock: number }>;
   price: number;
   compareAtPrice?: number | null;
   costPrice?: number | null;
@@ -48,6 +58,15 @@ function toProduct(product: ApiProduct): Product {
     compareAtPrice: product.compare_at_price === null ? undefined : Number(product.compare_at_price),
     costPrice: product.cost_price === null ? undefined : Number(product.cost_price),
     stock: Number(product.stock),
+    totalStock: Number(product.total_stock ?? product.stock),
+    reservedStock: Number(product.reserved_stock ?? 0),
+    variants: (product.stocks ?? []).map((variant) => ({
+      variantId: variant.variant_id,
+      size: variant.size,
+      totalStock: Number(variant.total_stock),
+      reservedStock: Number(variant.reserved_stock),
+      availableStock: Number(variant.available_stock),
+    })),
     lowStockThreshold: product.low_stock_threshold,
     status: product.status === 'active' ? 'published' : product.status === 'inactive' ? 'archived' : 'draft',
     images,
@@ -66,6 +85,7 @@ function toApiProduct(product: ProductInput) {
     sku: product.sku,
     category_id: product.categoryId,
     stock: product.stock,
+    variants: product.variants,
     price: product.price,
     compare_at_price: product.compareAtPrice ?? null,
     cost_price: product.costPrice ?? null,

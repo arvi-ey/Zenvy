@@ -28,6 +28,8 @@ export interface Size {
   value: string
   label: string
   inStock: boolean
+  variantId?: number
+  availableStock?: number
 }
 
 export interface Color {
@@ -41,6 +43,7 @@ export interface CartItem {
   quantity: number
   selectedSize: string
   selectedColor: string
+  variantId?: number
 }
 
 // Wishlist Types

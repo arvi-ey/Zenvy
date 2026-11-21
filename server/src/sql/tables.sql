@@ -21,7 +21,6 @@ CREATE TABLE product (
     is_featured boolean default false,
     sku TEXT,
     category_id INT NOT NULL,
-    stock NUMERIC NOT NULL DEFAULT(0),
     price NUMERIC(10, 2) NOT NULL
         CHECK (price >= 0),
     compare_at_price NUMERIC(10, 2),
@@ -176,11 +175,40 @@ CREATE TABLE address (
 
 
 --Cart Table
+--Product Variants
+CREATE TABLE product_variants(
+id SERIAL PRIMARY KEY,
+product_id INTEGER NOT NULL,
+size VARCHAR(5) NOT NULL CHECK(size in ('M','L','S','XS','XL','XXL','XXL','FREE')),
+created_at TIMESTAMPTZ NOT NULL DEFAULT CURRENT_TIMESTAMP,
+updated_at TIMESTAMPTZ NOT NULL DEFAULT CURRENT_TIMESTAMP,
+
+CONSTRAINT fk_product_id FOREIGN KEY (product_id) REFERENCES product(id)
+ON DELETE CASCADE,
+ CONSTRAINT unique_product_size
+        UNIQUE (product_id, size)
+);
+
+--Inventory
+CREATE TABLE inventory (
+    id BIGSERIAL PRIMARY KEY,
+    variant_id INT NOT NULL UNIQUE
+        REFERENCES product_variants(id),
+    total_stock INT NOT NULL DEFAULT 0,
+    reserved_stock INT NOT NULL DEFAULT 0,
+    CHECK (total_stock >= 0),
+    CHECK (reserved_stock >= 0),
+    CHECK (reserved_stock <= total_stock),
+    created_at TIMESTAMPTZ NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    updated_at TIMESTAMPTZ NOT NULL DEFAULT CURRENT_TIMESTAMP
+);
+
 create table cart(
 id SERIAL PRIMARY KEY,
 product_id INT NOT NULL,
 product_count INT NOT NULL DEFAULT 1 CHECK (product_count >0),
 user_id INT,
+variant_id INT NOT NULL REFERENCES product_variants(id),
 guest_token TEXT, 
 created_at TIMESTAMPTZ NOT NULL DEFAULT CURRENT_TIMESTAMP,
 updated_at TIMESTAMPTZ NOT NULL DEFAULT CURRENT_TIMESTAMP,
@@ -194,7 +222,7 @@ CONSTRAINT cart_owner_chk CHECK (
 );
 
 CREATE UNIQUE INDEX cart_user_product_unique
-ON cart (user_id, product_id)
+ON cart (user_id, product_id, variant_id)
 WHERE user_id IS NOT NULL
 AND deleted_at IS NULL;
 
@@ -217,33 +245,11 @@ CONSTRAINT uq_product_user_review UNIQUE (product_id, user_id)
 
 
 
---Product Variants
-CREATE TABLE product_variants(
-id SERIAL PRIMARY KEY,
-product_id INTEGER NOT NULL,
-size VARCHAR(5) NOT NULL CHECK(size in ('M','L','S','XS','XL','XXL','XXL','FREE')),
-stock INTEGER NOT NULL CHECK(stock >=0) DEFAULT 0,
-created_at TIMESTAMPTZ NOT NULL DEFAULT CURRENT_TIMESTAMP,
-updated_at TIMESTAMPTZ NOT NULL DEFAULT CURRENT_TIMESTAMP,
-
-CONSTRAINT fk_product_id FOREIGN KEY (product_id) REFERENCES product(id)
-ON DELETE CASCADE,
- CONSTRAINT unique_product_size
-        UNIQUE (product_id, size)
-);
-
-
 --auto insert products
--- INSERT INTO product_variants (product_id, size, stock)
+-- INSERT INTO product_variants (product_id, size)
 -- SELECT
 --     p.id,
---     s.size,
---     CASE
---         WHEN random() < 0.20 THEN 0
---         WHEN random() < 0.35 THEN (1 + floor(random() * 5))::int
---         WHEN random() < 0.65 THEN (6 + floor(random() * 25))::int
---         ELSE (31 + floor(random() * 90))::int
---     END
+--     s.size
 -- FROM product p
 -- CROSS JOIN (VALUES ('S'), ('M'), ('L'), ('XL'), ('XXL')) AS s(size)
 -- WHERE p.deleted_at IS NULL;

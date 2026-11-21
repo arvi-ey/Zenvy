@@ -31,16 +31,19 @@ export class OrderModel {
             const productIds = input.items.map((item) => item.product_id);
             const products = await client.query(
                 `SELECT p.id, p.name, p.price, pi.url AS image,
-                        pv.size AS variant_size, pv.stock AS variant_stock
+                        pv.id AS variant_id,
+                        pv.size AS variant_size,
+                        GREATEST(i.total_stock - i.reserved_stock, 0) AS available_stock
                  FROM product p
                  INNER JOIN product_variants pv ON pv.product_id = p.id
+                 INNER JOIN inventory i ON i.variant_id = pv.id
                  LEFT JOIN LATERAL (
                    SELECT url FROM product_images
                    WHERE product_id = p.id AND deleted_at IS NULL
                    ORDER BY is_main DESC, id ASC LIMIT 1
                  ) pi ON true
                  WHERE p.id = ANY($1::int[]) AND p.deleted_at IS NULL AND p.status = 'active'
-                 FOR UPDATE OF p, pv`,
+                 FOR UPDATE OF p, pv, i`,
                 [productIds]
             );
             const productMap = new Map(products.rows.map((product) => [
@@ -57,7 +60,7 @@ export class OrderModel {
                         409
                     );
                 }
-                if (Number(product.variant_stock) < item.quantity) {
+                if (Number(product.available_stock) < item.quantity) {
                     throw new AppError(
                         `${product.name} does not have enough stock for the selected size.`,
                         409
@@ -87,12 +90,18 @@ export class OrderModel {
                     [order.rows[0].id, item.product_id, product.name, product.image ?? null, item.quantity,
                         product.price, item.selected_size, item.selected_color]
                 );
-                await client.query(
-                    `UPDATE product_variants
-                     SET stock = stock - $1, updated_at = CURRENT_TIMESTAMP
-                     WHERE product_id = $2 AND lower(size) = lower($3)`,
-                    [item.quantity, item.product_id, item.selected_size]
+                const inventoryUpdate = await client.query(
+                    `UPDATE inventory
+                     SET total_stock = total_stock - $1, updated_at = CURRENT_TIMESTAMP
+                     WHERE variant_id = $2 AND total_stock - $1 >= reserved_stock`,
+                    [item.quantity, product.variant_id]
                 );
+                if (!inventoryUpdate.rowCount) {
+                    throw new AppError(
+                        `${product.name} does not have enough stock for the selected size.`,
+                        409
+                    );
+                }
             }
 
             await client.query(

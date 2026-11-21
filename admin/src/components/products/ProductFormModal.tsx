@@ -21,7 +21,6 @@ const productSchema = z.object({
   price: z.number().positive('Price must be greater than 0'),
   compareAtPrice: z.number().optional().nullable(),
   costPrice: z.number().optional().nullable(),
-  stock: z.number().int('Stock must be an integer').nonnegative('Stock cannot be negative'),
   lowStockThreshold: z.number().int().nonnegative('Threshold must be 0 or more'),
   status: z.enum(['published', 'draft', 'archived'] as const),
   description: z.string().min(10, 'Description must be at least 10 characters long'),
@@ -47,6 +46,12 @@ export const ProductFormModal: React.FC<ProductFormModalProps> = ({
   const [images, setImages] = useState<string[]>([]);
   const [thumbnail, setThumbnail] = useState<string>('');
   const [imageError, setImageError] = useState<string>('');
+  const [inventoryError, setInventoryError] = useState<string>('');
+  const [inventoryVariants, setInventoryVariants] = useState<Array<{
+    size: string;
+    totalStock: number;
+    reservedStock: number;
+  }>>([]);
 
   const {
     register,
@@ -64,7 +69,6 @@ export const ProductFormModal: React.FC<ProductFormModalProps> = ({
       price: 0,
       compareAtPrice: null,
       costPrice: null,
-      stock: 10,
       lowStockThreshold: 5,
       status: 'published',
       description: '',
@@ -82,7 +86,6 @@ export const ProductFormModal: React.FC<ProductFormModalProps> = ({
         price: productToEdit.price,
         compareAtPrice: productToEdit.compareAtPrice ?? null,
         costPrice: productToEdit.costPrice ?? null,
-        stock: productToEdit.stock,
         lowStockThreshold: productToEdit.lowStockThreshold,
         status: productToEdit.status,
         description: productToEdit.description,
@@ -90,6 +93,13 @@ export const ProductFormModal: React.FC<ProductFormModalProps> = ({
       });
       setImages(productToEdit.images || [productToEdit.thumbnail]);
       setThumbnail(productToEdit.thumbnail);
+      setInventoryVariants(productToEdit.variants?.length
+        ? productToEdit.variants.map((variant) => ({
+            size: variant.size,
+            totalStock: variant.totalStock,
+            reservedStock: variant.reservedStock,
+          }))
+        : [{ size: 'FREE', totalStock: productToEdit.stock, reservedStock: 0 }]);
     } else {
       reset({
         title: '',
@@ -98,7 +108,6 @@ export const ProductFormModal: React.FC<ProductFormModalProps> = ({
         price: 99.0,
         compareAtPrice: null,
         costPrice: null,
-        stock: 20,
         lowStockThreshold: 5,
         status: 'published',
         description: '',
@@ -106,8 +115,10 @@ export const ProductFormModal: React.FC<ProductFormModalProps> = ({
       });
       setImages([ASSET_WATCH]);
       setThumbnail(ASSET_WATCH);
+      setInventoryVariants([{ size: 'M', totalStock: 20, reservedStock: 0 }]);
     }
     setImageError('');
+    setInventoryError('');
   }, [productToEdit, reset, categories]);
 
   if (!isOpen) return null;
@@ -127,6 +138,14 @@ export const ProductFormModal: React.FC<ProductFormModalProps> = ({
       setImageError('Select a category from the connected catalog before saving.');
       return;
     }
+    if (
+      inventoryVariants.length === 0 ||
+      new Set(inventoryVariants.map((variant) => variant.size)).size !== inventoryVariants.length ||
+      inventoryVariants.some((variant) => variant.totalStock < variant.reservedStock)
+    ) {
+      setInventoryError('Add unique sizes and ensure total stock is not below reserved stock.');
+      return;
+    }
 
     const tags = data.tagsInput
       ? data.tagsInput
@@ -144,7 +163,14 @@ export const ProductFormModal: React.FC<ProductFormModalProps> = ({
         categoryId: Number(category.id),
         categoryName: category.name,
         sku: data.sku.toUpperCase(),
-        stock: Number(data.stock),
+        stock: inventoryVariants.reduce(
+          (sum, variant) => sum + variant.totalStock - variant.reservedStock,
+          0
+        ),
+        variants: inventoryVariants.map((variant) => ({
+          size: variant.size,
+          total_stock: variant.totalStock,
+        })),
         price: Number(data.price),
         compareAtPrice: Number.isFinite(data.compareAtPrice) ? Number(data.compareAtPrice) : null,
         costPrice: Number.isFinite(data.costPrice) ? Number(data.costPrice) : null,
@@ -312,22 +338,78 @@ export const ProductFormModal: React.FC<ProductFormModalProps> = ({
               </div>
             </div>
 
-            {/* Stock and Low Stock Threshold */}
-            <div className="grid grid-cols-2 gap-3">
-              <div className="space-y-1">
+            {/* Inventory per product size */}
+            <div className="space-y-2">
+              <div className="flex items-center justify-between">
                 <label className="block text-xs font-semibold text-slate-700 dark:text-slate-300">
-                  Initial Stock Count <span className="text-rose-500">*</span>
+                  Variant Inventory
                 </label>
-                <input
-                  type="number"
-                  {...register('stock', { valueAsNumber: true })}
-                  className={`w-full px-3 py-2 text-xs font-mono rounded-lg border ${
-                    errors.stock ? 'border-rose-500' : 'border-slate-300 dark:border-slate-700'
-                  } bg-white dark:bg-slate-800 text-slate-900 dark:text-slate-100 focus:outline-none focus:ring-2 focus:ring-slate-900 dark:focus:ring-white`}
-                />
-                {errors.stock && <p className="text-[11px] text-rose-500">{errors.stock.message}</p>}
+                <button
+                  type="button"
+                  onClick={() => {
+                    const nextSize = ['XS', 'S', 'M', 'L', 'XL', 'XXL', 'FREE']
+                      .find((size) => !inventoryVariants.some((variant) => variant.size === size));
+                    if (nextSize) setInventoryVariants((current) => [
+                      ...current,
+                      { size: nextSize, totalStock: 0, reservedStock: 0 },
+                    ]);
+                  }}
+                  className="text-[11px] font-medium text-slate-700 hover:underline dark:text-slate-300"
+                >
+                  Add size
+                </button>
               </div>
+              {inventoryVariants.map((variant, index) => (
+                <div key={`${variant.size}-${index}`} className="grid grid-cols-[1fr_1fr_auto] items-center gap-2">
+                  <select
+                    value={variant.size}
+                    onChange={(event) => {
+                      const size = event.target.value;
+                      setInventoryVariants((current) => current.map((item, itemIndex) =>
+                        itemIndex === index ? { ...item, size } : item
+                      ));
+                      setInventoryError('');
+                    }}
+                    className="w-full rounded-lg border border-slate-300 bg-white px-3 py-2 text-xs dark:border-slate-700 dark:bg-slate-800"
+                    aria-label={`Size for inventory row ${index + 1}`}
+                  >
+                    {['XS', 'S', 'M', 'L', 'XL', 'XXL', 'FREE'].map((size) => (
+                      <option key={size} value={size}>{size}</option>
+                    ))}
+                  </select>
+                  <input
+                    type="number"
+                    min={variant.reservedStock}
+                    value={variant.totalStock}
+                    onChange={(event) => {
+                      const totalStock = Number(event.target.value);
+                      setInventoryVariants((current) => current.map((item, itemIndex) =>
+                        itemIndex === index ? { ...item, totalStock } : item
+                      ));
+                      setInventoryError('');
+                    }}
+                    className="w-full rounded-lg border border-slate-300 bg-white px-3 py-2 font-mono text-xs dark:border-slate-700 dark:bg-slate-800"
+                    aria-label={`Total stock for size ${variant.size}`}
+                  />
+                  <button
+                    type="button"
+                    onClick={() => setInventoryVariants((current) => current.filter((_, itemIndex) => itemIndex !== index))}
+                    disabled={inventoryVariants.length === 1}
+                    className="px-2 text-xs text-rose-600 disabled:opacity-40"
+                    aria-label={`Remove size ${variant.size}`}
+                  >
+                    Remove
+                  </button>
+                  <p className="col-span-3 -mt-1 text-[10px] text-slate-500">
+                    Total {variant.totalStock} · Reserved {variant.reservedStock} · Available {Math.max(0, variant.totalStock - variant.reservedStock)}
+                  </p>
+                </div>
+              ))}
+              {inventoryError && <p className="text-[11px] text-rose-500">{inventoryError}</p>}
+            </div>
 
+            {/* Low Stock Threshold */}
+            <div className="grid grid-cols-2 gap-3">
               <div className="space-y-1">
                 <label className="block text-xs font-semibold text-slate-700 dark:text-slate-300">
                   Low Stock Warning Threshold
@@ -337,6 +419,12 @@ export const ProductFormModal: React.FC<ProductFormModalProps> = ({
                   {...register('lowStockThreshold', { valueAsNumber: true })}
                   className="w-full px-3 py-2 text-xs font-mono rounded-lg border border-slate-300 dark:border-slate-700 bg-white dark:bg-slate-800 text-slate-900 dark:text-slate-100 focus:outline-none focus:ring-2 focus:ring-slate-900 dark:focus:ring-white"
                 />
+              </div>
+              <div className="flex items-end text-[11px] text-slate-500">
+                Product available stock: {inventoryVariants.reduce(
+                  (sum, variant) => sum + Math.max(0, variant.totalStock - variant.reservedStock),
+                  0
+                )}
               </div>
             </div>
 

@@ -35,8 +35,12 @@ interface ProductImage {
 }
 
 interface ProductVariant {
+    variant_id: number;
     size: string;
     stock: number;
+    total_stock: number;
+    reserved_stock: number;
+    available_stock: number;
 }
 
 interface Product {
@@ -50,7 +54,7 @@ interface Product {
     created_at: string;
     updated_at: string;
     deleted_at: string | null;
-    stock: string;
+    stock: string | number;
     is_featured: boolean;
     images: ProductImage[];
     stocks: ProductVariant[];
@@ -82,6 +86,8 @@ function toWishlistProduct(product: Product): CartProduct {
             value: variant.size.toLowerCase(),
             label: variant.size,
             inStock: variant.stock > 0,
+            variantId: variant.variant_id,
+            availableStock: variant.stock,
         })),
         colors: [{ name: 'Black', value: '#000000' }],
         rating: 0,
@@ -100,7 +106,13 @@ function toRelatedProduct(product: ListingProduct, category: ProductCategory): C
         price: Number(product.price) || 0,
         images: product.images.map((image) => image.url),
         category,
-        sizes: [],
+        sizes: product.stocks.map((variant) => ({
+            value: variant.size.toLowerCase(),
+            label: variant.size,
+            inStock: variant.stock > 0,
+            variantId: variant.variant_id,
+            availableStock: variant.stock,
+        })),
         colors: [{ name: 'Black', value: '#000000' }],
         rating: 0,
         reviewCount: 0,

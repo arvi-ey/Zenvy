@@ -18,7 +18,9 @@ export function ProductInfo({ product }: ProductInfoProps) {
   const dispatch = useAppDispatch()
   const { addItem, isAdding } = useAddToCart()
   const isWishlisted = useAppSelector(selectIsInWishlist(product.id))
-  const [selectedSize, setSelectedSize] = useState(product.sizes[0]?.value || '')
+  const [selectedSize, setSelectedSize] = useState(
+    product.sizes.find((size) => size.inStock)?.value || ''
+  )
   const [selectedColor, setSelectedColor] = useState(product.colors[0]?.name || '')
   const [quantity, setQuantity] = useState(1)
 
@@ -35,12 +37,14 @@ export function ProductInfo({ product }: ProductInfoProps) {
     : 0
 
   const handleAddToCart = async () => {
+    if (!product.sizes.some((size) => size.value === selectedSize && size.inStock)) return
     if (await addItem({ product, quantity, selectedSize, selectedColor })) {
       dispatch(setCartOpen(true))
     }
   }
 
   const handleBuyNow = async () => {
+    if (!product.sizes.some((size) => size.value === selectedSize && size.inStock)) return
     if (await addItem({ product, quantity, selectedSize, selectedColor })) {
       dispatch(setCartOpen(true))
     }
@@ -193,10 +197,10 @@ export function ProductInfo({ product }: ProductInfoProps) {
 
       {/* Actions */}
       <div className="mt-6 flex flex-col gap-3 sm:flex-row">
-        <Button onClick={handleAddToCart} disabled={isAdding} className="flex-1" size="lg">
+        <Button onClick={handleAddToCart} disabled={isAdding || !product.sizes.some((size) => size.inStock)} className="flex-1" size="lg">
           Add to Cart
         </Button>
-        <Button onClick={handleBuyNow} disabled={isAdding} variant="secondary" className="flex-1" size="lg">
+        <Button onClick={handleBuyNow} disabled={isAdding || !product.sizes.some((size) => size.inStock)} variant="secondary" className="flex-1" size="lg">
           Buy Now
         </Button>
         <Button
