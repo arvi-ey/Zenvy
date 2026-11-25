@@ -257,25 +257,34 @@ CONSTRAINT uq_product_user_review UNIQUE (product_id, user_id)
 -- Orders
 CREATE TABLE orders (
     id SERIAL PRIMARY KEY,
+
     user_id INT NOT NULL,
     address_id INT NOT NULL,
 
     payment_method VARCHAR(20) NOT NULL DEFAULT 'cod'
-        CHECK (payment_method IN ('cod')),
+        CHECK (payment_method IN ('cod', 'razorpay')),
+
+    payment_status VARCHAR(20) NOT NULL DEFAULT 'pending'
+        CHECK (payment_status IN ('pending', 'paid', 'refunded', 'failed')),
 
     status VARCHAR(30) NOT NULL DEFAULT 'placed'
-        CHECK (status IN (
-            'placed',
-            'confirmed',
-            'shipped',
-            'out_for_delivery',
-            'delivered',
-            'cancelled'
-        )),
+        CHECK (
+            status IN (
+                'pending_payment',
+                'placed',
+                'confirmed',
+                'shipped',
+                'out_for_delivery',
+                'delivered',
+                'cancelled'
+            )
+        ),
 
     subtotal NUMERIC(10, 2) NOT NULL CHECK (subtotal >= 0),
+
     delivery_charge NUMERIC(10, 2) NOT NULL DEFAULT 40
         CHECK (delivery_charge >= 0),
+
     total NUMERIC(10, 2) NOT NULL CHECK (total >= 0),
 
     created_at TIMESTAMPTZ NOT NULL DEFAULT CURRENT_TIMESTAMP,
@@ -289,7 +298,6 @@ CREATE TABLE orders (
         FOREIGN KEY (address_id) REFERENCES address(id)
         ON DELETE RESTRICT
 );
-
 
 CREATE TABLE order_items (
     id SERIAL PRIMARY KEY,
@@ -319,3 +327,47 @@ CREATE TABLE order_items (
         FOREIGN KEY (variant_id) REFERENCES product_variants(id)
         ON DELETE RESTRICT
 );
+
+
+
+-- Payment table
+CREATE TABLE payments (
+    id BIGSERIAL PRIMARY KEY,
+
+    order_id INT NOT NULL,
+
+    gateway VARCHAR(30) NOT NULL DEFAULT 'razorpay'
+        CHECK (gateway IN ('razorpay')),
+
+    gateway_order_id VARCHAR(100) UNIQUE,
+
+    gateway_payment_id VARCHAR(100) UNIQUE,
+
+    amount NUMERIC(10, 2) NOT NULL
+        CHECK (amount > 0),
+
+    currency VARCHAR(3) NOT NULL DEFAULT 'INR',
+
+    status VARCHAR(20) NOT NULL DEFAULT 'created'
+        CHECK (
+            status IN (
+                'created',
+                'authorized',
+                'captured',
+                'failed',
+                'refunded'
+            )
+        ),
+
+    created_at TIMESTAMPTZ NOT NULL DEFAULT CURRENT_TIMESTAMP,
+
+    updated_at TIMESTAMPTZ NOT NULL DEFAULT CURRENT_TIMESTAMP,
+
+    CONSTRAINT payments_order_fkey
+        FOREIGN KEY (order_id)
+        REFERENCES orders(id)
+        ON DELETE RESTRICT
+);
+
+CREATE INDEX idx_payments_order_id
+ON payments(order_id);

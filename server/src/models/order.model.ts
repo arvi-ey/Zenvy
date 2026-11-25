@@ -30,7 +30,7 @@ export class OrderModel {
                  FROM address
                  WHERE id = $1 AND user_id = $2 AND deleted_at IS NULL
                  FOR UPDATE`,
-                [input.address_id, userId]
+                [input.address_id, userId] 
             );
             if (!address.rowCount) {
                 throw new AppError("Delivery address not found.", 404);
